@@ -28,7 +28,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Printer, FileText } from "lucide-react";
+import {
+  Printer,
+  FileText
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 const Bulletins = () => {
@@ -83,11 +86,11 @@ const Bulletins = () => {
   ];
 
   const generateStudentData = () => {
-    const data = {};
+    const data: Record<number, any> = {};
     
     students.forEach(student => {
       const studentData = {
-        unites: {},
+        unites: {} as Record<number, any>,
         moyenne: 0,
         moyenneClasse: 13.8,
         rang: 0,
@@ -105,7 +108,7 @@ const Bulletins = () => {
       unites.forEach(unite => {
         studentData.unites[unite.id] = {
           moyenne: 0,
-          matieres: {}
+          matieres: {} as Record<number, string>
         };
         
         let unitePoints = 0;
