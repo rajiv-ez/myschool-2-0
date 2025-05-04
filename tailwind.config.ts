@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,22 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Couleurs personnalisées pour MySchool 2.0
+				myschool: {
+					'purple': '#9b87f5',
+					'purple-dark': '#7E69AB',
+					'gray': '#8E9196',
+					'gray-light': '#F1F0FB',
+					'gray-dark': '#221F26',
+					'blue-soft': '#D3E4FD',
+					'purple-soft': '#E5DEFF', 
+					'orange': '#F97316',
 				}
+			},
+			fontFamily: {
+				'sans': ['Poppins', 'sans-serif'],
+				'chalk': ['Fredericka the Great', 'cursive'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +100,32 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-10px)'
+					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0'
+					},
+					'100%': {
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'float': 'float 6s ease-in-out infinite',
+				'fade-in': 'fade-in 0.5s ease-out'
+			},
+			backgroundImage: {
+				'blackboard': "url('/images/blackboard-texture.jpg')",
 			}
 		}
 	},
