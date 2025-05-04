@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { 
   Tabs, 
@@ -18,7 +18,8 @@ import {
   School,
   FileText,
   Clock,
-  GridIcon
+  GridIcon,
+  ListCheck
 } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
@@ -35,7 +36,9 @@ const DashboardLayout: React.FC = () => {
     { id: 'presence', label: 'Présences', icon: <Clock size={18} />, path: '/dashboard/presence' },
     { id: 'sessions', label: 'Sessions & Paliers', icon: <GridIcon size={18} />, path: '/dashboard/sessions' },
     { id: 'paiements', label: 'Paiements', icon: <CreditCard size={18} />, path: '/dashboard/paiements' },
-    { id: 'mes-paiements', label: 'Mes Paiements', icon: <Wallet size={18} />, path: '/dashboard/mes-paiements' }
+    { id: 'mes-paiements', label: 'Mes Paiements', icon: <Wallet size={18} />, path: '/dashboard/mes-paiements' },
+    { id: 'notes', label: 'Relevé des Notes', icon: <ListCheck size={18} />, path: '/dashboard/notes' },
+    { id: 'bulletins', label: 'Bulletins', icon: <FileText size={18} />, path: '/dashboard/bulletins' },
   ];
   
   const activeTab = tabs.find(tab => location.pathname.includes(tab.id))?.id || 'inscriptions';
@@ -50,23 +53,28 @@ const DashboardLayout: React.FC = () => {
           <p className="text-muted-foreground">Gérez votre établissement scolaire en toute simplicité</p>
         </div>
         
-        <Tabs value={activeTab} className="mb-6">
-          <TabsList className="w-full overflow-x-auto flex-nowrap flex justify-start max-w-full">
-            {tabs.map(tab => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id}
-                className="flex items-center gap-2"
-                asChild
-              >
-                <Link to={tab.path}>
-                  {tab.icon}
-                  {tab.label}
-                </Link>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <div className="mb-6 overflow-hidden">
+          <div className="overflow-x-auto pb-3">
+            <Tabs value={activeTab} className="w-full">
+              <TabsList className="flex p-1 h-auto overflow-x-auto max-w-full">
+                {tabs.map(tab => (
+                  <TabsTrigger 
+                    key={tab.id} 
+                    value={tab.id}
+                    className="flex items-center gap-2 whitespace-nowrap"
+                    asChild
+                  >
+                    <Link to={tab.path}>
+                      {tab.icon}
+                      <span className="hidden sm:inline">{tab.label}</span>
+                      <span className="sm:hidden">{tab.label.substring(0, 1)}</span>
+                    </Link>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <Outlet />
