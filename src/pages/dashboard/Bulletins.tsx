@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -34,13 +33,49 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
+interface Student {
+  id: number;
+  nom: string;
+  prenom: string;
+  photo: string | null;
+}
+
+interface Matiere {
+  id: number;
+  nom: string;
+  coefficient: number;
+  moyenne: number;
+}
+
+interface Unite {
+  id: number;
+  nom: string;
+  matieres: Matiere[];
+}
+
+interface StudentData {
+  unites: Record<number, {
+    moyenne: number;
+    matieres: Record<number, number>;
+  }>;
+  moyenne: number;
+  moyenneClasse: number;
+  rang: number;
+  effectif: number;
+  plusForte: number;
+  plusFaible: number;
+  appreciation: string;
+  absences: number;
+  retards: number;
+}
+
 const Bulletins = () => {
   const [selectedSession, setSelectedSession] = useState("2023-2024");
   const [selectedPalier, setSelectedPalier] = useState("1");
   const [selectedClass, setSelectedClass] = useState("CM1");
   
   // Données d'exemple
-  const students = [
+  const students: Student[] = [
     { id: 1, nom: "Nguema", prenom: "Marc", photo: null },
     { id: 2, nom: "Ekomi", prenom: "Sarah", photo: null },
     { id: 3, nom: "Mbadinga", prenom: "Jean", photo: null },
@@ -50,7 +85,7 @@ const Bulletins = () => {
 
   const [activeTab, setActiveTab] = useState(students[0].id.toString());
 
-  const unites = [
+  const unites: Unite[] = [
     {
       id: 1, 
       nom: "Mathématiques et Sciences", 
@@ -86,11 +121,14 @@ const Bulletins = () => {
   ];
 
   const generateStudentData = () => {
-    const data: Record<number, any> = {};
+    const data: Record<number, StudentData> = {};
     
     students.forEach(student => {
-      const studentData = {
-        unites: {} as Record<number, any>,
+      const studentData: StudentData = {
+        unites: {} as Record<number, {
+          moyenne: number;
+          matieres: Record<number, number>;
+        }>,
         moyenne: 0,
         moyenneClasse: 13.8,
         rang: 0,
@@ -108,7 +146,7 @@ const Bulletins = () => {
       unites.forEach(unite => {
         studentData.unites[unite.id] = {
           moyenne: 0,
-          matieres: {} as Record<number, string>
+          matieres: {} as Record<number, number>
         };
         
         let unitePoints = 0;
@@ -117,7 +155,7 @@ const Bulletins = () => {
         unite.matieres.forEach(matiere => {
           // Générer une note aléatoire entre 8 et 19
           const note = 8 + Math.random() * 11;
-          studentData.unites[unite.id].matieres[matiere.id] = note.toFixed(2);
+          studentData.unites[unite.id].matieres[matiere.id] = parseFloat(note.toFixed(2));
           
           unitePoints += note * matiere.coefficient;
           uniteCoeff += matiere.coefficient;
@@ -126,13 +164,13 @@ const Bulletins = () => {
           totalCoeff += matiere.coefficient;
         });
         
-        studentData.unites[unite.id].moyenne = (unitePoints / uniteCoeff).toFixed(2);
+        studentData.unites[unite.id].moyenne = parseFloat((unitePoints / uniteCoeff).toFixed(2));
       });
       
-      studentData.moyenne = (totalPoints / totalCoeff).toFixed(2);
+      studentData.moyenne = parseFloat((totalPoints / totalCoeff).toFixed(2));
       
       // Générer une appréciation
-      const moyenne = parseFloat(studentData.moyenne);
+      const moyenne = studentData.moyenne;
       if (moyenne >= 16) {
         studentData.appreciation = "Excellent trimestre. Continuez ainsi !";
       } else if (moyenne >= 14) {
@@ -151,7 +189,7 @@ const Bulletins = () => {
     // Attribution des rangs en fonction des moyennes
     const rankedStudents = students.map(s => ({
       id: s.id,
-      moyenne: parseFloat(data[s.id].moyenne)
+      moyenne: data[s.id].moyenne
     })).sort((a, b) => b.moyenne - a.moyenne);
     
     rankedStudents.forEach((s, index) => {
