@@ -13,7 +13,12 @@ import {
   Users, 
   Calendar, 
   CreditCard, 
-  Wallet
+  Wallet,
+  Building,
+  School,
+  FileText,
+  Clock,
+  GridIcon
 } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
@@ -23,7 +28,12 @@ const DashboardLayout: React.FC = () => {
   const tabs = [
     { id: 'inscriptions', label: 'Inscriptions', icon: <UserPlus size={18} />, path: '/dashboard/inscriptions' },
     { id: 'personnes', label: 'Élèves & Tuteurs', icon: <Users size={18} />, path: '/dashboard/personnes' },
-    { id: 'sessions', label: 'Sessions & Paliers', icon: <Calendar size={18} />, path: '/dashboard/sessions' },
+    { id: 'infrastructure', label: 'Infrastructure', icon: <Building size={18} />, path: '/dashboard/infrastructure' },
+    { id: 'academics', label: 'Académique', icon: <School size={18} />, path: '/dashboard/academics' },
+    { id: 'education', label: 'Enseignement', icon: <FileText size={18} />, path: '/dashboard/education' },
+    { id: 'calendar', label: 'Calendrier', icon: <Calendar size={18} />, path: '/dashboard/calendar' },
+    { id: 'presence', label: 'Présences', icon: <Clock size={18} />, path: '/dashboard/presence' },
+    { id: 'sessions', label: 'Sessions & Paliers', icon: <GridIcon size={18} />, path: '/dashboard/sessions' },
     { id: 'paiements', label: 'Paiements', icon: <CreditCard size={18} />, path: '/dashboard/paiements' },
     { id: 'mes-paiements', label: 'Mes Paiements', icon: <Wallet size={18} />, path: '/dashboard/mes-paiements' }
   ];

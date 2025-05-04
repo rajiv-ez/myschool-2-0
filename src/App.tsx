@@ -12,6 +12,11 @@ import Personnes from "./pages/dashboard/Personnes";
 import Sessions from "./pages/dashboard/Sessions";
 import Paiements from "./pages/dashboard/Paiements";
 import MesPaiements from "./pages/dashboard/MesPaiements";
+import Infrastructure from "./pages/dashboard/Infrastructure";
+import Academics from "./pages/dashboard/Academics";
+import Education from "./pages/dashboard/Education";
+import CalendarPage from "./pages/dashboard/CalendarPage";
+import Presence from "./pages/dashboard/Presence";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +35,11 @@ const App = () => (
             <Route index element={<Inscriptions />} />
             <Route path="inscriptions" element={<Inscriptions />} />
             <Route path="personnes" element={<Personnes />} />
+            <Route path="infrastructure" element={<Infrastructure />} />
+            <Route path="academics" element={<Academics />} />
+            <Route path="education" element={<Education />} />
+            <Route path="calendar" element={<CalendarPage />} />
+            <Route path="presence" element={<Presence />} />
             <Route path="sessions" element={<Sessions />} />
             <Route path="paiements" element={<Paiements />} />
             <Route path="mes-paiements" element={<MesPaiements />} />
