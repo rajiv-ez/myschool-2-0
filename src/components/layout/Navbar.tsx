@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { Home, LayoutDashboard, MessageSquare, LogIn } from 'lucide-react';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,55 +27,31 @@ const Navbar = () => {
         {/* Menu desktop */}
         <div className="hidden space-x-1 md:flex">
           <Button variant="ghost" asChild>
-            <Link to="/inscription">Inscription</Link>
+            <Link to="/" className="flex items-center gap-1">
+              <Home size={18} />
+              Accueil
+            </Link>
           </Button>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost">Modules</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem asChild>
-                <Link to="/emploi-du-temps" className="w-full">Emploi du temps</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/notes" className="w-full">Notes et évaluations</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/presences" className="w-full">Présences</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/paiements" className="w-full">Paiements</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/bibliotheque" className="w-full">Bibliothèque</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button variant="ghost" asChild>
+            <Link to="/dashboard" className="flex items-center gap-1">
+              <LayoutDashboard size={18} />
+              Mon École
+            </Link>
+          </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost">Offres</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to="/offres/starter" className="w-full">Starter</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/offres/medium" className="w-full">Medium</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/offres/premium" className="w-full">Premium</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button variant="outline" asChild>
-            <Link to="/contact">Contact</Link>
+          <Button variant="ghost" asChild>
+            <Link to="/contact" className="flex items-center gap-1">
+              <MessageSquare size={18} />
+              Contact
+            </Link>
           </Button>
 
           <Button asChild>
-            <Link to="/connexion">Connexion</Link>
+            <Link to="/connexion" className="flex items-center gap-1">
+              <LogIn size={18} />
+              Connexion
+            </Link>
           </Button>
         </div>
 
@@ -98,31 +75,28 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="px-4 py-2 space-y-2 bg-white border-t md:hidden">
           <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/inscription" onClick={() => setIsMenuOpen(false)}>Inscription</Link>
+            <Link to="/" onClick={() => setIsMenuOpen(false)}>
+              <Home className="mr-2" size={18} />
+              Accueil
+            </Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/emploi-du-temps" onClick={() => setIsMenuOpen(false)}>Emploi du temps</Link>
+            <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
+              <LayoutDashboard className="mr-2" size={18} />
+              Mon École
+            </Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/notes" onClick={() => setIsMenuOpen(false)}>Notes et évaluations</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/presences" onClick={() => setIsMenuOpen(false)}>Présences</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/offres/starter" onClick={() => setIsMenuOpen(false)}>Offres Starter</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/offres/medium" onClick={() => setIsMenuOpen(false)}>Offres Medium</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/offres/premium" onClick={() => setIsMenuOpen(false)}>Offres Premium</Link>
-          </Button>
-          <Button variant="outline" className="w-full" asChild>
-            <Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link>
+            <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
+              <MessageSquare className="mr-2" size={18} />
+              Contact
+            </Link>
           </Button>
           <Button className="w-full" asChild>
-            <Link to="/connexion" onClick={() => setIsMenuOpen(false)}>Connexion</Link>
+            <Link to="/connexion" onClick={() => setIsMenuOpen(false)}>
+              <LogIn className="mr-2" size={18} />
+              Connexion
+            </Link>
           </Button>
         </div>
       )}

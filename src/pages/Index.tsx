@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -36,7 +35,7 @@ const Index = () => {
               </div>
               <div className="md:w-1/2">
                 <img 
-                  src="https://via.placeholder.com/600x400" 
+                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158" 
                   alt="École numérique" 
                   className="rounded-lg shadow-lg border-4 border-white animate-float"
                 />
