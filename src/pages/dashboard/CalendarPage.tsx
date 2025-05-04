@@ -126,7 +126,7 @@ const CalendarPage = () => {
               <SelectValue placeholder="Classe" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Toutes les classes</SelectItem>
+              <SelectItem value="all">Toutes les classes</SelectItem>
               <SelectItem value="CM1">CM1</SelectItem>
               <SelectItem value="CM2">CM2</SelectItem>
               <SelectItem value="6e">6e</SelectItem>
@@ -140,7 +140,7 @@ const CalendarPage = () => {
               <SelectValue placeholder="Niveau" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous les niveaux</SelectItem>
+              <SelectItem value="all">Tous les niveaux</SelectItem>
               <SelectItem value="primaire">Primaire</SelectItem>
               <SelectItem value="college">Collège</SelectItem>
               <SelectItem value="lycee">Lycée</SelectItem>
