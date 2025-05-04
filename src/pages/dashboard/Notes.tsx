@@ -85,9 +85,9 @@ const Notes = () => {
         notes[student.id][matiere.id] = {};
         
         if (evaluations[matiere.id]) {
-          evaluations[matiere.id].forEach(eval => {
+          evaluations[matiere.id].forEach(assessment => {
             // Note entre 0 et 20
-            notes[student.id][matiere.id][eval.id] = (Math.random() * 20).toFixed(2);
+            notes[student.id][matiere.id][assessment.id] = (Math.random() * 20).toFixed(2);
           });
         }
       });
@@ -108,10 +108,10 @@ const Notes = () => {
     let totalPoints = 0;
     let totalCoeff = 0;
     
-    evaluations[matiereId].forEach(eval => {
-      const note = parseFloat(notes[studentId][matiereId][eval.id]);
-      totalPoints += note * eval.coefficient;
-      totalCoeff += eval.coefficient;
+    evaluations[matiereId].forEach(assessment => {
+      const note = parseFloat(notes[studentId][matiereId][assessment.id]);
+      totalPoints += note * assessment.coefficient;
+      totalCoeff += assessment.coefficient;
     });
     
     return totalCoeff > 0 ? (totalPoints / totalCoeff).toFixed(2) : "N/A";
@@ -204,10 +204,10 @@ const Notes = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="sticky left-0 bg-background z-10">Élève</TableHead>
-                        {evaluations[matiere.id]?.map(eval => (
-                          <TableHead key={eval.id} className="text-center">
-                            <div>{eval.titre}</div>
-                            <div className="text-xs text-muted-foreground">Coef. {eval.coefficient}</div>
+                        {evaluations[matiere.id]?.map(assessment => (
+                          <TableHead key={assessment.id} className="text-center">
+                            <div>{assessment.titre}</div>
+                            <div className="text-xs text-muted-foreground">Coef. {assessment.coefficient}</div>
                           </TableHead>
                         ))}
                         <TableHead className="text-center bg-muted">
@@ -229,15 +229,15 @@ const Notes = () => {
                             </div>
                           </TableCell>
                           
-                          {evaluations[matiere.id]?.map(eval => (
-                            <TableCell key={eval.id} className="text-center">
+                          {evaluations[matiere.id]?.map(assessment => (
+                            <TableCell key={assessment.id} className="text-center">
                               <Input 
                                 type="number" 
                                 min="0" 
                                 max="20" 
                                 step="0.25"
                                 className="w-16 text-center mx-auto"
-                                defaultValue={notes[student.id][matiere.id][eval.id]}
+                                defaultValue={notes[student.id][matiere.id][assessment.id]}
                               />
                             </TableCell>
                           ))}
