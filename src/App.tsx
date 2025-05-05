@@ -20,6 +20,9 @@ import Presence from "./pages/dashboard/Presence";
 import Notes from "./pages/dashboard/Notes";
 import ReleveNotes from "./pages/dashboard/ReleveNotes";
 import Bulletins from "./pages/dashboard/Bulletins";
+import Archives from "./pages/dashboard/Archives";
+import Bibliotheque from "./pages/dashboard/Bibliotheque";
+import RH from "./pages/dashboard/RH";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +50,9 @@ const App = () => (
             <Route path="notes" element={<Notes />} />
             <Route path="releve-notes" element={<ReleveNotes />} />
             <Route path="bulletins" element={<Bulletins />} />
+            <Route path="archives" element={<Archives />} />
+            <Route path="bibliotheque" element={<Bibliotheque />} />
+            <Route path="rh" element={<RH />} />
             <Route path="paiements" element={<Paiements />} />
             <Route path="mes-paiements" element={<MesPaiements />} />
           </Route>
