@@ -29,13 +29,13 @@ const Index = () => {
                     <Link to="/inscription">S'inscrire</Link>
                   </Button>
                   <Button size="lg" variant="outline" asChild>
-                    <Link to="/connexion">Se connecter</Link>
+                    <Link to="/connexion" className="text-myschool-purple">Se connecter</Link>
                   </Button>
                 </div>
               </div>
               <div className="md:w-1/2">
                 <img 
-                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158" 
+                  src="/images/logo-slogan.png" 
                   alt="École numérique" 
                   className="rounded-lg shadow-lg border-4 border-white animate-float"
                 />

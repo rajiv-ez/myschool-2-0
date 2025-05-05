@@ -56,40 +56,37 @@ const DashboardLayout: React.FC = () => {
   
   const activeTab = tabs.find(tab => location.pathname.includes(tab.id))?.id || 'inscriptions';
 
-  // Faire défiler jusqu'à l'onglet actif au chargement
   useEffect(() => {
-    if (scrollRef.current) {
-      const activeElement = scrollRef.current.querySelector(`[data-state="active"]`);
-      if (activeElement) {
-        const container = scrollRef.current;
-        const scrollLeft = activeElement.getBoundingClientRect().left - 
-                          container.getBoundingClientRect().left - 
-                          (container.clientWidth - (activeElement as HTMLElement).offsetWidth) / 2;
-        
-        container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
-      }
+    const activeTabEl = document.querySelector(`[data-tab-id='${activeTab}']`);
+    if (scrollRef.current && activeTabEl) {
+      const parent = scrollRef.current;
+      const tabRect = (activeTabEl as HTMLElement).getBoundingClientRect();
+      const parentRect = parent.getBoundingClientRect();
+      const scrollLeft = tabRect.left - parentRect.left + parent.scrollLeft - 16;
+      parent.scrollTo({ left: scrollLeft, behavior: 'smooth' });
     }
   }, [activeTab]);
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      
+
       <div className="container mx-auto px-4 py-6 flex-grow">
         <div className="mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Mon École</h1>
           <p className="text-muted-foreground">Gérez votre établissement scolaire en toute simplicité</p>
         </div>
-        
-        <div className="mb-6 w-full overflow-x-auto pb-3" ref={scrollRef}>
-          <Tabs value={activeTab} className="w-full">
-            <TabsList className={`w-full flex-nowrap flex justify-start ${isMobile ? 'min-w-max' : ''}`}>
+
+        <div className="w-full mb-6 overflow-x-auto" ref={scrollRef}>
+          <Tabs value={activeTab} className="w-max">
+            <TabsList className="flex space-x-2">
               {tabs.map(tab => (
                 <TabsTrigger 
                   key={tab.id} 
                   value={tab.id}
                   className="flex items-center gap-2 whitespace-nowrap"
                   asChild
+                  data-tab-id={tab.id}
                 >
                   <Link to={tab.path}>
                     {tab.icon}
@@ -100,14 +97,14 @@ const DashboardLayout: React.FC = () => {
             </TabsList>
           </Tabs>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <ScrollArea className="h-full w-full" type="auto">
             <Outlet />
           </ScrollArea>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
