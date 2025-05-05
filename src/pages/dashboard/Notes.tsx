@@ -111,10 +111,10 @@ const bulletinsData = [
 ];
 
 const Notes: React.FC = () => {
-  const [classe, setClasse] = useState<string>('');
-  const [session, setSession] = useState<string>('');
-  const [palier, setPalier] = useState<string>('');
-  const [matiere, setMatiere] = useState<string>('');
+  const [classe, setClasse] = useState<string>('all');
+  const [session, setSession] = useState<string>('all');
+  const [palier, setPalier] = useState<string>('all');
+  const [matiere, setMatiere] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('notes');
   
   return (
@@ -147,197 +147,201 @@ const Notes: React.FC = () => {
             <span>Bulletins</span>
           </TabsTrigger>
         </TabsList>
-      </Tabs>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <FilterIcon size={18} />
-            Filtres
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Classe</label>
-              <Select value={classe} onValueChange={setClasse}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une classe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cm1">CM1</SelectItem>
-                  <SelectItem value="cm2">CM2</SelectItem>
-                  <SelectItem value="ce1">CE1</SelectItem>
-                  <SelectItem value="ce2">CE2</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Session</label>
-              <Select value={session} onValueChange={setSession}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une session" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2023-2024">2023-2024</SelectItem>
-                  <SelectItem value="2024-2025">2024-2025</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Période</label>
-              <Select value={palier} onValueChange={setPalier}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une période" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="trimestre1">1er Trimestre</SelectItem>
-                  <SelectItem value="trimestre2">2ème Trimestre</SelectItem>
-                  <SelectItem value="trimestre3">3ème Trimestre</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {activeTab === 'notes' && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FilterIcon size={18} />
+              Filtres
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Matière</label>
-                <Select value={matiere} onValueChange={setMatiere}>
+                <label className="text-sm font-medium">Classe</label>
+                <Select value={classe} onValueChange={setClasse}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une matière" />
+                    <SelectValue placeholder="Sélectionner une classe" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="math">Mathématiques</SelectItem>
-                    <SelectItem value="francais">Français</SelectItem>
-                    <SelectItem value="hist-geo">Histoire-Géo</SelectItem>
-                    <SelectItem value="sciences">Sciences</SelectItem>
+                    <SelectItem value="all">Toutes les classes</SelectItem>
+                    <SelectItem value="cm1">CM1</SelectItem>
+                    <SelectItem value="cm2">CM2</SelectItem>
+                    <SelectItem value="ce1">CE1</SelectItem>
+                    <SelectItem value="ce2">CE2</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <TabsContent value="notes" className="mt-0">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Layers size={18} />
-              Liste des notes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[calc(100vh-35rem)] w-full">
-              <div className="rounded-md border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Élève</TableHead>
-                      <TableHead>Classe</TableHead>
-                      <TableHead>Matière</TableHead>
-                      <TableHead className="hidden md:table-cell">Évaluation</TableHead>
-                      <TableHead>Note</TableHead>
-                      <TableHead className="hidden md:table-cell">Coef.</TableHead>
-                      <TableHead className="hidden md:table-cell">Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {notesData.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.id}</TableCell>
-                        <TableCell className="font-medium">{item.eleve}</TableCell>
-                        <TableCell>{item.classe}</TableCell>
-                        <TableCell>{item.matiere}</TableCell>
-                        <TableCell className="hidden md:table-cell">{item.evaluation}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            item.note >= 14 
-                              ? 'bg-green-100 text-green-800' 
-                              : item.note >= 10 
-                              ? 'bg-yellow-100 text-yellow-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {item.note}/20
-                          </span>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">{item.coefficient}</TableCell>
-                        <TableCell className="hidden md:table-cell">{item.date}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="outline" size="sm">Modifier</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Session</label>
+                <Select value={session} onValueChange={setSession}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une session" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les sessions</SelectItem>
+                    <SelectItem value="2023-2024">2023-2024</SelectItem>
+                    <SelectItem value="2024-2025">2024-2025</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </ScrollArea>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Période</label>
+                <Select value={palier} onValueChange={setPalier}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une période" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les périodes</SelectItem>
+                    <SelectItem value="trimestre1">1er Trimestre</SelectItem>
+                    <SelectItem value="trimestre2">2ème Trimestre</SelectItem>
+                    <SelectItem value="trimestre3">3ème Trimestre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {activeTab === 'notes' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Matière</label>
+                  <Select value={matiere} onValueChange={setMatiere}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une matière" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les matières</SelectItem>
+                      <SelectItem value="math">Mathématiques</SelectItem>
+                      <SelectItem value="francais">Français</SelectItem>
+                      <SelectItem value="hist-geo">Histoire-Géo</SelectItem>
+                      <SelectItem value="sciences">Sciences</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
-      </TabsContent>
 
-      <TabsContent value="bulletins" className="mt-0">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText size={18} />
-              Bulletins de notes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[calc(100vh-35rem)] w-full">
-              <div className="rounded-md border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Élève</TableHead>
-                      <TableHead>Classe</TableHead>
-                      <TableHead>Session</TableHead>
-                      <TableHead>Période</TableHead>
-                      <TableHead>Moyenne</TableHead>
-                      <TableHead className="hidden md:table-cell">Rang</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {bulletinsData.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.id}</TableCell>
-                        <TableCell className="font-medium">{item.eleve}</TableCell>
-                        <TableCell>{item.classe}</TableCell>
-                        <TableCell>{item.session}</TableCell>
-                        <TableCell>{item.periode}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            item.moyenne >= 14 
-                              ? 'bg-green-100 text-green-800' 
-                              : item.moyenne >= 10 
-                              ? 'bg-yellow-100 text-yellow-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {item.moyenne}/20
-                          </span>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">{item.rang}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
-                            <Eye size={14} />
-                            <span>Voir</span>
-                          </Button>
-                        </TableCell>
+        <TabsContent value="notes" className="mt-0">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Layers size={18} />
+                Liste des notes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[calc(100vh-35rem)] w-full">
+                <div className="rounded-md border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Élève</TableHead>
+                        <TableHead>Classe</TableHead>
+                        <TableHead>Matière</TableHead>
+                        <TableHead className="hidden md:table-cell">Évaluation</TableHead>
+                        <TableHead>Note</TableHead>
+                        <TableHead className="hidden md:table-cell">Coef.</TableHead>
+                        <TableHead className="hidden md:table-cell">Date</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </TabsContent>
+                    </TableHeader>
+                    <TableBody>
+                      {notesData.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{item.id}</TableCell>
+                          <TableCell className="font-medium">{item.eleve}</TableCell>
+                          <TableCell>{item.classe}</TableCell>
+                          <TableCell>{item.matiere}</TableCell>
+                          <TableCell className="hidden md:table-cell">{item.evaluation}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              item.note >= 14 
+                                ? 'bg-green-100 text-green-800' 
+                                : item.note >= 10 
+                                ? 'bg-yellow-100 text-yellow-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {item.note}/20
+                            </span>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">{item.coefficient}</TableCell>
+                          <TableCell className="hidden md:table-cell">{item.date}</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="outline" size="sm">Modifier</Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="bulletins" className="mt-0">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText size={18} />
+                Bulletins de notes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[calc(100vh-35rem)] w-full">
+                <div className="rounded-md border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Élève</TableHead>
+                        <TableHead>Classe</TableHead>
+                        <TableHead>Session</TableHead>
+                        <TableHead>Période</TableHead>
+                        <TableHead>Moyenne</TableHead>
+                        <TableHead className="hidden md:table-cell">Rang</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {bulletinsData.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{item.id}</TableCell>
+                          <TableCell className="font-medium">{item.eleve}</TableCell>
+                          <TableCell>{item.classe}</TableCell>
+                          <TableCell>{item.session}</TableCell>
+                          <TableCell>{item.periode}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              item.moyenne >= 14 
+                                ? 'bg-green-100 text-green-800' 
+                                : item.moyenne >= 10 
+                                ? 'bg-yellow-100 text-yellow-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {item.moyenne}/20
+                            </span>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">{item.rang}</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="outline" size="sm" className="flex items-center gap-1">
+                              <Eye size={14} />
+                              <span>Voir</span>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
