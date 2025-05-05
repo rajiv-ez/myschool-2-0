@@ -124,10 +124,10 @@ const elevesData = [
 ];
 
 const Presence: React.FC = () => {
-  const [classe, setClasse] = useState<string>('');
-  const [session, setSession] = useState<string>('');
-  const [palier, setPalier] = useState<string>('');
-  const [typeEvenement, setTypeEvenement] = useState<string>('');
+  const [classe, setClasse] = useState<string>("all");
+  const [session, setSession] = useState<string>("all");
+  const [palier, setPalier] = useState<string>("all");
+  const [typeEvenement, setTypeEvenement] = useState<string>("all");
   const [presences, setPresences] = useState(presencesData);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPresence, setSelectedPresence] = useState<any>(null);
@@ -265,8 +265,8 @@ const Presence: React.FC = () => {
   };
   
   const filteredPresences = presences.filter(item => {
-    if (classe && item.classe !== classe) return false;
-    if (typeEvenement && item.typeEvenement !== typeEvenement) return false;
+    if (classe !== "all" && item.classe !== classe) return false;
+    if (typeEvenement !== "all" && item.typeEvenement !== typeEvenement) return false;
     return true;
   });
   
@@ -305,7 +305,7 @@ const Presence: React.FC = () => {
                   <SelectValue placeholder="Sélectionner une classe" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les classes</SelectItem>
+                  <SelectItem value="all">Toutes les classes</SelectItem>
                   <SelectItem value="CM1">CM1</SelectItem>
                   <SelectItem value="CM2">CM2</SelectItem>
                   <SelectItem value="CE1">CE1</SelectItem>
@@ -321,7 +321,7 @@ const Presence: React.FC = () => {
                   <SelectValue placeholder="Sélectionner une session" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les sessions</SelectItem>
+                  <SelectItem value="all">Toutes les sessions</SelectItem>
                   <SelectItem value="2023-2024">2023-2024</SelectItem>
                   <SelectItem value="2024-2025">2024-2025</SelectItem>
                 </SelectContent>
@@ -335,7 +335,7 @@ const Presence: React.FC = () => {
                   <SelectValue placeholder="Sélectionner un palier" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les paliers</SelectItem>
+                  <SelectItem value="all">Tous les paliers</SelectItem>
                   <SelectItem value="trimestre1">1er Trimestre</SelectItem>
                   <SelectItem value="trimestre2">2ème Trimestre</SelectItem>
                   <SelectItem value="trimestre3">3ème Trimestre</SelectItem>
@@ -350,7 +350,7 @@ const Presence: React.FC = () => {
                   <SelectValue placeholder="Type d'événement" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les types</SelectItem>
+                  <SelectItem value="all">Tous les types</SelectItem>
                   <SelectItem value={EVENT_TYPES.COURS}>Cours</SelectItem>
                   <SelectItem value={EVENT_TYPES.EVALUATION}>Évaluation</SelectItem>
                   <SelectItem value={EVENT_TYPES.EVENEMENT}>Événement scolaire</SelectItem>
