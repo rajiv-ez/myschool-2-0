@@ -6,6 +6,8 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { 
@@ -13,17 +15,28 @@ import {
   Users, 
   Calendar, 
   CreditCard, 
-  Wallet
+  Wallet,
+  Building,
+  School,
+  BookOpen,
+  ClipboardCheck,
+  Layers
 } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
   const currentPath = location.pathname.split('/')[2] || '';
+  const isMobile = useIsMobile();
   
   const tabs = [
     { id: 'inscriptions', label: 'Inscriptions', icon: <UserPlus size={18} />, path: '/dashboard/inscriptions' },
     { id: 'personnes', label: 'Élèves & Tuteurs', icon: <Users size={18} />, path: '/dashboard/personnes' },
     { id: 'sessions', label: 'Sessions & Paliers', icon: <Calendar size={18} />, path: '/dashboard/sessions' },
+    { id: 'locaux', label: 'Locaux', icon: <Building size={18} />, path: '/dashboard/locaux' },
+    { id: 'academics', label: 'Structure Académique', icon: <School size={18} />, path: '/dashboard/academics' },
+    { id: 'education', label: 'Enseignement', icon: <BookOpen size={18} />, path: '/dashboard/education' },
+    { id: 'presence', label: 'Présences', icon: <ClipboardCheck size={18} />, path: '/dashboard/presence' },
+    { id: 'notes', label: 'Notes', icon: <Layers size={18} />, path: '/dashboard/notes' },
     { id: 'paiements', label: 'Paiements', icon: <CreditCard size={18} />, path: '/dashboard/paiements' },
     { id: 'mes-paiements', label: 'Mes Paiements', icon: <Wallet size={18} />, path: '/dashboard/mes-paiements' }
   ];
@@ -40,26 +53,30 @@ const DashboardLayout: React.FC = () => {
           <p className="text-muted-foreground">Gérez votre établissement scolaire en toute simplicité</p>
         </div>
         
-        <Tabs value={activeTab} className="mb-6">
-          <TabsList className="w-full overflow-x-auto flex-nowrap flex justify-start max-w-full">
-            {tabs.map(tab => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id}
-                className="flex items-center gap-2"
-                asChild
-              >
-                <Link to={tab.path}>
-                  {tab.icon}
-                  {tab.label}
-                </Link>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <ScrollArea className="w-full mb-6" type="always">
+          <Tabs value={activeTab} className="w-full">
+            <TabsList className={`w-full flex-nowrap flex justify-start ${isMobile ? 'overflow-x-auto' : ''}`}>
+              {tabs.map(tab => (
+                <TabsTrigger 
+                  key={tab.id} 
+                  value={tab.id}
+                  className="flex items-center gap-2 whitespace-nowrap"
+                  asChild
+                >
+                  <Link to={tab.path}>
+                    {tab.icon}
+                    {tab.label}
+                  </Link>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </ScrollArea>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <Outlet />
+          <ScrollArea className="h-full w-full" type="auto">
+            <Outlet />
+          </ScrollArea>
         </div>
       </div>
       
