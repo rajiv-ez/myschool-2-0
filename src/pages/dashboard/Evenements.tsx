@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -141,8 +142,8 @@ const Evenements: React.FC = () => {
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [filterClasse, setFilterClasse] = useState("");
-  const [filterNiveau, setFilterNiveau] = useState("");
+  const [filterClasse, setFilterClasse] = useState("all");
+  const [filterNiveau, setFilterNiveau] = useState("all");
   const calendarRef = useRef<FullCalendar | null>(null);
   const { toast } = useToast();
 
@@ -331,8 +332,8 @@ const Evenements: React.FC = () => {
   };
 
   const filteredEvents = events.filter(event => {
-    if (filterClasse && event.extendedProps?.classe !== filterClasse) return false;
-    if (filterNiveau && event.extendedProps?.niveau !== filterNiveau) return false;
+    if (filterClasse !== "all" && event.extendedProps?.classe !== filterClasse) return false;
+    if (filterNiveau !== "all" && event.extendedProps?.niveau !== filterNiveau) return false;
     return true;
   });
 
@@ -728,7 +729,7 @@ const Evenements: React.FC = () => {
                   <SelectValue placeholder="Toutes les classes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les classes</SelectItem>
+                  <SelectItem value="all">Toutes les classes</SelectItem>
                   <SelectItem value="CP">CP</SelectItem>
                   <SelectItem value="CE1">CE1</SelectItem>
                   <SelectItem value="CE2">CE2</SelectItem>
@@ -745,7 +746,7 @@ const Evenements: React.FC = () => {
                   <SelectValue placeholder="Tous les niveaux" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les niveaux</SelectItem>
+                  <SelectItem value="all">Tous les niveaux</SelectItem>
                   <SelectItem value="primaire">Primaire</SelectItem>
                   <SelectItem value="college">Collège</SelectItem>
                   <SelectItem value="lycee">Lycée</SelectItem>
