@@ -265,7 +265,7 @@ const ReleveNotes: React.FC = () => {
                   <SelectValue placeholder="Toutes les sessions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les sessions</SelectItem>
+                  <SelectItem value="all">Toutes les sessions</SelectItem>
                   <SelectItem value="2024-2025">2024-2025</SelectItem>
                   <SelectItem value="2023-2024">2023-2024</SelectItem>
                 </SelectContent>
@@ -279,7 +279,7 @@ const ReleveNotes: React.FC = () => {
                   <SelectValue placeholder="Tous les paliers" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les paliers</SelectItem>
+                  <SelectItem value="all">Tous les paliers</SelectItem>
                   <SelectItem value="trimestre1">1er Trimestre</SelectItem>
                   <SelectItem value="trimestre2">2ème Trimestre</SelectItem>
                   <SelectItem value="trimestre3">3ème Trimestre</SelectItem>
@@ -294,7 +294,7 @@ const ReleveNotes: React.FC = () => {
                   <SelectValue placeholder="Toutes les classes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les classes</SelectItem>
+                  <SelectItem value="all">Toutes les classes</SelectItem>
                   <SelectItem value="CP">CP</SelectItem>
                   <SelectItem value="CE1">CE1</SelectItem>
                   <SelectItem value="CE2">CE2</SelectItem>
@@ -311,7 +311,7 @@ const ReleveNotes: React.FC = () => {
                   <SelectValue placeholder="Tous les élèves" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les élèves</SelectItem>
+                  <SelectItem value="all">Tous les élèves</SelectItem>
                   {eleves.map(eleve => (
                     <SelectItem key={eleve.id} value={eleve.id}>
                       {eleve.prenom} {eleve.nom}
@@ -376,7 +376,7 @@ const ReleveNotes: React.FC = () => {
                       </TableHeader>
                       <TableBody>
                         {eleves
-                          .filter(eleve => !selectedEleve || eleve.id === selectedEleve)
+                          .filter(eleve => !selectedEleve || selectedEleve === "all" || eleve.id === selectedEleve)
                           .map(eleve => (
                             <TableRow key={eleve.id}>
                               <TableCell className="font-medium sticky left-0 bg-white z-10">
@@ -446,7 +446,7 @@ const ReleveNotes: React.FC = () => {
                 </ScrollArea>
 
                 {/* Statistiques de classe */}
-                {!selectedEleve && (
+                {(!selectedEleve || selectedEleve === "all") && (
                   <div className="mt-6 border-t pt-4">
                     <h3 className="text-lg font-semibold mb-4">Statistiques de classe</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -505,3 +505,4 @@ const ReleveNotes: React.FC = () => {
 };
 
 export default ReleveNotes;
+
