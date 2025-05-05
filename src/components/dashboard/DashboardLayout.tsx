@@ -20,7 +20,8 @@ import {
   School,
   BookOpen,
   ClipboardCheck,
-  Layers
+  Layers,
+  CalendarDays
 } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
@@ -32,6 +33,7 @@ const DashboardLayout: React.FC = () => {
     { id: 'inscriptions', label: 'Inscriptions', icon: <UserPlus size={18} />, path: '/dashboard/inscriptions' },
     { id: 'personnes', label: 'Élèves & Tuteurs', icon: <Users size={18} />, path: '/dashboard/personnes' },
     { id: 'sessions', label: 'Sessions & Paliers', icon: <Calendar size={18} />, path: '/dashboard/sessions' },
+    { id: 'evenements', label: 'Événements', icon: <CalendarDays size={18} />, path: '/dashboard/evenements' },
     { id: 'locaux', label: 'Locaux', icon: <Building size={18} />, path: '/dashboard/locaux' },
     { id: 'academics', label: 'Structure Académique', icon: <School size={18} />, path: '/dashboard/academics' },
     { id: 'education', label: 'Enseignement', icon: <BookOpen size={18} />, path: '/dashboard/education' },
@@ -54,23 +56,25 @@ const DashboardLayout: React.FC = () => {
         </div>
         
         <ScrollArea className="w-full mb-6" type="always">
-          <Tabs value={activeTab} className="w-full">
-            <TabsList className={`w-full flex-nowrap flex justify-start ${isMobile ? 'overflow-x-auto' : ''}`}>
-              {tabs.map(tab => (
-                <TabsTrigger 
-                  key={tab.id} 
-                  value={tab.id}
-                  className="flex items-center gap-2 whitespace-nowrap"
-                  asChild
-                >
-                  <Link to={tab.path}>
-                    {tab.icon}
-                    {tab.label}
-                  </Link>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <div className="pb-3">
+            <Tabs value={activeTab} className="w-full">
+              <TabsList className={`w-full flex-nowrap flex justify-start ${isMobile ? 'overflow-x-auto' : ''}`}>
+                {tabs.map(tab => (
+                  <TabsTrigger 
+                    key={tab.id} 
+                    value={tab.id}
+                    className="flex items-center gap-2 whitespace-nowrap"
+                    asChild
+                  >
+                    <Link to={tab.path}>
+                      {tab.icon}
+                      {tab.label}
+                    </Link>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
         </ScrollArea>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border">

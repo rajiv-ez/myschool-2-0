@@ -10,6 +10,7 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import Inscriptions from "./pages/dashboard/Inscriptions";
 import Personnes from "./pages/dashboard/Personnes";
 import Sessions from "./pages/dashboard/Sessions";
+import Evenements from "./pages/dashboard/Evenements";
 import Paiements from "./pages/dashboard/Paiements";
 import MesPaiements from "./pages/dashboard/MesPaiements";
 import Locaux from "./pages/dashboard/Locaux";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="inscriptions" element={<Inscriptions />} />
             <Route path="personnes" element={<Personnes />} />
             <Route path="sessions" element={<Sessions />} />
+            <Route path="evenements" element={<Evenements />} />
             <Route path="locaux" element={<Locaux />} />
             <Route path="academics" element={<Academics />} />
             <Route path="education" element={<Education />} />
