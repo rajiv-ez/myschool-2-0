@@ -18,6 +18,8 @@ import Academics from "./pages/dashboard/Academics";
 import Education from "./pages/dashboard/Education";
 import Presence from "./pages/dashboard/Presence";
 import Notes from "./pages/dashboard/Notes";
+import ReleveNotes from "./pages/dashboard/ReleveNotes";
+import Bulletins from "./pages/dashboard/Bulletins";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,8 @@ const App = () => (
             <Route path="education" element={<Education />} />
             <Route path="presence" element={<Presence />} />
             <Route path="notes" element={<Notes />} />
+            <Route path="releve-notes" element={<ReleveNotes />} />
+            <Route path="bulletins" element={<Bulletins />} />
             <Route path="paiements" element={<Paiements />} />
             <Route path="mes-paiements" element={<MesPaiements />} />
           </Route>

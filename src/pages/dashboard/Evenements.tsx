@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -23,22 +22,47 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { CalendarIcon, CalendarDays, Plus, Filter, Copy, Download, School, BookOpen, Award, User, Clock, Users, MapPin, Check, X } from 'lucide-react';
 
-// Types d'événements
+// Define event types
 const EVENT_TYPES = {
   COURS: 'cours',
   EVALUATION: 'evaluation',
   EVENEMENT: 'evenement'
-};
+} as const;
 
-// Couleurs pour les types d'événements
+type EventType = typeof EVENT_TYPES[keyof typeof EVENT_TYPES];
+
+// Define interface for event extended props
+interface EventExtendedProps {
+  type: EventType;
+  classe?: string;
+  niveau?: string;
+  matiere?: string;
+  professeur?: string;
+  salle?: string;
+  description?: string;
+}
+
+// Define interface for events
+interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  allDay?: boolean;
+  backgroundColor: string;
+  borderColor: string;
+  extendedProps: EventExtendedProps;
+}
+
+// Colors for event types
 const EVENT_COLORS = {
   [EVENT_TYPES.COURS]: '#4f46e5', // indigo pour les cours
   [EVENT_TYPES.EVALUATION]: '#e11d48', // rose pour les évaluations
   [EVENT_TYPES.EVENEMENT]: '#eab308' // amber pour les événements
 };
 
-// Données fictives pour la démonstration
-const initialEvents = [
+// Sample data for demonstration
+const initialEvents: CalendarEvent[] = [
   {
     id: '1',
     title: 'Cours de Mathématiques',
@@ -50,7 +74,8 @@ const initialEvents = [
       matiere: 'Mathématiques',
       professeur: 'M. Dupont',
       salle: 'Salle 101',
-      description: 'Cours sur les fractions'
+      description: 'Cours sur les fractions',
+      niveau: 'primaire'
     },
     backgroundColor: EVENT_COLORS[EVENT_TYPES.COURS],
     borderColor: EVENT_COLORS[EVENT_TYPES.COURS]
@@ -66,7 +91,8 @@ const initialEvents = [
       matiere: 'Français',
       professeur: 'Mme. Martin',
       salle: 'Salle 202',
-      description: 'Contrôle sur la conjugaison'
+      description: 'Contrôle sur la conjugaison',
+      niveau: 'primaire'
     },
     backgroundColor: EVENT_COLORS[EVENT_TYPES.EVALUATION],
     borderColor: EVENT_COLORS[EVENT_TYPES.EVALUATION]
@@ -79,14 +105,15 @@ const initialEvents = [
     allDay: true,
     extendedProps: {
       type: EVENT_TYPES.EVENEMENT,
-      description: 'Journée portes ouvertes de l\'école'
+      description: 'Journée portes ouvertes de l\'école',
+      niveau: ''
     },
     backgroundColor: EVENT_COLORS[EVENT_TYPES.EVENEMENT],
     borderColor: EVENT_COLORS[EVENT_TYPES.EVENEMENT]
   }
 ];
 
-// Schéma de validation pour le formulaire d'événement
+// Form validation schema
 const eventSchema = z.object({
   title: z.string().min(2, { message: 'Le titre est requis' }),
   type: z.string().min(1, { message: 'Le type d\'événement est requis' }),
@@ -107,7 +134,9 @@ const eventSchema = z.object({
 type EventFormValues = z.infer<typeof eventSchema>;
 
 const Evenements: React.FC = () => {
-  const [events, setEvents] = useState(initialEvents);
+  // ... keep existing code (state variables, refs, hooks)
+
+  const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -135,7 +164,8 @@ const Evenements: React.FC = () => {
     }
   });
 
-  // Réinitialise le formulaire lorsqu'on ouvre la boîte de dialogue
+  // ... keep existing code (useEffect hooks)
+
   useEffect(() => {
     if (isEventDialogOpen && !isEditing) {
       form.reset({
@@ -154,7 +184,6 @@ const Evenements: React.FC = () => {
     }
   }, [isEventDialogOpen, isEditing, form]);
 
-  // Remplir le formulaire avec les données de l'événement sélectionné
   useEffect(() => {
     if (isEditing && selectedEvent) {
       form.reset({
@@ -189,7 +218,7 @@ const Evenements: React.FC = () => {
   const handleCreateOrUpdateEvent = (data: EventFormValues) => {
     const eventColor = EVENT_COLORS[data.type as keyof typeof EVENT_COLORS];
     
-    const eventData = {
+    const eventData: CalendarEvent = {
       id: isEditing && selectedEvent ? selectedEvent.id : String(new Date().getTime()),
       title: data.title,
       start: data.start.toISOString(),
@@ -198,7 +227,7 @@ const Evenements: React.FC = () => {
       backgroundColor: eventColor,
       borderColor: eventColor,
       extendedProps: {
-        type: data.type,
+        type: data.type as EventType,
         classe: data.classe,
         niveau: data.niveau,
         matiere: data.matiere,
@@ -209,14 +238,12 @@ const Evenements: React.FC = () => {
     };
 
     if (isEditing) {
-      // Mise à jour d'un événement existant
       setEvents(events.map(event => event.id === eventData.id ? eventData : event));
       toast({
         title: "Événement mis à jour",
         description: `L'événement "${data.title}" a été mis à jour`,
       });
     } else {
-      // Création d'un nouvel événement
       setEvents([...events, eventData]);
       toast({
         title: "Événement créé",
@@ -228,6 +255,8 @@ const Evenements: React.FC = () => {
     setIsEditing(false);
     setSelectedEvent(null);
   };
+
+  // ... keep existing code (event handlers)
 
   const handleEditEvent = () => {
     setIsEditing(true);
@@ -248,14 +277,12 @@ const Evenements: React.FC = () => {
   };
 
   const handleDuplicateWeek = () => {
-    // Récupérer la semaine en cours
     const currentApi = calendarRef.current?.getApi();
     if (!currentApi) return;
 
     const currentView = currentApi.view;
     const currentStart = currentView.currentStart;
     
-    // Déterminer les événements de la semaine en cours
     const currentWeekEvents = events.filter(event => {
       const eventDate = new Date(event.start);
       const weekStart = new Date(currentStart);
@@ -274,12 +301,10 @@ const Evenements: React.FC = () => {
       return;
     }
     
-    // Dupliquer les événements à la semaine suivante
     const newEvents = currentWeekEvents.map(event => {
       const startDate = new Date(event.start);
       const endDate = new Date(event.end);
       
-      // Ajouter 7 jours
       startDate.setDate(startDate.getDate() + 7);
       endDate.setDate(endDate.getDate() + 7);
       
@@ -299,7 +324,6 @@ const Evenements: React.FC = () => {
   };
 
   const handleGeneratePDF = () => {
-    // Simulation de génération de PDF
     toast({
       title: "Programme généré",
       description: "Le programme hebdomadaire a été généré en PDF",
@@ -312,6 +336,7 @@ const Evenements: React.FC = () => {
     return true;
   });
 
+  // ... keep existing code (JSX and render function)
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

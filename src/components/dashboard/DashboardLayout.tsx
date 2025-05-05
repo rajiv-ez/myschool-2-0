@@ -21,7 +21,9 @@ import {
   BookOpen,
   ClipboardCheck,
   Layers,
-  CalendarDays
+  CalendarDays,
+  FileText,
+  ListOrdered
 } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
@@ -39,6 +41,8 @@ const DashboardLayout: React.FC = () => {
     { id: 'education', label: 'Enseignement', icon: <BookOpen size={18} />, path: '/dashboard/education' },
     { id: 'presence', label: 'Présences', icon: <ClipboardCheck size={18} />, path: '/dashboard/presence' },
     { id: 'notes', label: 'Notes', icon: <Layers size={18} />, path: '/dashboard/notes' },
+    { id: 'releve-notes', label: 'Relevés de Notes', icon: <FileText size={18} />, path: '/dashboard/releve-notes' },
+    { id: 'bulletins', label: 'Bulletins', icon: <ListOrdered size={18} />, path: '/dashboard/bulletins' },
     { id: 'paiements', label: 'Paiements', icon: <CreditCard size={18} />, path: '/dashboard/paiements' },
     { id: 'mes-paiements', label: 'Mes Paiements', icon: <Wallet size={18} />, path: '/dashboard/mes-paiements' }
   ];
