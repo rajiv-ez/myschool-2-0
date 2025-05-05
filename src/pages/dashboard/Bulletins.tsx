@@ -102,9 +102,9 @@ const demoNotes = generateRandomNotes();
 
 const Bulletins: React.FC = () => {
   const { toast } = useToast();
-  const [selectedSession, setSelectedSession] = useState("");
-  const [selectedPalier, setSelectedPalier] = useState("");
-  const [selectedClasse, setSelectedClasse] = useState("");
+  const [selectedSession, setSelectedSession] = useState("all");
+  const [selectedPalier, setSelectedPalier] = useState("all");
+  const [selectedClasse, setSelectedClasse] = useState("all");
   const [notes] = useState<Note[]>(demoNotes);
   const [selectedEleve, setSelectedEleve] = useState(eleves[0].id);
   
@@ -276,7 +276,7 @@ const Bulletins: React.FC = () => {
                   <SelectValue placeholder="Toutes les sessions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les sessions</SelectItem>
+                  <SelectItem value="all">Toutes les sessions</SelectItem>
                   <SelectItem value="2024-2025">2024-2025</SelectItem>
                   <SelectItem value="2023-2024">2023-2024</SelectItem>
                 </SelectContent>
@@ -290,7 +290,7 @@ const Bulletins: React.FC = () => {
                   <SelectValue placeholder="Tous les paliers" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les paliers</SelectItem>
+                  <SelectItem value="all">Tous les paliers</SelectItem>
                   <SelectItem value="trimestre1">1er Trimestre</SelectItem>
                   <SelectItem value="trimestre2">2ème Trimestre</SelectItem>
                   <SelectItem value="trimestre3">3ème Trimestre</SelectItem>
@@ -305,7 +305,7 @@ const Bulletins: React.FC = () => {
                   <SelectValue placeholder="Toutes les classes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les classes</SelectItem>
+                  <SelectItem value="all">Toutes les classes</SelectItem>
                   <SelectItem value="CP">CP</SelectItem>
                   <SelectItem value="CE1">CE1</SelectItem>
                   <SelectItem value="CE2">CE2</SelectItem>
