@@ -38,7 +38,7 @@ const Presence = () => {
   const [selectedClass, setSelectedClass] = useState("CM1");
   const [selectedSession, setSelectedSession] = useState("2023-2024");
   const [selectedPeriod, setSelectedPeriod] = useState("1");
-  const [selectedEvent, setSelectedEvent] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState("all"); // Changed from empty string to "all"
   const [activeTab, setActiveTab] = useState("presence");
   
   // Données d'exemple
@@ -154,7 +154,7 @@ const Presence = () => {
                   <SelectValue placeholder="Choisir un événement" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les événements</SelectItem>
+                  <SelectItem value="all">Tous les événements</SelectItem>
                   {events.map((event) => (
                     <SelectItem key={event.id} value={event.id.toString()}>
                       {event.matiere} ({event.heure})

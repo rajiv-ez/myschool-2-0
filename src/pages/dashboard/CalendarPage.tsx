@@ -23,8 +23,8 @@ import { fr } from "date-fns/locale";
 const CalendarPage = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [viewType, setViewType] = useState("semaine");
-  const [selectedClass, setSelectedClass] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("");
+  const [selectedClass, setSelectedClass] = useState("all");
+  const [selectedLevel, setSelectedLevel] = useState("all");
   const [eventType, setEventType] = useState("all");
 
   // Générer les données d'événements pour la semaine
@@ -85,7 +85,7 @@ const CalendarPage = () => {
   
   // Filtrer les événements
   const filteredEvents = weekEvents.filter(event => {
-    if (selectedClass && event.class !== selectedClass) return false;
+    if (selectedClass && selectedClass !== "all" && event.class !== selectedClass) return false;
     if (eventType !== "all" && event.type !== eventType) return false;
     return true;
   });
