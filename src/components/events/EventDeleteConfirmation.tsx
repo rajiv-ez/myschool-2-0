@@ -7,7 +7,7 @@ import { DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 // Event type
 interface Event {
-  id: number;
+  id: number | string;
   title: string;
   type: string;
   start: Date;

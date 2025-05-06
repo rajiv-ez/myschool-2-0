@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -10,6 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { useToast } from "@/components/ui/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod"; // Changed from import * as z from 'zod' to import { z } from "zod"
 import EventForm from '@/components/events/EventForm';
 import EventDeleteConfirmation from '@/components/events/EventDeleteConfirmation';
 import { 
@@ -31,6 +35,13 @@ import {
   Info,
   List
 } from 'lucide-react';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 // Define event types
 const EVENT_TYPES = {
