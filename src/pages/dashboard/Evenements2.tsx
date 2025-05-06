@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -129,8 +128,8 @@ const initialEvents: CalendarEvent[] = [
   {
     id: '4',
     title: 'Cours de Sciences',
-    start: new Date(new Date().setDate(new Date().getDate() + 1)).setHours(9, 0, 0, 0).toISOString(),
-    end: new Date(new Date().setDate(new Date().getDate() + 1)).setHours(11, 0, 0, 0).toISOString(),
+    start: new Date(new Date().setDate(new Date().getDate() + 1).valueOf()).toISOString(),
+    end: new Date(new Date().setDate(new Date().getDate() + 1).valueOf()).toISOString(),
     extendedProps: {
       type: EVENT_TYPES.COURS,
       classe: 'CE2',
@@ -146,8 +145,8 @@ const initialEvents: CalendarEvent[] = [
   {
     id: '5',
     title: 'Réunion Parents-Professeurs',
-    start: new Date(new Date().setDate(new Date().getDate() + 3)).setHours(18, 0, 0, 0).toISOString(),
-    end: new Date(new Date().setDate(new Date().getDate() + 3)).setHours(20, 0, 0, 0).toISOString(),
+    start: new Date(new Date().setDate(new Date().getDate() + 3).valueOf()).toISOString(),
+    end: new Date(new Date().setDate(new Date().getDate() + 3).valueOf()).toISOString(),
     extendedProps: {
       type: EVENT_TYPES.EVENEMENT,
       description: 'Réunion trimestrielle parents-professeurs',
@@ -250,8 +249,8 @@ const Evenements2: React.FC = () => {
     }
   }, [isEditing, selectedEvent, form]);
 
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
+  const handleDateClick = (value: Date) => {
+    setSelectedDate(value);
     setIsEditing(false);
     setIsEventDialogOpen(true);
   };
@@ -906,7 +905,7 @@ const Evenements2: React.FC = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="react-calendar-wrapper">
-              <style jsx global>{`
+              <style>{`
                 .react-calendar {
                   width: 100%;
                   max-width: 100%;
@@ -1005,9 +1004,15 @@ const Evenements2: React.FC = () => {
               `}</style>
               
               <Calendar
-                onChange={setSelectedDate}
+                onChange={(value) => {
+                  if (value instanceof Date) {
+                    setSelectedDate(value);
+                  } else if (Array.isArray(value) && value.length > 0) {
+                    setSelectedDate(value[0]);
+                  }
+                }}
                 value={selectedDate}
-                onClickDay={handleDateClick}
+                onClickDay={(value) => handleDateClick(value)}
                 locale="fr-FR"
                 tileClassName={getTileClassName}
                 tileContent={renderTileContent}

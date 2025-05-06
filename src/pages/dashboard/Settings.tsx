@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -113,8 +112,7 @@ const Settings: React.FC = () => {
     localStorage.setItem('appSettings', JSON.stringify(newSettings));
     toast({
       title: "Disposition modifiée",
-      description: `Disposition ${layoutType === 'tabs' ? 'en onglets' : 'avec barre latérale'} appliquée`,
-      description: "Veuillez rafraîchir la page pour appliquer les changements",
+      description: `Disposition ${layoutType === 'tabs' ? 'en onglets' : 'avec barre latérale'} appliquée. Veuillez rafraîchir la page pour appliquer les changements`,
     });
   };
 
