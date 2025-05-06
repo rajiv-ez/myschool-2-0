@@ -13,11 +13,16 @@ interface Event {
   start: Date;
   end: Date;
   description: string;
-  location: string;
+  location?: string;
   palier?: string;
   allDay: boolean;
   recurring?: boolean;
   recurrencePattern?: string;
+  academicClasses?: string[];
+  rooms?: string[];
+  subjects?: string[];
+  professors?: string[];
+  assistants?: string[];
 }
 
 interface EventDeleteConfirmationProps {

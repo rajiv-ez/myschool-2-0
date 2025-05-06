@@ -5,17 +5,13 @@ import { format, parseISO, isWithinInterval, addHours } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from "@/components/ui/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { Input } from '@/components/ui/input';
+import { useToast } from "@/components/ui/use-toast";
+import EventForm from '@/components/events/EventForm';
+import EventDeleteConfirmation from '@/components/events/EventDeleteConfirmation';
 import { 
   CalendarDays, 
   Plus, 
@@ -74,6 +70,33 @@ const EVENT_COLORS = {
   [EVENT_TYPES.EVALUATION]: '#e11d48', // rose pour les évaluations
   [EVENT_TYPES.EVENEMENT]: '#eab308' // amber pour les événements
 };
+
+// Sample data for academic classes, professors, rooms and subjects
+const sampleAcademicClasses = [
+  { id: 1, name: 'CM1', session: '2023-2024', mainTeacher: 'M. Dupont', capacity: 30, enrolled: 25, status: 'active' },
+  { id: 2, name: 'CM2', session: '2023-2024', mainTeacher: 'Mme. Martin', capacity: 28, enrolled: 26, status: 'active' },
+  { id: 3, name: 'CE2', session: '2023-2024', mainTeacher: 'M. Bernard', capacity: 30, enrolled: 22, status: 'active' },
+  { id: 4, name: 'CE1', session: '2023-2024', mainTeacher: 'Mme. Thomas', capacity: 26, enrolled: 24, status: 'active' },
+  { id: 5, name: 'CP', session: '2023-2024', mainTeacher: 'Mme. Petit', capacity: 25, enrolled: 20, status: 'active' },
+];
+
+const samplePaliers = [
+  { id: 1, nom: 'Premier trimestre', session: '2023-2024', dateDebut: '01/09/2023', dateFin: '15/12/2023', statut: 'terminé' },
+  { id: 2, nom: 'Second trimestre', session: '2023-2024', dateDebut: '16/12/2023', dateFin: '31/03/2024', statut: 'terminé' },
+  { id: 3, nom: 'Troisième trimestre', session: '2023-2024', dateDebut: '01/04/2024', dateFin: '06/07/2024', statut: 'actif' },
+];
+
+const sampleProfessors = [
+  'M. Dupont', 'Mme. Martin', 'M. Bernard', 'Mme. Thomas', 'M. Petit', 'Mme. Robert'
+];
+
+const sampleRooms = [
+  'Salle 101', 'Salle 102', 'Salle 201', 'Salle 202', 'Gymnase', 'Amphithéâtre', 'Laboratoire', 'Bibliothèque'
+];
+
+const sampleSubjects = [
+  'Mathématiques', 'Français', 'Histoire-Géographie', 'Sciences', 'Anglais', 'Arts plastiques', 'Musique', 'Sport'
+];
 
 // Sample data for demonstration
 const initialEvents: CalendarEvent[] = [
@@ -164,11 +187,10 @@ const eventSchema = z.object({
   start: z.date({ required_error: 'La date de début est requise' }),
   end: z.date({ required_error: 'La date de fin est requise' }),
   allDay: z.boolean().optional(),
-  classe: z.string().optional(),
-  niveau: z.string().optional(),
-  matiere: z.string().optional(),
-  professeur: z.string().optional(),
-  salle: z.string().optional(),
+  academicClasses: z.array(z.string()).optional(),
+  subjects: z.array(z.string()).optional(),
+  professors: z.array(z.string()).optional(),
+  rooms: z.array(z.string()).optional(),
   description: z.string().optional()
 }).refine(data => data.end > data.start, {
   message: "La date de fin doit être après la date de début",
@@ -181,6 +203,7 @@ const Evenements2: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [isEditing, setIsEditing] = useState(false);
@@ -200,11 +223,10 @@ const Evenements2: React.FC = () => {
       start: new Date(),
       end: new Date(new Date().setHours(new Date().getHours() + 2)),
       allDay: false,
-      classe: '',
-      niveau: '',
-      matiere: '',
-      professeur: '',
-      salle: '',
+      academicClasses: [],
+      subjects: [],
+      professors: [],
+      rooms: [],
       description: ''
     }
   });
@@ -221,11 +243,10 @@ const Evenements2: React.FC = () => {
         start: startDate,
         end: endDate,
         allDay: false,
-        classe: '',
-        niveau: '',
-        matiere: '',
-        professeur: '',
-        salle: '',
+        academicClasses: [],
+        subjects: [],
+        professors: [],
+        rooms: [],
         description: ''
       });
     }
@@ -239,11 +260,10 @@ const Evenements2: React.FC = () => {
         start: new Date(selectedEvent.start),
         end: new Date(selectedEvent.end || selectedEvent.start),
         allDay: selectedEvent.allDay || false,
-        classe: selectedEvent.extendedProps?.classe || '',
-        niveau: selectedEvent.extendedProps?.niveau || '',
-        matiere: selectedEvent.extendedProps?.matiere || '',
-        professeur: selectedEvent.extendedProps?.professeur || '',
-        salle: selectedEvent.extendedProps?.salle || '',
+        academicClasses: selectedEvent.extendedProps?.classe ? [selectedEvent.extendedProps?.classe] : [],
+        subjects: selectedEvent.extendedProps?.matiere ? [selectedEvent.extendedProps?.matiere] : [],
+        professors: selectedEvent.extendedProps?.professeur ? [selectedEvent.extendedProps?.professeur] : [],
+        rooms: selectedEvent.extendedProps?.salle ? [selectedEvent.extendedProps?.salle] : [],
         description: selectedEvent.extendedProps?.description || ''
       });
     }
@@ -260,8 +280,19 @@ const Evenements2: React.FC = () => {
     setIsEventDetailsOpen(true);
   };
 
-  const handleCreateOrUpdateEvent = (data: EventFormValues) => {
+  const handleCreateOrUpdateEvent = (data: any) => {
     const eventColor = EVENT_COLORS[data.type as keyof typeof EVENT_COLORS];
+    
+    // Convert the complex data from the form to match the CalendarEvent structure
+    const extendedProps: EventExtendedProps = {
+      type: data.type as EventType,
+      classe: data.academicClasses?.[0] || undefined,
+      niveau: data.academicClasses?.length ? "primaire" : undefined, // Simplified for example
+      matiere: data.subjects?.[0] || undefined,
+      professeur: data.professors?.[0] || undefined,
+      salle: data.rooms?.[0] || undefined,
+      description: data.description
+    };
     
     const eventData: CalendarEvent = {
       id: isEditing && selectedEvent ? selectedEvent.id : String(new Date().getTime()),
@@ -271,15 +302,7 @@ const Evenements2: React.FC = () => {
       allDay: data.allDay,
       backgroundColor: eventColor,
       borderColor: eventColor,
-      extendedProps: {
-        type: data.type as EventType,
-        classe: data.classe,
-        niveau: data.niveau,
-        matiere: data.matiere,
-        professeur: data.professeur,
-        salle: data.salle,
-        description: data.description
-      }
+      extendedProps: extendedProps
     };
 
     if (isEditing) {
@@ -477,6 +500,25 @@ const Evenements2: React.FC = () => {
     );
   };
 
+  // New function to handle delete confirmation
+  const handleConfirmDelete = () => {
+    if (selectedEvent) {
+      setEvents(events.filter(event => event.id !== selectedEvent.id));
+      toast({
+        title: "Événement supprimé",
+        description: `L'événement "${selectedEvent.title}" a été supprimé`,
+      });
+      setIsDeleteConfirmationOpen(false);
+      setIsEventDetailsOpen(false);
+      setSelectedEvent(null);
+    }
+  };
+
+  const handleDeleteRequest = () => {
+    setIsEventDetailsOpen(false);
+    setIsDeleteConfirmationOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -492,313 +534,24 @@ const Evenements2: React.FC = () => {
                 <span>Nouvel événement</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
               <DialogHeader>
                 <DialogTitle>
                   {isEditing ? "Modifier l'événement" : "Nouvel événement"}
                 </DialogTitle>
               </DialogHeader>
               
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleCreateOrUpdateEvent)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Titre</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nom de l'événement" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner un type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value={EVENT_TYPES.COURS}>Cours</SelectItem>
-                            <SelectItem value={EVENT_TYPES.EVALUATION}>Évaluation</SelectItem>
-                            <SelectItem value={EVENT_TYPES.EVENEMENT}>Événement scolaire</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="start"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Date et heure de début</FormLabel>
-                          <FormControl>
-                            <div className="flex flex-col space-y-2">
-                              <Input
-                                type="date"
-                                value={format(field.value, "yyyy-MM-dd")}
-                                onChange={(e) => {
-                                  const [year, month, day] = e.target.value.split('-').map(Number);
-                                  const newDate = new Date(field.value);
-                                  newDate.setFullYear(year, month - 1, day);
-                                  field.onChange(newDate);
-                                }}
-                              />
-                              <Input
-                                type="time"
-                                value={format(field.value, "HH:mm")}
-                                onChange={(e) => {
-                                  const [hours, minutes] = e.target.value.split(':').map(Number);
-                                  const newDate = new Date(field.value);
-                                  newDate.setHours(hours);
-                                  newDate.setMinutes(minutes);
-                                  field.onChange(newDate);
-                                }}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="end"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Date et heure de fin</FormLabel>
-                          <FormControl>
-                            <div className="flex flex-col space-y-2">
-                              <Input
-                                type="date"
-                                value={format(field.value, "yyyy-MM-dd")}
-                                onChange={(e) => {
-                                  const [year, month, day] = e.target.value.split('-').map(Number);
-                                  const newDate = new Date(field.value);
-                                  newDate.setFullYear(year, month - 1, day);
-                                  field.onChange(newDate);
-                                }}
-                              />
-                              <Input
-                                type="time"
-                                value={format(field.value, "HH:mm")}
-                                onChange={(e) => {
-                                  const [hours, minutes] = e.target.value.split(':').map(Number);
-                                  const newDate = new Date(field.value);
-                                  newDate.setHours(hours);
-                                  newDate.setMinutes(minutes);
-                                  field.onChange(newDate);
-                                }}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  {form.watch('type') !== EVENT_TYPES.EVENEMENT && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="classe"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Classe</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value || ''}
-                              value={field.value || ''}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner une classe" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="CP">CP</SelectItem>
-                                <SelectItem value="CE1">CE1</SelectItem>
-                                <SelectItem value="CE2">CE2</SelectItem>
-                                <SelectItem value="CM1">CM1</SelectItem>
-                                <SelectItem value="CM2">CM2</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="niveau"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Niveau</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value || ''}
-                              value={field.value || ''}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner un niveau" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="primaire">Primaire</SelectItem>
-                                <SelectItem value="college">Collège</SelectItem>
-                                <SelectItem value="lycee">Lycée</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-                  
-                  {form.watch('type') === EVENT_TYPES.COURS && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="matiere"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Matière</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value || ''}
-                              value={field.value || ''}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner une matière" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="mathematiques">Mathématiques</SelectItem>
-                                <SelectItem value="francais">Français</SelectItem>
-                                <SelectItem value="histoire_geo">Histoire-Géographie</SelectItem>
-                                <SelectItem value="sciences">Sciences</SelectItem>
-                                <SelectItem value="anglais">Anglais</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="professeur"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Professeur</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value || ''}
-                              value={field.value || ''}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Sélectionner un professeur" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="M. Dupont">M. Dupont</SelectItem>
-                                <SelectItem value="Mme. Martin">Mme. Martin</SelectItem>
-                                <SelectItem value="M. Bernard">M. Bernard</SelectItem>
-                                <SelectItem value="Mme. Thomas">Mme. Thomas</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-                  
-                  <FormField
-                    control={form.control}
-                    name="salle"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Salle</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value || ''}
-                          value={field.value || ''}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sélectionner une salle" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Salle 101">Salle 101</SelectItem>
-                            <SelectItem value="Salle 102">Salle 102</SelectItem>
-                            <SelectItem value="Salle 201">Salle 201</SelectItem>
-                            <SelectItem value="Salle 202">Salle 202</SelectItem>
-                            <SelectItem value="Gymnase">Gymnase</SelectItem>
-                            <SelectItem value="Amphithéâtre">Amphithéâtre</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Description de l'événement"
-                            className="resize-none"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <DialogFooter>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => setIsEventDialogOpen(false)}
-                    >
-                      Annuler
-                    </Button>
-                    <Button type="submit">
-                      {isEditing ? "Mettre à jour" : "Créer"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
+              <EventForm 
+                isEditing={isEditing}
+                selectedEvent={selectedEvent}
+                paliers={samplePaliers}
+                academicClasses={sampleAcademicClasses}
+                professors={sampleProfessors}
+                rooms={sampleRooms}
+                subjects={sampleSubjects}
+                onSubmit={handleCreateOrUpdateEvent}
+                onCancel={() => setIsEventDialogOpen(false)}
+              />
             </DialogContent>
           </Dialog>
           
@@ -1321,7 +1074,7 @@ const Evenements2: React.FC = () => {
               )}
               
               <div className="flex justify-end gap-2 mt-4">
-                <Button variant="destructive" onClick={handleDeleteEvent} className="flex items-center gap-2">
+                <Button variant="destructive" onClick={handleDeleteRequest} className="flex items-center gap-2">
                   <X size={16} />
                   <span>Supprimer</span>
                 </Button>
@@ -1331,6 +1084,18 @@ const Evenements2: React.FC = () => {
                 </Button>
               </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Add the delete confirmation dialog */}
+      <Dialog open={isDeleteConfirmationOpen} onOpenChange={setIsDeleteConfirmationOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          {selectedEvent && (
+            <EventDeleteConfirmation 
+              event={selectedEvent}
+              onConfirm={handleConfirmDelete}
+            />
           )}
         </DialogContent>
       </Dialog>
