@@ -26,7 +26,8 @@ import {
   ListOrdered,
   ArchiveIcon,
   BookOpenText,
-  UserCog
+  UserCog,
+  Settings
 } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
@@ -40,6 +41,7 @@ const DashboardLayout: React.FC = () => {
     { id: 'personnes', label: 'Élèves & Tuteurs', icon: <Users size={18} />, path: '/dashboard/personnes' },
     { id: 'sessions', label: 'Sessions & Paliers', icon: <Calendar size={18} />, path: '/dashboard/sessions' },
     { id: 'evenements', label: 'Événements', icon: <CalendarDays size={18} />, path: '/dashboard/evenements' },
+    { id: 'evenements2', label: 'Événements (v2)', icon: <CalendarDays size={18} />, path: '/dashboard/evenements2' },
     { id: 'locaux', label: 'Locaux', icon: <Building size={18} />, path: '/dashboard/locaux' },
     { id: 'academics', label: 'Structure Académique', icon: <School size={18} />, path: '/dashboard/academics' },
     { id: 'education', label: 'Enseignement', icon: <BookOpen size={18} />, path: '/dashboard/education' },
@@ -51,7 +53,8 @@ const DashboardLayout: React.FC = () => {
     { id: 'bibliotheque', label: 'Bibliothèque', icon: <BookOpenText size={18} />, path: '/dashboard/bibliotheque' },
     { id: 'rh', label: 'Ressources Humaines', icon: <UserCog size={18} />, path: '/dashboard/rh' },
     { id: 'paiements', label: 'Paiements', icon: <CreditCard size={18} />, path: '/dashboard/paiements' },
-    { id: 'mes-paiements', label: 'Mes Paiements', icon: <Wallet size={18} />, path: '/dashboard/mes-paiements' }
+    { id: 'mes-paiements', label: 'Mes Paiements', icon: <Wallet size={18} />, path: '/dashboard/mes-paiements' },
+    { id: 'settings', label: 'Paramètres', icon: <Settings size={18} />, path: '/dashboard/settings' }
   ];
   
   const activeTab = tabs.find(tab => location.pathname.includes(tab.id))?.id || 'inscriptions';

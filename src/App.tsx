@@ -11,6 +11,7 @@ import Inscriptions from "./pages/dashboard/Inscriptions";
 import Personnes from "./pages/dashboard/Personnes";
 import Sessions from "./pages/dashboard/Sessions";
 import Evenements from "./pages/dashboard/Evenements";
+import Evenements2 from "./pages/dashboard/Evenements2";
 import Paiements from "./pages/dashboard/Paiements";
 import MesPaiements from "./pages/dashboard/MesPaiements";
 import Locaux from "./pages/dashboard/Locaux";
@@ -23,6 +24,7 @@ import Bulletins from "./pages/dashboard/Bulletins";
 import Archives from "./pages/dashboard/Archives";
 import Bibliotheque from "./pages/dashboard/Bibliotheque";
 import RH from "./pages/dashboard/RH";
+import Settings from "./pages/dashboard/Settings";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,7 @@ const App = () => (
             <Route path="personnes" element={<Personnes />} />
             <Route path="sessions" element={<Sessions />} />
             <Route path="evenements" element={<Evenements />} />
+            <Route path="evenements2" element={<Evenements2 />} />
             <Route path="locaux" element={<Locaux />} />
             <Route path="academics" element={<Academics />} />
             <Route path="education" element={<Education />} />
@@ -55,6 +58,7 @@ const App = () => (
             <Route path="rh" element={<RH />} />
             <Route path="paiements" element={<Paiements />} />
             <Route path="mes-paiements" element={<MesPaiements />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
           
           {/* Routes à implémenter */}
