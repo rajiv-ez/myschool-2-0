@@ -7,22 +7,17 @@ import { DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 // Event type
 interface Event {
-  id: number | string;
+  id: number;
   title: string;
   type: string;
   start: Date;
   end: Date;
   description: string;
-  location?: string;
+  location: string;
   palier?: string;
   allDay: boolean;
   recurring?: boolean;
   recurrencePattern?: string;
-  academicClasses?: string[];
-  rooms?: string[];
-  subjects?: string[];
-  professors?: string[];
-  assistants?: string[];
 }
 
 interface EventDeleteConfirmationProps {

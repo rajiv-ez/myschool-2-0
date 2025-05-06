@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -149,27 +150,6 @@ const paliersData = [
     dateFin: '30/06/2024',
     statut: 'Terminé'
   }
-];
-
-// Sample data for the missing props (academic classes, professors, rooms, and subjects)
-const sampleAcademicClasses = [
-  { id: 1, name: 'CM1', session: '2024-2025', mainTeacher: 'M. Dupont', capacity: 30, enrolled: 25, status: 'active' },
-  { id: 2, name: 'CM2', session: '2024-2025', mainTeacher: 'Mme. Martin', capacity: 28, enrolled: 26, status: 'active' },
-  { id: 3, name: 'CE2', session: '2024-2025', mainTeacher: 'M. Bernard', capacity: 30, enrolled: 22, status: 'active' },
-  { id: 4, name: 'CE1', session: '2024-2025', mainTeacher: 'Mme. Thomas', capacity: 26, enrolled: 24, status: 'active' },
-  { id: 5, name: 'CP', session: '2024-2025', mainTeacher: 'Mme. Petit', capacity: 25, enrolled: 20, status: 'active' },
-];
-
-const sampleProfessors = [
-  'M. Dupont', 'Mme. Martin', 'M. Bernard', 'Mme. Thomas', 'M. Petit', 'Mme. Robert'
-];
-
-const sampleRooms = [
-  'Salle 101', 'Salle 102', 'Salle 201', 'Salle 202', 'Gymnase', 'Amphithéâtre', 'Laboratoire', 'Bibliothèque'
-];
-
-const sampleSubjects = [
-  'Mathématiques', 'Français', 'Histoire-Géographie', 'Sciences', 'Anglais', 'Arts plastiques', 'Musique', 'Sport'
 ];
 
 const Evenements = () => {
@@ -466,10 +446,6 @@ const Evenements = () => {
             isEditing={isEditing}
             selectedEvent={selectedEvent}
             paliers={paliersData}
-            academicClasses={sampleAcademicClasses}
-            professors={sampleProfessors}
-            rooms={sampleRooms}
-            subjects={sampleSubjects}
             onSubmit={handleEventSubmit}
             onCancel={() => setIsEventModalOpen(false)}
           />
