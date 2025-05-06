@@ -27,7 +27,8 @@ import {
   ArchiveIcon,
   BookOpenText,
   UserCog,
-  Settings
+  Settings,
+  Layout
 } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
@@ -43,6 +44,7 @@ const DashboardLayout: React.FC = () => {
     { id: 'evenements', label: 'Événements', icon: <CalendarDays size={18} />, path: '/dashboard/evenements' },
     { id: 'evenements2', label: 'Événements (v2)', icon: <CalendarDays size={18} />, path: '/dashboard/evenements2' },
     { id: 'locaux', label: 'Locaux', icon: <Building size={18} />, path: '/dashboard/locaux' },
+    { id: 'classroom-config', label: 'Configuration Classe', icon: <Layout size={18} />, path: '/dashboard/classroom-config' },
     { id: 'academics', label: 'Structure Académique', icon: <School size={18} />, path: '/dashboard/academics' },
     { id: 'education', label: 'Enseignement', icon: <BookOpen size={18} />, path: '/dashboard/education' },
     { id: 'presence', label: 'Présences', icon: <ClipboardCheck size={18} />, path: '/dashboard/presence' },

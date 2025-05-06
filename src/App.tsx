@@ -25,6 +25,7 @@ import Archives from "./pages/dashboard/Archives";
 import Bibliotheque from "./pages/dashboard/Bibliotheque";
 import RH from "./pages/dashboard/RH";
 import Settings from "./pages/dashboard/Settings";
+import ClassroomConfig from "./pages/dashboard/ClassroomConfig";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="paiements" element={<Paiements />} />
             <Route path="mes-paiements" element={<MesPaiements />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="classroom-config" element={<ClassroomConfig />} />
           </Route>
           
           {/* Routes à implémenter */}
