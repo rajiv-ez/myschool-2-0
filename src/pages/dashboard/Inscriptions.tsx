@@ -45,8 +45,58 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
+import InscriptionForm from '@/components/forms/InscriptionForm';
 
-// Données fictives pour démonstration
+// Données fictives pour les classes académiques (utilisant le nouveau format)
+const classesAcademiquesData = [
+  { 
+    id: 1, 
+    classe: 'CP', 
+    session: '2024-2025', 
+    enseignant: 'Mme Ntoutoume',
+    eleves: 25,
+    capacite: 30,
+    statut: 'Actif'
+  },
+  { 
+    id: 2, 
+    classe: 'CE1', 
+    session: '2024-2025', 
+    enseignant: 'M. Ekomi',
+    eleves: 23,
+    capacite: 28,
+    statut: 'Actif'
+  },
+  { 
+    id: 3, 
+    classe: 'CE2', 
+    session: '2024-2025', 
+    enseignant: 'Mme Abessolo',
+    eleves: 22,
+    capacite: 25,
+    statut: 'Actif'
+  },
+  { 
+    id: 4, 
+    classe: 'CM1', 
+    session: '2024-2025', 
+    enseignant: 'M. Mboumba',
+    eleves: 20,
+    capacite: 24,
+    statut: 'Actif'
+  },
+  { 
+    id: 5, 
+    classe: 'CM2', 
+    session: '2024-2025', 
+    enseignant: 'Mme Ovono',
+    eleves: 24,
+    capacite: 26,
+    statut: 'Actif'
+  }
+];
+
+// Données fictives pour les inscriptions
 const inscriptionsData = [
   { 
     id: 1, 
@@ -151,6 +201,7 @@ const Inscriptions: React.FC = () => {
   
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedInscription, setSelectedInscription] = useState<typeof inscriptionsData[0] | null>(null);
   
@@ -205,6 +256,11 @@ const Inscriptions: React.FC = () => {
     setIsEditModalOpen(true);
   };
   
+  // Ouvrir la modale de création
+  const handleCreateClick = () => {
+    setIsCreateModalOpen(true);
+  };
+  
   // Ouvrir la modale de suppression
   const handleDeleteClick = (inscription: typeof inscriptionsData[0]) => {
     setSelectedInscription(inscription);
@@ -223,6 +279,62 @@ const Inscriptions: React.FC = () => {
         title: "Inscription supprimée",
         description: `L'inscription de ${selectedInscription.prenom} ${selectedInscription.nom} a été supprimée.`,
       });
+    }
+  };
+  
+  // Gérer la soumission du formulaire de création
+  const handleCreateSubmit = (data: any) => {
+    // Créer une nouvelle inscription
+    const newInscription = {
+      id: Math.max(...filteredData.map(item => item.id)) + 1,
+      nom: data.nom,
+      prenom: data.prenom,
+      classe: data.classe,
+      session: data.session,
+      statut: data.statut,
+      date: data.date
+    };
+    
+    // Ajouter à la liste
+    setFilteredData([...filteredData, newInscription]);
+    
+    // Mettre à jour le nombre d'élèves dans la classe académique
+    // (Ceci serait normalement géré par le back-end)
+    
+    toast({
+      title: "Inscription créée",
+      description: `L'inscription de ${data.prenom} ${data.nom} a été créée avec succès.`,
+    });
+    
+    setIsCreateModalOpen(false);
+  };
+  
+  // Gérer la soumission du formulaire d'édition
+  const handleEditSubmit = (data: any) => {
+    if (selectedInscription) {
+      // Mettre à jour l'inscription
+      const updatedData = filteredData.map(item => 
+        item.id === selectedInscription.id ? 
+        { 
+          ...item, 
+          nom: data.nom,
+          prenom: data.prenom,
+          classe: data.classe,
+          session: data.session,
+          statut: data.statut,
+          date: data.date
+        } : 
+        item
+      );
+      
+      setFilteredData(updatedData);
+      
+      toast({
+        title: "Inscription mise à jour",
+        description: `L'inscription de ${data.prenom} ${data.nom} a été mise à jour avec succès.`,
+      });
+      
+      setIsEditModalOpen(false);
     }
   };
 
@@ -249,11 +361,9 @@ const Inscriptions: React.FC = () => {
             <Download size={16} />
             Exporter
           </Button>
-          <Button className="flex items-center gap-2" asChild>
-            <Link to="/dashboard/inscriptions/nouvelle">
-              <UserPlus size={16} />
-              Nouvelle inscription
-            </Link>
+          <Button className="flex items-center gap-2" onClick={handleCreateClick}>
+            <UserPlus size={16} />
+            Nouvelle inscription
           </Button>
         </div>
       </div>
@@ -466,6 +576,25 @@ const Inscriptions: React.FC = () => {
         </DialogContent>
       </Dialog>
       
+      {/* Modale de création */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nouvelle inscription</DialogTitle>
+            <DialogDescription>
+              Remplissez les informations pour créer une nouvelle inscription
+            </DialogDescription>
+          </DialogHeader>
+          <InscriptionForm 
+            isEditing={false}
+            selectedInscription={null}
+            classesAcademiques={classesAcademiquesData}
+            onSubmit={handleCreateSubmit}
+            onCancel={() => setIsCreateModalOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+      
       {/* Modale d'édition */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-md">
@@ -475,86 +604,13 @@ const Inscriptions: React.FC = () => {
               Modifiez les informations de cette inscription
             </DialogDescription>
           </DialogHeader>
-          {selectedInscription && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="nom">Nom</label>
-                  <Input id="nom" defaultValue={selectedInscription.nom} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="prenom">Prénom</label>
-                  <Input id="prenom" defaultValue={selectedInscription.prenom} />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="classe">Classe</label>
-                  <Select defaultValue={selectedInscription.classe}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Classe" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CP">CP</SelectItem>
-                      <SelectItem value="CE1">CE1</SelectItem>
-                      <SelectItem value="CE2">CE2</SelectItem>
-                      <SelectItem value="CM1">CM1</SelectItem>
-                      <SelectItem value="CM2">CM2</SelectItem>
-                      <SelectItem value="6ème">6ème</SelectItem>
-                      <SelectItem value="5ème">5ème</SelectItem>
-                      <SelectItem value="4ème">4ème</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="session">Session</label>
-                  <Select defaultValue={selectedInscription.session}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Session" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2024-2025">2024-2025</SelectItem>
-                      <SelectItem value="2023-2024">2023-2024</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="statut">Statut</label>
-                  <Select defaultValue={selectedInscription.statut}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Statut" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Nouvelle">Nouvelle</SelectItem>
-                      <SelectItem value="Réinscription">Réinscription</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="date">Date</label>
-                  <Input id="date" type="date" defaultValue={selectedInscription.date.split('/').reverse().join('-')} />
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
-            </DialogClose>
-            <Button onClick={() => {
-              setIsEditModalOpen(false);
-              toast({
-                title: "Modifications enregistrées",
-                description: "Les informations de l'inscription ont été mises à jour."
-              });
-            }}>Enregistrer</Button>
-          </DialogFooter>
+          <InscriptionForm 
+            isEditing={true}
+            selectedInscription={selectedInscription}
+            classesAcademiques={classesAcademiquesData}
+            onSubmit={handleEditSubmit}
+            onCancel={() => setIsEditModalOpen(false)}
+          />
         </DialogContent>
       </Dialog>
       

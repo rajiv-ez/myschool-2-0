@@ -16,35 +16,25 @@ import {
   TabsTrigger 
 } from '@/components/ui/tabs';
 import { 
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose
+  DialogDescription,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
-import { Plus, Filter, Search, Edit, Trash2, Eye, X, CalendarDays } from 'lucide-react';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { Plus, Filter, Edit, Trash2, CalendarDays } from 'lucide-react';
+import { parse } from 'date-fns';
+
+// Import des composants refactorisés
+import FilterSessions from '@/components/sessions/FilterSessions';
+import FilterPaliers from '@/components/sessions/FilterPaliers';
+import FilterClasses from '@/components/sessions/FilterClasses';
+import SessionForm from '@/components/sessions/SessionForm';
+import PalierForm from '@/components/sessions/PalierForm';
+import ClasseForm from '@/components/sessions/ClasseForm';
+import DeleteConfirmation from '@/components/sessions/DeleteConfirmation';
 
 // Données fictives pour démonstration
 const sessionsData = [
@@ -191,38 +181,6 @@ const Sessions: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   
-  // Formulaire de session
-  const sessionForm = useForm({
-    defaultValues: {
-      nom: '',
-      dateDebut: '',
-      dateFin: '',
-      statut: 'Actif'
-    }
-  });
-  
-  // Formulaire de palier
-  const palierForm = useForm({
-    defaultValues: {
-      nom: '',
-      session: '',
-      dateDebut: '',
-      dateFin: '',
-      statut: 'Planifié'
-    }
-  });
-  
-  // Formulaire de classe académique
-  const classeForm = useForm({
-    defaultValues: {
-      classe: '',
-      session: '',
-      enseignant: '',
-      capacite: 30,
-      statut: 'Actif'
-    }
-  });
-  
   // Gestion des filtres pour les sessions
   const [sessionSearchTerm, setSessionSearchTerm] = useState('');
   const [sessionStatut, setSessionStatut] = useState('all');
@@ -237,7 +195,7 @@ const Sessions: React.FC = () => {
   const [classeSessionFilter, setClasseSessionFilter] = useState('all');
   const [classeType, setClasseType] = useState('all');
   const [classeStatut, setClasseStatut] = useState('all');
-  
+
   // Fonction pour filtrer les sessions
   const filterSessions = () => {
     let result = [...sessionsData];
@@ -328,90 +286,36 @@ const Sessions: React.FC = () => {
   const handleCreateSession = () => {
     setSelectedItem(null);
     setIsEditing(false);
-    sessionForm.reset({
-      nom: '',
-      dateDebut: '',
-      dateFin: '',
-      statut: 'Actif'
-    });
     setIsSessionModalOpen(true);
   };
   
   const handleEditSession = (session: any) => {
     setSelectedItem(session);
     setIsEditing(true);
-    
-    // Convertir les dates au format YYYY-MM-DD pour l'input date
-    const dateDebut = session.dateDebut.split('/').reverse().join('-');
-    const dateFin = session.dateFin.split('/').reverse().join('-');
-    
-    sessionForm.reset({
-      nom: session.nom,
-      dateDebut: dateDebut,
-      dateFin: dateFin,
-      statut: session.statut
-    });
-    
     setIsSessionModalOpen(true);
   };
   
   const handleCreatePalier = () => {
     setSelectedItem(null);
     setIsEditing(false);
-    palierForm.reset({
-      nom: '',
-      session: sessionsData.find(s => s.statut === 'Actif')?.nom || '',
-      dateDebut: '',
-      dateFin: '',
-      statut: 'Planifié'
-    });
     setIsPalierModalOpen(true);
   };
   
   const handleEditPalier = (palier: any) => {
     setSelectedItem(palier);
     setIsEditing(true);
-    
-    // Convertir les dates au format YYYY-MM-DD pour l'input date
-    const dateDebut = palier.dateDebut.split('/').reverse().join('-');
-    const dateFin = palier.dateFin.split('/').reverse().join('-');
-    
-    palierForm.reset({
-      nom: palier.nom,
-      session: palier.session,
-      dateDebut: dateDebut,
-      dateFin: dateFin,
-      statut: palier.statut
-    });
-    
     setIsPalierModalOpen(true);
   };
   
   const handleCreateClasse = () => {
     setSelectedItem(null);
     setIsEditing(false);
-    classeForm.reset({
-      classe: '',
-      session: sessionsData.find(s => s.statut === 'Actif')?.nom || '',
-      enseignant: '',
-      capacite: 30,
-      statut: 'Actif'
-    });
     setIsClasseModalOpen(true);
   };
   
   const handleEditClasse = (classe: any) => {
     setSelectedItem(classe);
     setIsEditing(true);
-    
-    classeForm.reset({
-      classe: classe.classe,
-      session: classe.session,
-      enseignant: classe.enseignant,
-      capacite: classe.capacite,
-      statut: classe.statut
-    });
-    
     setIsClasseModalOpen(true);
   };
   
@@ -444,15 +348,11 @@ const Sessions: React.FC = () => {
   };
   
   const onSubmitSession = (data: any) => {
-    // Convertir les dates au format DD/MM/YYYY pour l'affichage
-    const dateDebut = data.dateDebut.split('-').reverse().join('/');
-    const dateFin = data.dateFin.split('-').reverse().join('/');
-    
     if (isEditing && selectedItem) {
       // Mise à jour d'une session existante
       const updatedSessions = filteredSessions.map(session => 
         session.id === selectedItem.id ? 
-        { ...session, nom: data.nom, dateDebut, dateFin, statut: data.statut } : 
+        { ...session, nom: data.nom, dateDebut: data.dateDebut, dateFin: data.dateFin, statut: data.statut } : 
         session
       );
       setFilteredSessions(updatedSessions);
@@ -466,8 +366,8 @@ const Sessions: React.FC = () => {
       const newSession = {
         id: Math.max(...filteredSessions.map(s => s.id)) + 1,
         nom: data.nom,
-        dateDebut,
-        dateFin,
+        dateDebut: data.dateDebut,
+        dateFin: data.dateFin,
         statut: data.statut,
         paliers: 0
       };
@@ -484,15 +384,11 @@ const Sessions: React.FC = () => {
   };
   
   const onSubmitPalier = (data: any) => {
-    // Convertir les dates au format DD/MM/YYYY pour l'affichage
-    const dateDebut = data.dateDebut.split('-').reverse().join('/');
-    const dateFin = data.dateFin.split('-').reverse().join('/');
-    
     if (isEditing && selectedItem) {
       // Mise à jour d'un palier existant
       const updatedPaliers = filteredPaliers.map(palier => 
         palier.id === selectedItem.id ? 
-        { ...palier, nom: data.nom, session: data.session, dateDebut, dateFin, statut: data.statut } : 
+        { ...palier, nom: data.nom, session: data.session, dateDebut: data.dateDebut, dateFin: data.dateFin, statut: data.statut } : 
         palier
       );
       setFilteredPaliers(updatedPaliers);
@@ -507,8 +403,8 @@ const Sessions: React.FC = () => {
         id: Math.max(...filteredPaliers.map(p => p.id)) + 1,
         nom: data.nom,
         session: data.session,
-        dateDebut,
-        dateFin,
+        dateDebut: data.dateDebut,
+        dateFin: data.dateFin,
         statut: data.statut
       };
       
@@ -607,7 +503,7 @@ const Sessions: React.FC = () => {
         
         {/* Onglet Sessions */}
         <TabsContent value="sessions">
-          {/* Filtres pour sessions */}
+          {/* Bouton de filtres */}
           <div className="mb-4">
             <Button 
               variant="outline" 
@@ -619,57 +515,20 @@ const Sessions: React.FC = () => {
             </Button>
           </div>
           
+          {/* Filtres pour sessions */}
           {showSessionsFilters && (
-            <Card className="mb-6">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-base">Filtres</CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    className="h-8 w-8 p-0" 
-                    onClick={() => setShowSessionsFilters(false)}
-                  >
-                    <X size={16} />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="search"
-                        placeholder="Rechercher une session..."
-                        className="pl-8"
-                        value={sessionSearchTerm}
-                        onChange={(e) => setSessionSearchTerm(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Select value={sessionStatut} onValueChange={setSessionStatut}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Statut" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous les statuts</SelectItem>
-                        <SelectItem value="Actif">Actif</SelectItem>
-                        <SelectItem value="Terminé">Terminé</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="sm:col-span-2 lg:col-span-3 flex justify-end gap-2">
-                    <Button variant="outline" onClick={resetSessionsFilters}>Réinitialiser</Button>
-                    <Button onClick={filterSessions}>Appliquer les filtres</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <FilterSessions 
+              searchTerm={sessionSearchTerm}
+              setSearchTerm={setSessionSearchTerm}
+              sessionStatut={sessionStatut}
+              setSessionStatut={setSessionStatut}
+              applyFilter={filterSessions}
+              resetFilter={resetSessionsFilters}
+              onClose={() => setShowSessionsFilters(false)}
+            />
           )}
           
+          {/* Table des sessions */}
           <ScrollArea className="h-[calc(100vh-25rem)]">
             <div className="rounded-md border">
               <Table>
@@ -729,7 +588,7 @@ const Sessions: React.FC = () => {
         
         {/* Onglet Paliers */}
         <TabsContent value="paliers">
-          {/* Filtres pour paliers */}
+          {/* Bouton de filtres */}
           <div className="mb-4">
             <Button 
               variant="outline" 
@@ -741,72 +600,23 @@ const Sessions: React.FC = () => {
             </Button>
           </div>
           
+          {/* Filtres pour paliers */}
           {showPaliersFilters && (
-            <Card className="mb-6">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-base">Filtres</CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    className="h-8 w-8 p-0" 
-                    onClick={() => setShowPaliersFilters(false)}
-                  >
-                    <X size={16} />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="search"
-                        placeholder="Rechercher un palier..."
-                        className="pl-8"
-                        value={palierSearchTerm}
-                        onChange={(e) => setPalierSearchTerm(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Select value={palierSession} onValueChange={setPalierSession}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Session" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Toutes les sessions</SelectItem>
-                        {sessionsData.map(session => (
-                          <SelectItem key={session.id} value={session.nom}>{session.nom}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Select value={palierStatut} onValueChange={setPalierStatut}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Statut" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous les statuts</SelectItem>
-                        <SelectItem value="Actif">Actif</SelectItem>
-                        <SelectItem value="Planifié">Planifié</SelectItem>
-                        <SelectItem value="Terminé">Terminé</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="sm:col-span-3 flex justify-end gap-2">
-                    <Button variant="outline" onClick={resetPaliersFilters}>Réinitialiser</Button>
-                    <Button onClick={filterPaliers}>Appliquer les filtres</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <FilterPaliers 
+              searchTerm={palierSearchTerm}
+              setSearchTerm={setPalierSearchTerm}
+              sessionFilter={palierSession}
+              setSessionFilter={setPalierSession}
+              statutFilter={palierStatut}
+              setStatutFilter={setPalierStatut}
+              sessions={sessionsData}
+              applyFilter={filterPaliers}
+              resetFilter={resetPaliersFilters}
+              onClose={() => setShowPaliersFilters(false)}
+            />
           )}
           
+          {/* Table des paliers */}
           <ScrollArea className="h-[calc(100vh-25rem)]">
             <div className="rounded-md border">
               <Table>
@@ -868,7 +678,7 @@ const Sessions: React.FC = () => {
         
         {/* Onglet Classes académiques */}
         <TabsContent value="classes">
-          {/* Filtres pour classes académiques */}
+          {/* Bouton de filtres */}
           <div className="mb-4">
             <Button 
               variant="outline" 
@@ -880,87 +690,25 @@ const Sessions: React.FC = () => {
             </Button>
           </div>
           
+          {/* Filtres pour classes académiques */}
           {showClassesFilters && (
-            <Card className="mb-6">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-base">Filtres</CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    className="h-8 w-8 p-0" 
-                    onClick={() => setShowClassesFilters(false)}
-                  >
-                    <X size={16} />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div>
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="search"
-                        placeholder="Rechercher..."
-                        className="pl-8"
-                        value={classeSearchTerm}
-                        onChange={(e) => setClasseSearchTerm(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Select value={classeSessionFilter} onValueChange={setClasseSessionFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Session" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Toutes les sessions</SelectItem>
-                        {sessionsData.map(session => (
-                          <SelectItem key={session.id} value={session.nom}>{session.nom}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Select value={classeType} onValueChange={setClasseType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Classe" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Toutes les classes</SelectItem>
-                        <SelectItem value="CP">CP</SelectItem>
-                        <SelectItem value="CE1">CE1</SelectItem>
-                        <SelectItem value="CE2">CE2</SelectItem>
-                        <SelectItem value="CM1">CM1</SelectItem>
-                        <SelectItem value="CM2">CM2</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Select value={classeStatut} onValueChange={setClasseStatut}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Statut" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous les statuts</SelectItem>
-                        <SelectItem value="Actif">Actif</SelectItem>
-                        <SelectItem value="Terminé">Terminé</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="sm:col-span-2 lg:col-span-4 flex justify-end gap-2">
-                    <Button variant="outline" onClick={resetClassesFilters}>Réinitialiser</Button>
-                    <Button onClick={filterClasses}>Appliquer les filtres</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <FilterClasses 
+              searchTerm={classeSearchTerm}
+              setSearchTerm={setClasseSearchTerm}
+              sessionFilter={classeSessionFilter}
+              setSessionFilter={setClasseSessionFilter}
+              classeType={classeType}
+              setClasseType={setClasseType}
+              statutFilter={classeStatut}
+              setStatutFilter={setClasseStatut}
+              sessions={sessionsData}
+              applyFilter={filterClasses}
+              resetFilter={resetClassesFilters}
+              onClose={() => setShowClassesFilters(false)}
+            />
           )}
           
+          {/* Table des classes académiques */}
           <ScrollArea className="h-[calc(100vh-25rem)]">
             <div className="rounded-md border">
               <Table>
@@ -1029,82 +777,12 @@ const Sessions: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...sessionForm}>
-            <form onSubmit={sessionForm.handleSubmit(onSubmitSession)} className="space-y-4">
-              <FormField
-                control={sessionForm.control}
-                name="nom"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nom de la session</FormLabel>
-                    <FormControl>
-                      <Input placeholder="ex: Année scolaire 2024-2025" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={sessionForm.control}
-                  name="dateDebut"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date de début</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={sessionForm.control}
-                  name="dateFin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date de fin</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={sessionForm.control}
-                name="statut"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Statut</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez un statut" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Actif">Actif</SelectItem>
-                        <SelectItem value="Terminé">Terminé</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button type="submit">{isEditing ? 'Mettre à jour' : 'Créer'}</Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <SessionForm
+            isEditing={isEditing}
+            selectedItem={selectedItem}
+            onSubmit={onSubmitSession}
+            onCancel={() => setIsSessionModalOpen(false)}
+          />
         </DialogContent>
       </Dialog>
       
@@ -1118,109 +796,14 @@ const Sessions: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...palierForm}>
-            <form onSubmit={palierForm.handleSubmit(onSubmitPalier)} className="space-y-4">
-              <FormField
-                control={palierForm.control}
-                name="nom"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nom du palier</FormLabel>
-                    <FormControl>
-                      <Input placeholder="ex: Trimestre 1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={palierForm.control}
-                name="session"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Session</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez une session" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {sessionsData.map(session => (
-                          <SelectItem key={session.id} value={session.nom}>{session.nom}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={palierForm.control}
-                  name="dateDebut"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date de début</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={palierForm.control}
-                  name="dateFin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date de fin</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={palierForm.control}
-                name="statut"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Statut</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez un statut" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Actif">Actif</SelectItem>
-                        <SelectItem value="Planifié">Planifié</SelectItem>
-                        <SelectItem value="Terminé">Terminé</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button type="submit">{isEditing ? 'Mettre à jour' : 'Créer'}</Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <PalierForm
+            isEditing={isEditing}
+            selectedItem={selectedItem}
+            sessions={sessionsData}
+            existingPaliers={paliersData}
+            onSubmit={onSubmitPalier}
+            onCancel={() => setIsPalierModalOpen(false)}
+          />
         </DialogContent>
       </Dialog>
       
@@ -1234,168 +817,27 @@ const Sessions: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...classeForm}>
-            <form onSubmit={classeForm.handleSubmit(onSubmitClasse)} className="space-y-4">
-              <FormField
-                control={classeForm.control}
-                name="classe"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Classe</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez une classe" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="CP">CP</SelectItem>
-                        <SelectItem value="CE1">CE1</SelectItem>
-                        <SelectItem value="CE2">CE2</SelectItem>
-                        <SelectItem value="CM1">CM1</SelectItem>
-                        <SelectItem value="CM2">CM2</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={classeForm.control}
-                name="session"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Session</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez une session" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {sessionsData.map(session => (
-                          <SelectItem key={session.id} value={session.nom}>{session.nom}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={classeForm.control}
-                name="enseignant"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Enseignant principal</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nom de l'enseignant" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={classeForm.control}
-                name="capacite"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Capacité d'accueil</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="1" 
-                        max="100" 
-                        {...field}
-                        value={field.value}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={classeForm.control}
-                name="statut"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Statut</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez un statut" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Actif">Actif</SelectItem>
-                        <SelectItem value="Terminé">Terminé</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button type="submit">{isEditing ? 'Mettre à jour' : 'Créer'}</Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <ClasseForm
+            isEditing={isEditing}
+            selectedItem={selectedItem}
+            sessions={sessionsData}
+            onSubmit={onSubmitClasse}
+            onCancel={() => setIsClasseModalOpen(false)}
+          />
         </DialogContent>
       </Dialog>
       
       {/* Modale de confirmation pour la suppression */}
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
-            <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer cet élément ? Cette action ne peut pas être annulée.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            {selectedItem && (
-              <p>
-                Vous êtes sur le point de supprimer{' '}
-                {selectedItem.type === 'session' && `la session "${selectedItem.nom}"`}
-                {selectedItem.type === 'palier' && `le palier "${selectedItem.nom}" de la session "${selectedItem.session}"`}
-                {selectedItem.type === 'classe' && `la classe ${selectedItem.classe} de la session "${selectedItem.session}"`}
-                .
-              </p>
-            )}
-          </div>
-          
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
-            </DialogClose>
-            <Button 
-              variant="destructive"
-              onClick={confirmDelete}
-            >
-              Supprimer définitivement
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteConfirmation
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        itemType={selectedItem?.type || ''}
+        itemName={selectedItem?.nom || selectedItem?.classe || ''}
+        itemDetails={selectedItem?.session}
+      />
     </div>
   );
 };
 
 export default Sessions;
-
