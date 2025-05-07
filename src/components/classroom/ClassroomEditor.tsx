@@ -259,7 +259,15 @@ const ClassroomEditor: React.FC<ClassroomEditorProps> = ({
   const handleLoadConfiguration = (configId: string) => {
     const config = savedConfigurations.find(c => c.id === configId);
     if (config) {
+      // Update form fields with the configuration values
+      setConfigName(config.name);
+      setRows(config.config.rows);
+      setLinesPerRow(config.config.linesPerRow);
+      setPositionsPerLine(config.config.positionsPerLine);
+      
+      // Load the configuration to the application
       updateConfig(config.config);
+      
       toast({
         title: "Configuration chargée",
         description: `La configuration "${config.name}" a été chargée.`
@@ -271,6 +279,9 @@ const ClassroomEditor: React.FC<ClassroomEditorProps> = ({
   const handleLoadAssignment = (assignmentId: string) => {
     const assignment = savedAssignments.find(a => a.id === assignmentId);
     if (assignment) {
+      // Update the assignment name in the form
+      setAssignmentName(assignment.name);
+      
       // Charger d'abord la configuration associée
       const config = savedConfigurations.find(c => c.id === assignment.configId);
       if (config) {

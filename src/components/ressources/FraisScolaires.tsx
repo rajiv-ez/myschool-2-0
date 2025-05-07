@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
 import { Search, Plus, Edit, Trash2 } from 'lucide-react';
@@ -64,13 +64,13 @@ const FraisScolaires: React.FC = () => {
   // Sample data for sessions and paliers
   const [sessions, setSessions] = useState<Session[]>([
     { id: '1', name: 'Année scolaire 2023-2024', paliers: [
-      { id: '1', name: 'CP', sessionId: '1' },
-      { id: '2', name: 'CE1', sessionId: '1' },
-      { id: '3', name: 'CE2', sessionId: '1' },
+      { id: '1', name: 'Trimestre 1', sessionId: '1' },
+      { id: '2', name: 'Trimestre 2', sessionId: '1' },
+      { id: '3', name: 'Trimestre 3', sessionId: '1' },
     ]},
     { id: '2', name: 'Année scolaire 2024-2025', paliers: [
-      { id: '4', name: 'CP', sessionId: '2' },
-      { id: '5', name: 'CE1', sessionId: '2' },
+      { id: '4', name: 'Trimestre 1', sessionId: '2' },
+      { id: '5', name: 'Trimestre 2', sessionId: '2' },
     ]},
   ]);
 
@@ -269,18 +269,18 @@ const FraisScolaires: React.FC = () => {
 
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="palier" className="text-right">
-                    Palier
+                    Trimestre
                   </Label>
                   <Select 
                     value={formValues.palierId}
-                    onValueChange={(value) => setFormValues({...formValues, palierId: value})}
+                    onValueChange={(value) => setFormValues({...formValues, palierId: value === "none" ? undefined : value})}
                     disabled={!formValues.sessionId}
                   >
                     <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Sélectionner un palier (optionnel)" />
+                      <SelectValue placeholder="Sélectionner un trimestre (optionnel)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Aucun palier spécifique</SelectItem>
+                      <SelectItem value="none">Aucun trimestre spécifique</SelectItem>
                       {filteredPaliers.map(palier => (
                         <SelectItem key={palier.id} value={palier.id}>
                           {palier.name}
@@ -338,7 +338,7 @@ const FraisScolaires: React.FC = () => {
               <TableHead>Nom</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Session</TableHead>
-              <TableHead>Palier</TableHead>
+              <TableHead>Trimestre</TableHead>
               <TableHead>Quantité</TableHead>
               <TableHead className="text-right">Montant</TableHead>
               <TableHead className="text-right">Actions</TableHead>
