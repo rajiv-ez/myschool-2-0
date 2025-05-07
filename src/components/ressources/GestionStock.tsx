@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -785,7 +784,7 @@ const GestionStock: React.FC = () => {
                       <TableCell>{format(demande.date, "dd/MM/yyyy")}</TableCell>
                       <TableCell>
                         <Badge variant={
-                          demande.statut === 'Approuvée' ? "success" : 
+                          demande.statut === 'Approuvée' ? "default" : 
                           demande.statut === 'Refusée' ? "destructive" : 
                           "outline"
                         }>

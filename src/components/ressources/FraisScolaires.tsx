@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -273,14 +272,14 @@ const FraisScolaires: React.FC = () => {
                   </Label>
                   <Select 
                     value={formValues.palierId}
-                    onValueChange={(value) => setFormValues({...formValues, palierId: value === "none" ? undefined : value})}
+                    onValueChange={(value) => setFormValues({...formValues, palierId: value === "no-palier" ? undefined : value})}
                     disabled={!formValues.sessionId}
                   >
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Sélectionner un trimestre (optionnel)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Aucun trimestre spécifique</SelectItem>
+                      <SelectItem value="no-palier">Aucun trimestre spécifique</SelectItem>
                       {filteredPaliers.map(palier => (
                         <SelectItem key={palier.id} value={palier.id}>
                           {palier.name}
