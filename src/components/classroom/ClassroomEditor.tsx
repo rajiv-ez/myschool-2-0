@@ -156,9 +156,9 @@ const ClassroomEditor: React.FC<ClassroomEditorProps> = ({
                               </div>
                               
                               <Select
-                                value={seat?.studentId?.toString() || ""}
+                                value={seat?.studentId?.toString() || "unassigned"}
                                 onValueChange={(value) => {
-                                  const studentId = value ? parseInt(value) : undefined;
+                                  const studentId = value !== "unassigned" ? parseInt(value) : undefined;
                                   assignStudent(seatId, studentId);
                                 }}
                               >
@@ -166,7 +166,7 @@ const ClassroomEditor: React.FC<ClassroomEditorProps> = ({
                                   <SelectValue placeholder="Sélectionner un élève" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="">Non assigné</SelectItem>
+                                  <SelectItem value="unassigned">Non assigné</SelectItem>
                                   {students.map((student) => (
                                     <SelectItem
                                       key={student.id}
