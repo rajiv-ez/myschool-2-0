@@ -54,81 +54,79 @@ const ClassroomVisualization: React.FC<ClassroomVisualizationProps> = ({
 
   return (
     <div className="space-y-6">
-      {(activeConfiguration || activeAssignment) && (
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-              {activeConfiguration && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">Configuration active :</h4>
-                  <p className="font-medium">{activeConfiguration}</p>
-                </div>
-              )}
-              {activeAssignment && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">Attribution active :</h4>
-                  <p className="font-medium">{activeAssignment}</p>
-                </div>
-              )}
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+            <div>
+              <h4 className="text-sm font-medium text-gray-500">Configuration active :</h4>
+              <p className="font-medium">{activeConfiguration || 'Aucune configuration active'}</p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div>
+              <h4 className="text-sm font-medium text-gray-500">Attribution active :</h4>
+              <p className="font-medium">{activeAssignment || 'Aucune attribution active'}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Tableau du professeur et grille d'élèves */}
-        <div className="md:w-2/3">
+        {/* Visualisation des tables et du tableau */}
+        <div className="md:w-3/4">
           <div className="w-full p-6 bg-gray-100 border rounded-lg">
-            {/* Tableau de l'enseignant */}
-            <div className="h-8 bg-gray-300 rounded mb-10 flex items-center justify-center text-sm font-medium">
-              Tableau
-            </div>
-            
-            {/* Représentation des rangées */}
-            <div className="space-y-8">
-              {seatsByRow.map((lines, rowIdx) => (
-                <div key={`row-${rowIdx}`} className="space-y-6">
-                  {lines.map((lineSeats, lineIdx) => (
-                    lineSeats.length > 0 && (
-                      <div key={`line-${rowIdx}-${lineIdx}`} className="flex justify-center space-x-6">
-                        {lineSeats.map((seat) => (
-                          <TooltipProvider key={seat.id}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div
-                                  className={`
-                                    w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center 
-                                    ${seat.studentId ? 'bg-blue-500 text-white' : 'bg-gray-300'}
-                                    cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-blue-300
-                                    transition-all duration-200
-                                  `}
-                                  onClick={() => setActiveSeat(seat === activeSeat ? null : seat)}
-                                >
-                                  {seat.position.toUpperCase()}
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>
-                                  <span className="font-semibold">Position:</span> Rangée {seat.row}, Ligne {seat.line}, Place {seat.position.toUpperCase()}
-                                </p>
-                                <p>
-                                  <span className="font-semibold">Élève:</span> {getStudentForSeat(seat)?.name || 'Non assigné'}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        ))}
-                      </div>
-                    )
-                  ))}
+            <div className="flex">
+              {/* Tableau de l'enseignant (à gauche) */}
+              <div className="w-16 mr-8">
+                <div className="h-32 bg-gray-300 rounded mb-10 flex items-center justify-center text-sm font-medium writing-mode-vertical">
+                  <span className="transform -rotate-90">Tableau</span>
                 </div>
-              ))}
+              </div>
+              
+              {/* Representation des rangées (à droite du tableau) */}
+              <div className="flex-1 space-y-8">
+                {seatsByRow.map((lines, rowIdx) => (
+                  <div key={`row-${rowIdx}`} className="space-y-6">
+                    {lines.map((lineSeats, lineIdx) => (
+                      lineSeats.length > 0 && (
+                        <div key={`line-${rowIdx}-${lineIdx}`} className="flex justify-center space-x-6">
+                          {lineSeats.map((seat) => (
+                            <TooltipProvider key={seat.id}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    className={`
+                                      w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center 
+                                      ${seat.studentId ? 'bg-blue-500 text-white' : 'bg-gray-300'}
+                                      cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-blue-300
+                                      transition-all duration-200
+                                    `}
+                                    onClick={() => setActiveSeat(seat === activeSeat ? null : seat)}
+                                  >
+                                    {seat.position.toUpperCase()}
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    <span className="font-semibold">Position:</span> Rangée {seat.row}, Ligne {seat.line}, Place {seat.position.toUpperCase()}
+                                  </p>
+                                  <p>
+                                    <span className="font-semibold">Élève:</span> {getStudentForSeat(seat)?.name || 'Non assigné'}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ))}
+                        </div>
+                      )
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
         
         {/* Informations sur le siège sélectionné */}
-        <div className="md:w-1/3">
+        <div className="md:w-1/4">
           <Card className="h-full">
             <CardContent className="pt-6">
               {activeSeat ? (
