@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import ClassroomEditor from '@/components/classroom/ClassroomEditor';
 import ClassroomVisualization from '@/components/classroom/ClassroomVisualization';
 import SeatChangeRequests from '@/components/classroom/SeatChangeRequests';
+import { useToast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 // Types pour la gestion des places
 export interface Student {
@@ -29,7 +31,26 @@ export interface SeatChangeRequest {
   status: 'pending' | 'approved' | 'rejected';
 }
 
+export interface ClassroomConfiguration {
+  id: string;
+  name: string;
+  config: {
+    rows: number;
+    linesPerRow: number;
+    positionsPerLine: number;
+  };
+}
+
+export interface SeatAssignment {
+  id: string;
+  name: string;
+  configId: string;
+  seats: Seat[];
+}
+
 const ClassroomConfig = () => {
+  const { toast } = useToast();
+  
   // Sample data for students
   const [students, setStudents] = useState<Student[]>([
     { id: 1, name: "Eric Ndong" },
@@ -50,9 +71,18 @@ const ClassroomConfig = () => {
     linesPerRow: 3,
     positionsPerLine: 3
   });
+  
+  // State for saved configurations and assignments
+  const [savedConfigurations, setSavedConfigurations] = useState<ClassroomConfiguration[]>([]);
+  const [savedAssignments, setSavedAssignments] = useState<SeatAssignment[]>([]);
+  const [activeConfigurationName, setActiveConfigurationName] = useState<string>('');
+  const [activeAssignmentName, setActiveAssignmentName] = useState<string>('');
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Seats data structure
   const [seats, setSeats] = useState<Seat[]>([]);
+  const [originalSeats, setOriginalSeats] = useState<Seat[]>([]);
+  const [originalConfig, setOriginalConfig] = useState(classConfig);
 
   // Sample change requests
   const [changeRequests, setChangeRequests] = useState<SeatChangeRequest[]>([
@@ -73,6 +103,31 @@ const ClassroomConfig = () => {
       status: 'pending'
     }
   ]);
+
+  // Détecteur de changements
+  useEffect(() => {
+    // Vérifier les changements dans la configuration
+    const configChanged = 
+      originalConfig.rows !== classConfig.rows || 
+      originalConfig.linesPerRow !== classConfig.linesPerRow || 
+      originalConfig.positionsPerLine !== classConfig.positionsPerLine;
+    
+    // Vérifier les changements dans les attributions de sièges
+    let seatsChanged = false;
+    if (originalSeats.length !== seats.length) {
+      seatsChanged = true;
+    } else {
+      for (let i = 0; i < seats.length; i++) {
+        const originalSeat = originalSeats.find(s => s.id === seats[i].id);
+        if (!originalSeat || originalSeat.studentId !== seats[i].studentId) {
+          seatsChanged = true;
+          break;
+        }
+      }
+    }
+    
+    setHasChanges(configChanged || seatsChanged);
+  }, [classConfig, seats, originalConfig, originalSeats]);
 
   // Fonction pour créer ou mettre à jour les sièges
   const updateClassroomConfig = (config: typeof classConfig) => {
@@ -102,6 +157,7 @@ const ClassroomConfig = () => {
     }
     
     setSeats(newSeats);
+    setHasChanges(true);
   };
 
   // Fonction pour attribuer un étudiant à un siège
@@ -115,6 +171,7 @@ const ClassroomConfig = () => {
             : seat
       )
     );
+    setHasChanges(true);
   };
 
   // Fonction pour gérer les demandes de changement
@@ -126,7 +183,98 @@ const ClassroomConfig = () => {
           : req
       )
     );
+    
+    const request = changeRequests.find(r => r.id === requestId);
+    if (request && action === 'approve') {
+      toast({
+        title: "Demande approuvée",
+        description: `La demande de ${request.studentName} a été approuvée.`
+      });
+    } else if (request && action === 'reject') {
+      toast({
+        title: "Demande rejetée",
+        description: `La demande de ${request.studentName} a été rejetée.`
+      });
+    }
   };
+  
+  // Fonction pour sauvegarder une configuration
+  const saveConfiguration = (name: string, config: typeof classConfig) => {
+    const newConfig: ClassroomConfiguration = {
+      id: uuidv4(),
+      name,
+      config: { ...config }
+    };
+    
+    setSavedConfigurations(prev => [...prev, newConfig]);
+    setActiveConfigurationName(name);
+  };
+  
+  // Fonction pour sauvegarder une attribution de sièges
+  const saveAssignment = (name: string, configId: string, seatsData: Seat[]) => {
+    const newAssignment: SeatAssignment = {
+      id: uuidv4(),
+      name,
+      configId,
+      seats: JSON.parse(JSON.stringify(seatsData)) // Deep copy
+    };
+    
+    setSavedAssignments(prev => [...prev, newAssignment]);
+    setActiveAssignmentName(name);
+  };
+  
+  // Fonction pour supprimer une configuration
+  const deleteConfiguration = (id: string) => {
+    // Vérifier si la configuration est utilisée par des attributions
+    const usedByAssignments = savedAssignments.some(a => a.configId === id);
+    if (usedByAssignments) {
+      toast({
+        title: "Impossible de supprimer",
+        description: "Cette configuration est utilisée par une ou plusieurs attributions.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const configToDelete = savedConfigurations.find(c => c.id === id);
+    if (configToDelete && configToDelete.name === activeConfigurationName) {
+      setActiveConfigurationName('');
+    }
+    
+    setSavedConfigurations(prev => prev.filter(c => c.id !== id));
+  };
+  
+  // Fonction pour supprimer une attribution
+  const deleteAssignment = (id: string) => {
+    const assignmentToDelete = savedAssignments.find(a => a.id === id);
+    if (assignmentToDelete && assignmentToDelete.name === activeAssignmentName) {
+      setActiveAssignmentName('');
+    }
+    
+    setSavedAssignments(prev => prev.filter(a => a.id !== id));
+  };
+  
+  // Fonction pour appliquer les changements
+  const applyChanges = () => {
+    setOriginalConfig({ ...classConfig });
+    setOriginalSeats(JSON.parse(JSON.stringify(seats)));
+    setHasChanges(false);
+  };
+  
+  // Initialisation au chargement
+  useEffect(() => {
+    // Créer la structure initiale des sièges
+    updateClassroomConfig(classConfig);
+    setOriginalConfig({ ...classConfig });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
+  // Mettre à jour les sièges originaux après la première création
+  useEffect(() => {
+    if (seats.length > 0 && originalSeats.length === 0) {
+      setOriginalSeats(JSON.parse(JSON.stringify(seats)));
+    }
+  }, [seats, originalSeats]);
 
   return (
     <div className="space-y-6">
@@ -160,8 +308,16 @@ const ClassroomConfig = () => {
                 classConfig={classConfig}
                 seats={seats}
                 students={students}
+                savedConfigurations={savedConfigurations}
+                savedAssignments={savedAssignments}
                 updateConfig={updateClassroomConfig}
                 assignStudent={assignStudentToSeat}
+                saveConfiguration={saveConfiguration}
+                saveAssignment={saveAssignment}
+                deleteConfiguration={deleteConfiguration}
+                deleteAssignment={deleteAssignment}
+                applyChanges={applyChanges}
+                hasChanges={hasChanges}
               />
             </TabsContent>
             
@@ -169,6 +325,8 @@ const ClassroomConfig = () => {
               <ClassroomVisualization 
                 seats={seats}
                 students={students}
+                activeConfiguration={activeConfigurationName}
+                activeAssignment={activeAssignmentName}
               />
             </TabsContent>
             

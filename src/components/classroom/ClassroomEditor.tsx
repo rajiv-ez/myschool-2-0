@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Student, Seat } from '@/pages/dashboard/ClassroomConfig';
+import { useToast } from "@/hooks/use-toast";
+import { Save, Trash2, Check, Plus } from 'lucide-react';
 
 interface ClassroomEditorProps {
   classConfig: {
@@ -15,26 +17,56 @@ interface ClassroomEditorProps {
   };
   seats: Seat[];
   students: Student[];
+  savedConfigurations: {
+    id: string;
+    name: string;
+    config: { rows: number; linesPerRow: number; positionsPerLine: number; };
+  }[];
+  savedAssignments: {
+    id: string;
+    name: string;
+    configId: string;
+    seats: Seat[];
+  }[];
   updateConfig: (config: {
     rows: number;
     linesPerRow: number;
     positionsPerLine: number;
   }) => void;
   assignStudent: (seatId: string, studentId?: number) => void;
+  saveConfiguration: (name: string, config: { rows: number; linesPerRow: number; positionsPerLine: number }) => void;
+  saveAssignment: (name: string, configId: string, seats: Seat[]) => void;
+  deleteConfiguration: (id: string) => void;
+  deleteAssignment: (id: string) => void;
+  applyChanges: () => void;
+  hasChanges: boolean;
 }
 
 const ClassroomEditor: React.FC<ClassroomEditorProps> = ({
   classConfig,
   seats,
   students,
+  savedConfigurations,
+  savedAssignments,
   updateConfig,
-  assignStudent
+  assignStudent,
+  saveConfiguration,
+  saveAssignment,
+  deleteConfiguration,
+  deleteAssignment,
+  applyChanges,
+  hasChanges
 }) => {
   const [rows, setRows] = useState(classConfig.rows);
   const [linesPerRow, setLinesPerRow] = useState(classConfig.linesPerRow);
   const [positionsPerLine, setPositionsPerLine] = useState(classConfig.positionsPerLine);
   
   const [editMode, setEditMode] = useState<'config' | 'assignment'>('config');
+  const [configName, setConfigName] = useState<string>('');
+  const [assignmentName, setAssignmentName] = useState<string>('');
+  const [selectedConfigId, setSelectedConfigId] = useState<string>('');
+
+  const { toast } = useToast();
 
   // Lorsque les valeurs changent, mettons à jour le local state
   useEffect(() => {
@@ -52,6 +84,105 @@ const ClassroomEditor: React.FC<ClassroomEditorProps> = ({
     });
   };
 
+  const handleSaveConfiguration = () => {
+    if (!configName.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer un nom pour la configuration",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Vérifier si le nom existe déjà
+    const exists = savedConfigurations.some(conf => conf.name === configName);
+    if (exists) {
+      toast({
+        title: "Erreur",
+        description: "Ce nom de configuration existe déjà",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    saveConfiguration(configName, { rows, linesPerRow, positionsPerLine });
+    setConfigName('');
+    toast({
+      title: "Configuration sauvegardée",
+      description: `La configuration "${configName}" a été sauvegardée avec succès.`
+    });
+  };
+
+  const handleSaveAssignment = () => {
+    if (!assignmentName.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer un nom pour l'attribution",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!selectedConfigId) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner une configuration",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Vérifier si le nom existe déjà
+    const exists = savedAssignments.some(assign => assign.name === assignmentName);
+    if (exists) {
+      toast({
+        title: "Erreur",
+        description: "Ce nom d'attribution existe déjà",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    saveAssignment(assignmentName, selectedConfigId, seats);
+    setAssignmentName('');
+    toast({
+      title: "Attribution sauvegardée",
+      description: `L'attribution "${assignmentName}" a été sauvegardée avec succès.`
+    });
+  };
+
+  const handleLoadConfiguration = (configId: string) => {
+    const config = savedConfigurations.find(c => c.id === configId);
+    if (config) {
+      updateConfig(config.config);
+      toast({
+        title: "Configuration chargée",
+        description: `La configuration "${config.name}" a été chargée.`
+      });
+    }
+  };
+
+  const handleLoadAssignment = (assignmentId: string) => {
+    const assignment = savedAssignments.find(a => a.id === assignmentId);
+    if (assignment) {
+      // Charger d'abord la configuration associée
+      const config = savedConfigurations.find(c => c.id === assignment.configId);
+      if (config) {
+        updateConfig(config.config);
+      }
+      
+      // Appliquer ensuite les attributions de sièges
+      assignment.seats.forEach(seat => {
+        assignStudent(seat.id, seat.studentId);
+      });
+      
+      toast({
+        title: "Attribution chargée",
+        description: `L'attribution "${assignment.name}" a été chargée.`
+      });
+    }
+  };
+
   const getStudentNameById = (studentId?: number): string => {
     if (!studentId) return 'Non assigné';
     const student = students.find(s => s.id === studentId);
@@ -61,6 +192,14 @@ const ClassroomEditor: React.FC<ClassroomEditorProps> = ({
   const getUnassignedStudents = (): Student[] => {
     const assignedStudentIds = seats.map(seat => seat.studentId).filter(Boolean);
     return students.filter(student => !assignedStudentIds.includes(student.id));
+  };
+
+  const handleApplyChanges = () => {
+    applyChanges();
+    toast({
+      title: "Changements appliqués",
+      description: "Les changements ont été appliqués avec succès."
+    });
   };
 
   return (
@@ -80,54 +219,204 @@ const ClassroomEditor: React.FC<ClassroomEditorProps> = ({
         </Button>
       </div>
 
+      {hasChanges && (
+        <div className="flex justify-end">
+          <Button 
+            onClick={handleApplyChanges} 
+            variant="default" 
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <Check size={16} className="mr-2" />
+            Appliquer les changements
+          </Button>
+        </div>
+      )}
+
       {editMode === 'config' ? (
-        <Card>
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rows">Nombre de rangées</Label>
-                  <Input
-                    id="rows"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={rows}
-                    onChange={(e) => setRows(parseInt(e.target.value))}
-                  />
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="rows">Nombre de rangées</Label>
+                    <Input
+                      id="rows"
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={rows}
+                      onChange={(e) => setRows(parseInt(e.target.value))}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="linesPerRow">Lignes par rangée</Label>
+                    <Input
+                      id="linesPerRow"
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={linesPerRow}
+                      onChange={(e) => setLinesPerRow(parseInt(e.target.value))}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="positionsPerLine">Places par ligne</Label>
+                    <Input
+                      id="positionsPerLine"
+                      type="number"
+                      min="1"
+                      max="6"
+                      value={positionsPerLine}
+                      onChange={(e) => setPositionsPerLine(parseInt(e.target.value))}
+                    />
+                  </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="linesPerRow">Lignes par rangée</Label>
-                  <Input
-                    id="linesPerRow"
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={linesPerRow}
-                    onChange={(e) => setLinesPerRow(parseInt(e.target.value))}
-                  />
+                <Button type="submit" className="mt-4">Mettre à jour la configuration</Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-medium mb-4">Gestion des configurations</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-medium">Sauvegarder la configuration actuelle</h4>
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Nom de la configuration" 
+                      value={configName}
+                      onChange={(e) => setConfigName(e.target.value)}
+                    />
+                    <Button onClick={handleSaveConfiguration}>
+                      <Save size={16} className="mr-2" />
+                      Sauvegarder
+                    </Button>
+                  </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="positionsPerLine">Places par ligne</Label>
-                  <Input
-                    id="positionsPerLine"
-                    type="number"
-                    min="1"
-                    max="6"
-                    value={positionsPerLine}
-                    onChange={(e) => setPositionsPerLine(parseInt(e.target.value))}
-                  />
+                <div className="space-y-4">
+                  <h4 className="font-medium">Configurations sauvegardées</h4>
+                  {savedConfigurations.length === 0 ? (
+                    <p className="text-muted-foreground">Aucune configuration sauvegardée</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {savedConfigurations.map(config => (
+                        <div key={config.id} className="flex items-center justify-between p-2 border rounded-md">
+                          <span>{config.name}</span>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleLoadConfiguration(config.id)}
+                            >
+                              Charger
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => {
+                                deleteConfiguration(config.id);
+                                toast({
+                                  title: "Configuration supprimée",
+                                  description: `La configuration "${config.name}" a été supprimée.`
+                                });
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              <Button type="submit" className="mt-4">Mettre à jour la configuration</Button>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6 space-y-6">
+              <h3 className="text-lg font-medium">Attribution des places</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-medium">Sauvegarder l'attribution actuelle</h4>
+                  <div className="space-y-2">
+                    <Input 
+                      placeholder="Nom de l'attribution" 
+                      value={assignmentName}
+                      onChange={(e) => setAssignmentName(e.target.value)}
+                    />
+                    <Select 
+                      value={selectedConfigId} 
+                      onValueChange={setSelectedConfigId}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner une configuration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {savedConfigurations.map(config => (
+                          <SelectItem key={config.id} value={config.id}>
+                            {config.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={handleSaveAssignment} className="w-full">
+                      <Save size={16} className="mr-2" />
+                      Sauvegarder l'attribution
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-medium">Attributions sauvegardées</h4>
+                  {savedAssignments.length === 0 ? (
+                    <p className="text-muted-foreground">Aucune attribution sauvegardée</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {savedAssignments.map(assignment => (
+                        <div key={assignment.id} className="flex items-center justify-between p-2 border rounded-md">
+                          <span>{assignment.name}</span>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleLoadAssignment(assignment.id)}
+                            >
+                              Charger
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => {
+                                deleteAssignment(assignment.id);
+                                toast({
+                                  title: "Attribution supprimée",
+                                  description: `L'attribution "${assignment.name}" a été supprimée.`
+                                });
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
           <div className="grid gap-6">
             {Array.from({ length: classConfig.rows }).map((_, rowIndex) => (
               <div key={`row-${rowIndex + 1}`} className="space-y-4">

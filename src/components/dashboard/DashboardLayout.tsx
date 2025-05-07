@@ -103,10 +103,10 @@ const DashboardLayout: React.FC = () => {
           </Tabs>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <ScrollArea className="h-full w-full" type="auto">
+        <div className="bg-white p-6 rounded-lg shadow-sm border min-h-[600px] max-h-[calc(100vh-220px)] overflow-auto">
+          <div className="h-full w-full">
             <Outlet />
-          </ScrollArea>
+          </div>
         </div>
       </div>
 
