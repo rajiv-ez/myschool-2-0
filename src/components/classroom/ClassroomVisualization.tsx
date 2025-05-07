@@ -34,22 +34,16 @@ const ClassroomVisualization: React.FC<ClassroomVisualizationProps> = ({
     return undefined;
   };
 
-  // Grouper les sièges par rangée et ligne
+  // Organiser les sièges par rangée, ligne et position
   const seatsByRow = Array.from({ length: maxRow }, (_, rowIndex) => {
     const row = rowIndex + 1;
-    const rowSeats = seats.filter(s => s.row === row);
-    
-    const linesByRow = Array.from({ length: maxLinesPerRow }, (_, lineIndex) => {
+    return Array.from({ length: maxLinesPerRow }, (_, lineIndex) => {
       const line = lineIndex + 1;
-      const lineSeats = rowSeats.filter(s => s.line === line);
-      
-      // Tri par position
-      lineSeats.sort((a, b) => a.position.localeCompare(b.position));
-      
-      return lineSeats;
+      const positions = seats
+        .filter(s => s.row === row && s.line === line)
+        .sort((a, b) => a.position.localeCompare(b.position));
+      return positions;
     });
-    
-    return linesByRow;
   });
 
   return (
@@ -73,22 +67,28 @@ const ClassroomVisualization: React.FC<ClassroomVisualizationProps> = ({
         {/* Visualisation des tables et du tableau */}
         <div className="md:w-3/4">
           <div className="w-full p-6 bg-gray-100 border rounded-lg">
-            <div className="flex">
-              {/* Tableau de l'enseignant (à gauche) */}
-              <div className="w-16 mr-8">
-                <div className="h-32 bg-gray-300 rounded mb-10 flex items-center justify-center text-sm font-medium writing-mode-vertical">
-                  <span className="transform -rotate-90">Tableau</span>
-                </div>
+            {/* Tableau de l'enseignant (en haut) */}
+            <div className="w-full flex justify-center mb-8">
+              <div className="h-16 w-64 bg-gray-300 rounded flex items-center justify-center text-sm font-medium">
+                <span>Tableau</span>
               </div>
-              
-              {/* Representation des rangées (à droite du tableau) */}
-              <div className="flex-1 space-y-8">
-                {seatsByRow.map((lines, rowIdx) => (
-                  <div key={`row-${rowIdx}`} className="space-y-6">
-                    {lines.map((lineSeats, lineIdx) => (
-                      lineSeats.length > 0 && (
-                        <div key={`line-${rowIdx}-${lineIdx}`} className="flex justify-center space-x-6">
-                          {lineSeats.map((seat) => (
+            </div>
+            
+            {/* Representation des sièges selon la nouvelle structure */}
+            <div className="grid gap-8">
+              {Array.from({ length: maxLinesPerRow }, (_, lineIndex) => {
+                const lineNumber = lineIndex + 1;
+                return (
+                  <div key={`line-${lineNumber}`} className="flex justify-center gap-8">
+                    {Array.from({ length: maxRow }, (_, rowIndex) => {
+                      const rowNumber = rowIndex + 1;
+                      const seatsInPosition = seats.filter(
+                        s => s.row === rowNumber && s.line === lineNumber
+                      ).sort((a, b) => a.position.localeCompare(b.position));
+                      
+                      return (
+                        <div key={`row-${rowNumber}-line-${lineNumber}`} className="flex gap-2">
+                          {seatsInPosition.map((seat) => (
                             <TooltipProvider key={seat.id}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -101,7 +101,9 @@ const ClassroomVisualization: React.FC<ClassroomVisualizationProps> = ({
                                     `}
                                     onClick={() => setActiveSeat(seat === activeSeat ? null : seat)}
                                   >
-                                    {seat.position.toUpperCase()}
+                                    <span className="text-xs">
+                                      r{seat.row}l{seat.line}p{seat.position}
+                                    </span>
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -116,11 +118,11 @@ const ClassroomVisualization: React.FC<ClassroomVisualizationProps> = ({
                             </TooltipProvider>
                           ))}
                         </div>
-                      )
-                    ))}
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>

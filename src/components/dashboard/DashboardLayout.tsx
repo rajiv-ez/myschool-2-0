@@ -28,7 +28,8 @@ import {
   BookOpenText,
   UserCog,
   Settings,
-  Layout
+  Layout,
+  Package
 } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
@@ -54,6 +55,7 @@ const DashboardLayout: React.FC = () => {
     { id: 'archives', label: 'Archives', icon: <ArchiveIcon size={18} />, path: '/dashboard/archives' },
     { id: 'bibliotheque', label: 'Bibliothèque', icon: <BookOpenText size={18} />, path: '/dashboard/bibliotheque' },
     { id: 'rh', label: 'Ressources Humaines', icon: <UserCog size={18} />, path: '/dashboard/rh' },
+    { id: 'gestion-ressources', label: 'Moyens Généraux', icon: <Package size={18} />, path: '/dashboard/gestion-ressources' },
     { id: 'paiements', label: 'Paiements', icon: <CreditCard size={18} />, path: '/dashboard/paiements' },
     { id: 'mes-paiements', label: 'Mes Paiements', icon: <Wallet size={18} />, path: '/dashboard/mes-paiements' },
     { id: 'settings', label: 'Paramètres', icon: <Settings size={18} />, path: '/dashboard/settings' }
