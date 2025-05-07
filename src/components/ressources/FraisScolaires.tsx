@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -281,7 +280,7 @@ const FraisScolaires: React.FC = () => {
                       <SelectValue placeholder="Sélectionner un palier (optionnel)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Aucun palier spécifique</SelectItem>
+                      <SelectItem value="none">Aucun palier spécifique</SelectItem>
                       {filteredPaliers.map(palier => (
                         <SelectItem key={palier.id} value={palier.id}>
                           {palier.name}
