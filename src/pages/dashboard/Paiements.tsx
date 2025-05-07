@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -806,3 +807,537 @@ const Paiements: React.FC = () => {
                         {currentPaiement ? "Mettre à jour" : "Enregistrer"}
                       </Button>
                     </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Élève</TableHead>
+                    <TableHead>Classe</TableHead>
+                    <TableHead>Type de frais</TableHead>
+                    <TableHead>Montant</TableHead>
+                    <TableHead>Payé</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredPaiements.length > 0 ? (
+                    filteredPaiements.map(paiement => (
+                      <TableRow key={paiement.id}>
+                        <TableCell>{paiement.eleve}</TableCell>
+                        <TableCell>{paiement.classe}</TableCell>
+                        <TableCell>{paiement.fraisNom}</TableCell>
+                        <TableCell>{paiement.montant.toLocaleString()} FCFA</TableCell>
+                        <TableCell>{paiement.montantPaye.toLocaleString()} FCFA</TableCell>
+                        <TableCell>{formatDate(paiement.date)}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(paiement.statut)}`}>
+                            {paiement.statut}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => handleEditPaiement(paiement)}
+                              title="Modifier"
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => handleDeletePaiement(paiement.id)}
+                              title="Supprimer"
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-6">
+                        Aucun paiement trouvé.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TabsContent>
+            
+            <TabsContent value="sorties" className="pt-4">
+              <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <Input 
+                    placeholder="Rechercher une dépense..." 
+                    value={searchQuery} 
+                    onChange={(e) => setSearchQuery(e.target.value)} 
+                    className="pl-10"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Select
+                    value={filtreSuccursale}
+                    onValueChange={setFiltreSuccursale}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Toutes les succursales" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Toutes les succursales</SelectItem>
+                      {succursales.map((succursale, index) => (
+                        <SelectItem key={index} value={succursale}>
+                          {succursale}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Dialog open={isDepenseDialogOpen} onOpenChange={setIsDepenseDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        onClick={() => {
+                          resetDepenseForm();
+                          setIsDepenseDialogOpen(true);
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus size={18} />
+                        Nouvelle dépense
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[550px]">
+                      <DialogHeader>
+                        <DialogTitle>{currentDepense ? "Modifier une dépense" : "Enregistrer une dépense"}</DialogTitle>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="description" className="text-right">
+                            Description*
+                          </Label>
+                          <Input
+                            id="description"
+                            value={formDepense.description}
+                            onChange={(e) => setFormDepense({...formDepense, description: e.target.value})}
+                            className="col-span-3"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="montant" className="text-right">
+                            Montant*
+                          </Label>
+                          <Input
+                            id="montant"
+                            type="number"
+                            value={formDepense.montant}
+                            onChange={(e) => setFormDepense({...formDepense, montant: Number(e.target.value)})}
+                            className="col-span-3"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="categorie" className="text-right">
+                            Catégorie*
+                          </Label>
+                          <Select
+                            value={formDepense.categorie}
+                            onValueChange={(value) => setFormDepense({...formDepense, categorie: value})}
+                          >
+                            <SelectTrigger className="col-span-3">
+                              <SelectValue placeholder="Sélectionner une catégorie" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categoriesDepenses.map((categorie, index) => (
+                                <SelectItem key={index} value={categorie}>
+                                  {categorie}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="responsable" className="text-right">
+                            Responsable*
+                          </Label>
+                          <Input
+                            id="responsable"
+                            value={formDepense.responsable}
+                            onChange={(e) => setFormDepense({...formDepense, responsable: e.target.value})}
+                            className="col-span-3"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="succursale" className="text-right">
+                            Succursale*
+                          </Label>
+                          <Select
+                            value={formDepense.succursale}
+                            onValueChange={(value) => setFormDepense({...formDepense, succursale: value})}
+                          >
+                            <SelectTrigger className="col-span-3">
+                              <SelectValue placeholder="Sélectionner une succursale" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {succursales.map((succursale, index) => (
+                                <SelectItem key={index} value={succursale}>
+                                  {succursale}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="date" className="text-right">
+                            Date*
+                          </Label>
+                          <Input
+                            id="date"
+                            type="date"
+                            value={formDepense.date ? formDepense.date.toISOString().split('T')[0] : ''}
+                            onChange={(e) => setFormDepense({...formDepense, date: new Date(e.target.value)})}
+                            className="col-span-3"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDepenseDialogOpen(false)}>
+                          Annuler
+                        </Button>
+                        <Button onClick={handleDepenseSubmit}>
+                          {currentDepense ? "Mettre à jour" : "Enregistrer"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Catégorie</TableHead>
+                    <TableHead>Montant</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Responsable</TableHead>
+                    <TableHead>Succursale</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredDepenses.length > 0 ? (
+                    filteredDepenses.map(depense => (
+                      <TableRow key={depense.id}>
+                        <TableCell>{depense.description}</TableCell>
+                        <TableCell>{depense.categorie}</TableCell>
+                        <TableCell>{depense.montant.toLocaleString()} FCFA</TableCell>
+                        <TableCell>{formatDate(depense.date)}</TableCell>
+                        <TableCell>{depense.responsable}</TableCell>
+                        <TableCell>{depense.succursale}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => handleEditDepense(depense)}
+                              title="Modifier"
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => handleDeleteDepense(depense.id)}
+                              title="Supprimer"
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-6">
+                        Aucune dépense trouvée.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TabsContent>
+            
+            <TabsContent value="bilan" className="pt-4">
+              <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+                <div className="flex gap-2 flex-1">
+                  <Select
+                    value={filtreSession}
+                    onValueChange={setFiltreSession}
+                  >
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="Toutes les sessions" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Toutes les sessions</SelectItem>
+                      {sessions.map(session => (
+                        <SelectItem key={session.id} value={session.id}>
+                          {session.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select
+                    value={filtreSuccursale}
+                    onValueChange={setFiltreSuccursale}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Toutes les succursales" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Toutes les succursales</SelectItem>
+                      {succursales.map((succursale, index) => (
+                        <SelectItem key={index} value={succursale}>
+                          {succursale}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button 
+                  onClick={() => setIsImprimerDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Printer size={18} />
+                  Imprimer le bilan
+                </Button>
+              </div>
+              
+              <Dialog open={isImprimerDialogOpen} onOpenChange={setIsImprimerDialogOpen}>
+                <DialogContent className="sm:max-w-[800px]">
+                  <DialogHeader>
+                    <DialogTitle>Aperçu du bilan</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="print-content py-8">
+                    <div className="text-center mb-8">
+                      <h1 className="text-2xl font-bold">Bilan Financier</h1>
+                      <p className="text-gray-600">
+                        {filtreSession 
+                          ? sessions.find(s => s.id === filtreSession)?.nom 
+                          : "Toutes les sessions"}
+                      </p>
+                      <p className="text-gray-600">
+                        {filtreSuccursale || "Toutes les succursales"}
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                      <div className="border p-4 rounded-lg">
+                        <h3 className="font-medium mb-2">Total des entrées</h3>
+                        <p className="text-xl font-bold text-green-600">{totalEntrees.toLocaleString()} FCFA</p>
+                      </div>
+                      <div className="border p-4 rounded-lg">
+                        <h3 className="font-medium mb-2">Total des dépenses</h3>
+                        <p className="text-xl font-bold text-red-600">{totalSorties.toLocaleString()} FCFA</p>
+                      </div>
+                      <div className="border p-4 rounded-lg">
+                        <h3 className="font-medium mb-2">Solde</h3>
+                        <p className={`text-xl font-bold ${solde >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                          {solde.toLocaleString()} FCFA
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-8">
+                      <h2 className="text-lg font-semibold mb-4">Détail des entrées</h2>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Élève</TableHead>
+                            <TableHead>Type de frais</TableHead>
+                            <TableHead>Montant</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {paiements.length > 0 ? (
+                            paiements.map(paiement => (
+                              <TableRow key={paiement.id}>
+                                <TableCell>{formatDate(paiement.date)}</TableCell>
+                                <TableCell>{paiement.eleve}</TableCell>
+                                <TableCell>{paiement.fraisNom}</TableCell>
+                                <TableCell>{paiement.montantPaye.toLocaleString()} FCFA</TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center">
+                                Aucun paiement enregistré
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    
+                    <div>
+                      <h2 className="text-lg font-semibold mb-4">Détail des dépenses</h2>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Catégorie</TableHead>
+                            <TableHead>Montant</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {depenses.length > 0 ? (
+                            depenses.map(depense => (
+                              <TableRow key={depense.id}>
+                                <TableCell>{formatDate(depense.date)}</TableCell>
+                                <TableCell>{depense.description}</TableCell>
+                                <TableCell>{depense.categorie}</TableCell>
+                                <TableCell>{depense.montant.toLocaleString()} FCFA</TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center">
+                                Aucune dépense enregistrée
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                  
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsImprimerDialogOpen(false)}>
+                      Fermer
+                    </Button>
+                    <Button onClick={() => window.print()}>
+                      <Printer className="mr-2" size={16} />
+                      Imprimer
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Résumé des entrées</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Type de frais</TableHead>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Montant total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {/* Grouper les paiements par type de frais et calculer les totaux */}
+                      {(() => {
+                        const resume = paiements.reduce((acc, paiement) => {
+                          if (!acc[paiement.fraisNom]) {
+                            acc[paiement.fraisNom] = {
+                              count: 0,
+                              total: 0
+                            };
+                          }
+                          acc[paiement.fraisNom].count += 1;
+                          acc[paiement.fraisNom].total += paiement.montantPaye;
+                          return acc;
+                        }, {} as Record<string, {count: number, total: number}>);
+                        
+                        return Object.entries(resume).length > 0 ? (
+                          Object.entries(resume).map(([fraisNom, data], index) => (
+                            <TableRow key={index}>
+                              <TableCell>{fraisNom}</TableCell>
+                              <TableCell>{data.count}</TableCell>
+                              <TableCell>{data.total.toLocaleString()} FCFA</TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={3} className="text-center">
+                              Aucune donnée disponible
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })()}
+                    </TableBody>
+                  </Table>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Résumé des dépenses</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Catégorie</TableHead>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Montant total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {/* Grouper les dépenses par catégorie et calculer les totaux */}
+                      {(() => {
+                        const resume = depenses.reduce((acc, depense) => {
+                          if (!acc[depense.categorie]) {
+                            acc[depense.categorie] = {
+                              count: 0,
+                              total: 0
+                            };
+                          }
+                          acc[depense.categorie].count += 1;
+                          acc[depense.categorie].total += depense.montant;
+                          return acc;
+                        }, {} as Record<string, {count: number, total: number}>);
+                        
+                        return Object.entries(resume).length > 0 ? (
+                          Object.entries(resume).map(([categorie, data], index) => (
+                            <TableRow key={index}>
+                              <TableCell>{categorie}</TableCell>
+                              <TableCell>{data.count}</TableCell>
+                              <TableCell>{data.total.toLocaleString()} FCFA</TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={3} className="text-center">
+                              Aucune donnée disponible
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })()}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Paiements;
