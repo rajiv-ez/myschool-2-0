@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -893,7 +892,7 @@ const Paiements: React.FC = () => {
                       <SelectValue placeholder="Toutes les succursales" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Toutes les succursales</SelectItem>
+                      <SelectItem value="all-succursales">Toutes les succursales</SelectItem>
                       {succursales.map((succursale, index) => (
                         <SelectItem key={index} value={succursale}>
                           {succursale}
@@ -1092,7 +1091,7 @@ const Paiements: React.FC = () => {
                       <SelectValue placeholder="Toutes les sessions" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Toutes les sessions</SelectItem>
+                      <SelectItem value="all-sessions">Toutes les sessions</SelectItem>
                       {sessions.map(session => (
                         <SelectItem key={session.id} value={session.id}>
                           {session.nom}
@@ -1109,7 +1108,7 @@ const Paiements: React.FC = () => {
                       <SelectValue placeholder="Toutes les succursales" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Toutes les succursales</SelectItem>
+                      <SelectItem value="all-succursales">Toutes les succursales</SelectItem>
                       {succursales.map((succursale, index) => (
                         <SelectItem key={index} value={succursale}>
                           {succursale}
