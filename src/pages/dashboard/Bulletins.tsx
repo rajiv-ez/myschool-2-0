@@ -5,10 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Printer, Download, Filter } from 'lucide-react';
+import { Printer, Download, Filter, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 // Types
 interface Eleve {
@@ -36,6 +37,12 @@ interface Note {
   matiereId: string;
   valeur: number;
   appreciation?: string;
+}
+
+interface FilterOptions {
+  session: string;
+  palier: string;
+  classe: string;
 }
 
 // Données de démonstration
@@ -100,13 +107,211 @@ const generateRandomNotes = (): Note[] => {
 
 const demoNotes = generateRandomNotes();
 
+// Logo et informations de l'école pour le bulletin (exemple)
+const schoolInfo = {
+  nom: "École Primaire Excellencia",
+  address: "123 Avenue de l'Éducation, Libreville",
+  telephone: "+241 77 123 456",
+  email: "contact@excellencia.edu",
+  logo: "/path/to/logo.png", // Chemin vers le logo de l'école
+  slogan: "Éduquer pour l'avenir"
+};
+
+// Modèle de bulletin (version basique)
+const BulletinTemplate = ({ 
+  eleve, 
+  notes, 
+  unitesEnseignement, 
+  matieres,
+  session = "2024-2025",
+  periode = "1er Trimestre"
+}: { 
+  eleve: Eleve; 
+  notes: Note[]; 
+  unitesEnseignement: UniteEnseignement[]; 
+  matieres: Matiere[];
+  session?: string;
+  periode?: string;
+}) => {
+  // Fonctions de calcul identiques à celles du composant principal
+  const getNoteForMatiereAndEleve = (matiereId: string, eleveId: string): number | null => {
+    const note = notes.find(n => n.eleveId === eleveId && n.matiereId === matiereId);
+    return note ? note.valeur : null;
+  };
+
+  const getAppreciationForMatiereAndEleve = (matiereId: string, eleveId: string): string => {
+    const note = notes.find(n => n.eleveId === eleveId && n.matiereId === matiereId);
+    return note?.appreciation || '';
+  };
+
+  const getMoyenneForUnite = (uniteId: string, eleveId: string): number | null => {
+    const matieresInUnite = matieres.filter(m => m.uniteEnseignementId === uniteId);
+    
+    let totalPoints = 0;
+    let totalCoefficients = 0;
+    
+    matieresInUnite.forEach(matiere => {
+      const note = getNoteForMatiereAndEleve(matiere.id, eleveId);
+      if (note !== null) {
+        totalPoints += note * matiere.coefficient;
+        totalCoefficients += matiere.coefficient;
+      }
+    });
+    
+    if (totalCoefficients === 0) return null;
+    return parseFloat((totalPoints / totalCoefficients).toFixed(1));
+  };
+
+  const getMoyenneGenerale = (eleveId: string): number | null => {
+    let totalPoints = 0;
+    let totalCoefficients = 0;
+    
+    unitesEnseignement.forEach(unite => {
+      const moyenneUnite = getMoyenneForUnite(unite.id, eleveId);
+      if (moyenneUnite !== null) {
+        totalPoints += moyenneUnite * unite.coefficient;
+        totalCoefficients += unite.coefficient;
+      }
+    });
+    
+    if (totalCoefficients === 0) return null;
+    return parseFloat((totalPoints / totalCoefficients).toFixed(1));
+  };
+
+  const getRangEleve = (): string => {
+    // Simuler un rang pour cet exemple
+    return `${Math.floor(Math.random() * 5) + 1}/${eleves.length}`;
+  };
+
+  return (
+    <div className="bulletin-page mx-auto max-w-4xl bg-white p-8 mb-10 print:mb-0">
+      <div className="header flex justify-between items-center mb-8 border-b-2 border-gray-200 pb-4">
+        <div className="school-info">
+          <h1 className="text-2xl font-bold">{schoolInfo.nom}</h1>
+          <p className="text-sm text-gray-500">{schoolInfo.address}</p>
+          <p className="text-sm text-gray-500">Tel: {schoolInfo.telephone}</p>
+          <p className="text-xs text-gray-400 italic">{schoolInfo.slogan}</p>
+        </div>
+        <div className="bulletin-info text-right">
+          <h2 className="text-xl font-semibold">Bulletin de Notes</h2>
+          <p className="text-sm">Session: {session}</p>
+          <p className="text-sm">Période: {periode}</p>
+        </div>
+      </div>
+
+      <div className="student-info mb-6 bg-gray-50 p-4 rounded-lg">
+        <h3 className="text-lg font-semibold mb-2">Informations de l'élève</h3>
+        <div className="grid grid-cols-2">
+          <div>
+            <p><strong>Nom:</strong> {eleve.nom}</p>
+            <p><strong>Prénom:</strong> {eleve.prenom}</p>
+          </div>
+          <div>
+            <p><strong>Classe:</strong> {eleve.classe}</p>
+            <p><strong>Moyenne Générale:</strong> <span className="font-bold">{getMoyenneGenerale(eleve.id)?.toString() || 'N/A'}/20</span></p>
+            <p><strong>Rang:</strong> {getRangEleve()}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grades-table mb-8">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-100">
+              <TableHead style={{ width: '30%' }}>Matière</TableHead>
+              <TableHead style={{ width: '10%' }} className="text-center">Note</TableHead>
+              <TableHead style={{ width: '10%' }} className="text-center">Coef.</TableHead>
+              <TableHead style={{ width: '50%' }}>Appréciation</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {unitesEnseignement.map(unite => (
+              <React.Fragment key={unite.id}>
+                <TableRow className="bg-gray-50">
+                  <TableCell colSpan={4} className="font-semibold">
+                    {unite.nom}
+                  </TableCell>
+                </TableRow>
+
+                {matieres
+                  .filter(matiere => matiere.uniteEnseignementId === unite.id)
+                  .map(matiere => (
+                    <TableRow key={matiere.id}>
+                      <TableCell className="pl-6">
+                        {matiere.nom}
+                      </TableCell>
+                      <TableCell className="text-center font-medium">
+                        {getNoteForMatiereAndEleve(matiere.id, eleve.id)?.toString() || 'N/A'}/20
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {matiere.coefficient}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {getAppreciationForMatiereAndEleve(matiere.id, eleve.id)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+
+                <TableRow>
+                  <TableCell className="font-semibold text-right">
+                    Moyenne {unite.nom.toLowerCase()}:
+                  </TableCell>
+                  <TableCell className="text-center font-bold">
+                    {getMoyenneForUnite(unite.id, eleve.id)?.toString() || 'N/A'}/20
+                  </TableCell>
+                  <TableCell colSpan={2}></TableCell>
+                </TableRow>
+              </React.Fragment>
+            ))}
+
+            <TableRow className="bg-gray-100 border-t-4">
+              <TableCell className="font-bold text-right">
+                Moyenne Générale:
+              </TableCell>
+              <TableCell className="text-center font-bold text-lg">
+                {getMoyenneGenerale(eleve.id)?.toString() || 'N/A'}/20
+              </TableCell>
+              <TableCell colSpan={2}></TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="appreciation-generale p-4 border border-gray-200 rounded mb-8">
+        <h4 className="font-semibold mb-2">Appréciation générale:</h4>
+        <p className="italic">{appreciations[Math.floor(Math.random() * appreciations.length)]}</p>
+      </div>
+
+      <div className="signatures flex justify-between mt-16 pt-4 border-t">
+        <div>
+          <p className="font-semibold">Le Chef d'établissement</p>
+          <div className="h-10"></div>
+          <p>Signature et cachet</p>
+        </div>
+        <div className="text-right">
+          <p className="font-semibold">Date d'émission</p>
+          <p>{new Date().toLocaleDateString('fr-FR')}</p>
+        </div>
+      </div>
+      
+      <div className="footer text-center text-xs text-gray-400 mt-8 pt-4 border-t">
+        <p>{schoolInfo.nom} - {schoolInfo.address} - Tel: {schoolInfo.telephone} - Email: {schoolInfo.email}</p>
+      </div>
+    </div>
+  );
+};
+
 const Bulletins: React.FC = () => {
   const { toast } = useToast();
-  const [selectedSession, setSelectedSession] = useState("all");
-  const [selectedPalier, setSelectedPalier] = useState("all");
-  const [selectedClasse, setSelectedClasse] = useState("all");
+  const [filters, setFilters] = useState<FilterOptions>({
+    session: "all",
+    palier: "all",
+    classe: "all"
+  });
   const [notes] = useState<Note[]>(demoNotes);
   const [selectedEleve, setSelectedEleve] = useState(eleves[0].id);
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [printAllMode, setPrintAllMode] = useState(false);
   
   // Obtenir les notes d'un élève pour une matière spécifique
   const getNoteForMatiereAndEleve = (matiereId: string, eleveId: string): number | null => {
@@ -192,35 +397,35 @@ const Bulletins: React.FC = () => {
   };
 
   // Gérer l'impression des bulletins
-  const handlePrint = (eleveId?: string) => {
-    if (eleveId) {
-      const eleve = eleves.find(e => e.id === eleveId);
-      toast({
-        title: "Impression en cours",
-        description: `Le bulletin de ${eleve?.prenom} ${eleve?.nom} est en cours d'impression.`
-      });
-    } else {
-      toast({
-        title: "Impression en cours",
-        description: "Les bulletins de toute la classe sont en cours d'impression."
-      });
-    }
+  const handlePrint = () => {
+    window.print();
+    setPrintModalOpen(false);
+    toast({
+      title: printAllMode ? "Bulletins imprimés" : "Bulletin imprimé",
+      description: printAllMode ? "Les bulletins ont été envoyés à l'impression." : "Le bulletin a été envoyé à l'impression."
+    });
   };
 
-  // Gérer l'export en PDF
-  const handleExport = (eleveId?: string) => {
+  // Ouvrir la modal d'aperçu d'impression
+  const openPrintPreview = (eleveId?: string, all: boolean = false) => {
     if (eleveId) {
-      const eleve = eleves.find(e => e.id === eleveId);
-      toast({
-        title: "Export PDF",
-        description: `Le bulletin de ${eleve?.prenom} ${eleve?.nom} a été exporté en PDF.`
-      });
-    } else {
-      toast({
-        title: "Export PDF",
-        description: "Les bulletins de toute la classe ont été exportés en PDF."
-      });
+      setSelectedEleve(eleveId);
     }
+    setPrintAllMode(all);
+    setPrintModalOpen(true);
+  };
+
+  // Filtrer les élèves selon les filtres sélectionnés
+  const filteredEleves = eleves.filter(eleve => {
+    if (filters.classe !== "all" && eleve.classe.toLowerCase() !== filters.classe.toLowerCase()) {
+      return false;
+    }
+    return true;
+  });
+
+  // Mettre à jour les filtres
+  const updateFilter = (key: keyof FilterOptions, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
 
   return (
@@ -233,7 +438,7 @@ const Bulletins: React.FC = () => {
         <div className="flex flex-wrap gap-2">
           <Button 
             variant="outline" 
-            onClick={() => handlePrint()} 
+            onClick={() => openPrintPreview(undefined, true)} 
             className="flex items-center gap-2"
           >
             <Printer size={16} />
@@ -242,7 +447,12 @@ const Bulletins: React.FC = () => {
           </Button>
           <Button 
             variant="outline" 
-            onClick={() => handleExport()} 
+            onClick={() => {
+              toast({
+                title: "Export PDF",
+                description: "Les bulletins ont été exportés en PDF"
+              });
+            }}
             className="flex items-center gap-2"
           >
             <Download size={16} />
@@ -250,7 +460,7 @@ const Bulletins: React.FC = () => {
             <span className="sm:hidden">PDF</span>
           </Button>
           <Button 
-            onClick={() => handlePrint(selectedEleve)} 
+            onClick={() => openPrintPreview(selectedEleve)} 
             className="flex items-center gap-2"
           >
             <Printer size={16} />
@@ -271,7 +481,10 @@ const Bulletins: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Session</label>
-              <Select value={selectedSession} onValueChange={setSelectedSession}>
+              <Select 
+                value={filters.session} 
+                onValueChange={(value) => updateFilter('session', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Toutes les sessions" />
                 </SelectTrigger>
@@ -285,7 +498,10 @@ const Bulletins: React.FC = () => {
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Palier</label>
-              <Select value={selectedPalier} onValueChange={setSelectedPalier}>
+              <Select 
+                value={filters.palier} 
+                onValueChange={(value) => updateFilter('palier', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Tous les paliers" />
                 </SelectTrigger>
@@ -300,7 +516,10 @@ const Bulletins: React.FC = () => {
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Classe</label>
-              <Select value={selectedClasse} onValueChange={setSelectedClasse}>
+              <Select 
+                value={filters.classe} 
+                onValueChange={(value) => updateFilter('classe', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Toutes les classes" />
                 </SelectTrigger>
@@ -329,7 +548,7 @@ const Bulletins: React.FC = () => {
             <ScrollArea className="w-full" type="always">
               <div className="pb-3">
                 <TabsList className="w-full flex-nowrap flex justify-start overflow-x-auto">
-                  {eleves.map(eleve => (
+                  {filteredEleves.map(eleve => (
                     <TabsTrigger 
                       key={eleve.id} 
                       value={eleve.id}
@@ -342,7 +561,7 @@ const Bulletins: React.FC = () => {
               </div>
             </ScrollArea>
 
-            {eleves.map(eleve => (
+            {filteredEleves.map(eleve => (
               <TabsContent key={eleve.id} value={eleve.id} className="mt-4">
                 <div className="mb-8">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -473,14 +692,19 @@ const Bulletins: React.FC = () => {
                   <div className="mt-6 flex justify-end gap-2">
                     <Button 
                       variant="outline" 
-                      onClick={() => handlePrint(eleve.id)} 
+                      onClick={() => openPrintPreview(eleve.id)} 
                       className="flex items-center gap-2"
                     >
                       <Printer size={16} />
                       <span>Imprimer</span>
                     </Button>
                     <Button 
-                      onClick={() => handleExport(eleve.id)} 
+                      onClick={() => {
+                        toast({
+                          title: "Export PDF",
+                          description: `Le bulletin de ${eleve.prenom} ${eleve.nom} a été exporté en PDF.`
+                        });
+                      }} 
                       className="flex items-center gap-2"
                     >
                       <Download size={16} />
@@ -493,6 +717,84 @@ const Bulletins: React.FC = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Modal d'aperçu d'impression */}
+      <Dialog open={printModalOpen} onOpenChange={setPrintModalOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="sticky top-0 z-10 bg-white px-6 py-4 border-b">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xl">
+                Aperçu avant impression
+              </DialogTitle>
+              <Button variant="outline" size="sm" onClick={handlePrint} className="flex items-center gap-2">
+                <Printer size={16} />
+                <span>Imprimer</span>
+              </Button>
+            </div>
+          </DialogHeader>
+          <ScrollArea className="h-[calc(90vh-8rem)] p-6">
+            {printAllMode ? (
+              <div>
+                {filteredEleves.map(eleve => (
+                  <BulletinTemplate 
+                    key={eleve.id}
+                    eleve={eleve}
+                    notes={notes}
+                    unitesEnseignement={unitesEnseignement}
+                    matieres={matieres}
+                    session={filters.session !== "all" ? filters.session : "2024-2025"}
+                    periode={filters.palier !== "all" ? 
+                      filters.palier === "trimestre1" ? "1er Trimestre" : 
+                      filters.palier === "trimestre2" ? "2ème Trimestre" : 
+                      "3ème Trimestre" : "1er Trimestre"
+                    }
+                  />
+                ))}
+              </div>
+            ) : (
+              <BulletinTemplate 
+                eleve={eleves.find(e => e.id === selectedEleve) || eleves[0]}
+                notes={notes}
+                unitesEnseignement={unitesEnseignement}
+                matieres={matieres}
+                session={filters.session !== "all" ? filters.session : "2024-2025"}
+                periode={filters.palier !== "all" ? 
+                  filters.palier === "trimestre1" ? "1er Trimestre" : 
+                  filters.palier === "trimestre2" ? "2ème Trimestre" : 
+                  "3ème Trimestre" : "1er Trimestre"
+                }
+              />
+            )}
+          </ScrollArea>
+          <DialogFooter className="sticky bottom-0 bg-white px-6 py-4 border-t">
+            <Button variant="outline" onClick={() => setPrintModalOpen(false)} className="flex items-center gap-2">
+              <X size={16} />
+              <span>Fermer</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .bulletin-page, .bulletin-page * {
+            visibility: visible;
+          }
+          .bulletin-page {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: auto;
+          }
+          .page-break {
+            page-break-before: always;
+          }
+        }
+      `}</style>
     </div>
   );
 };

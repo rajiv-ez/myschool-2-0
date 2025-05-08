@@ -111,10 +111,10 @@ const bulletinsData = [
 ];
 
 const Notes: React.FC = () => {
-  const [classe, setClasse] = useState<string>('all');
-  const [session, setSession] = useState<string>('all');
-  const [palier, setPalier] = useState<string>('all');
-  const [matiere, setMatiere] = useState<string>('all');
+  const [classe, setClasse] = useState<string>("all");
+  const [session, setSession] = useState<string>("all");
+  const [palier, setPalier] = useState<string>("all");
+  const [matiere, setMatiere] = useState<string>("all");
   const [activeTab, setActiveTab] = useState('notes');
   
   return (
