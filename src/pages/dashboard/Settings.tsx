@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -5,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Moon, 
   Sun, 
@@ -50,6 +51,20 @@ const colorPalettes = [
   { id: 'pink', name: 'Rose', primaryColor: '#EC4899', secondaryColor: '#DB2777' },
 ];
 
+// Variable CSS pour les couleurs
+const applyColorPalette = (palette: string) => {
+  const selectedPalette = colorPalettes.find(p => p.id === palette);
+  
+  if (!selectedPalette) return;
+
+  document.documentElement.style.setProperty('--color-primary', selectedPalette.primaryColor);
+  document.documentElement.style.setProperty('--color-primary-hover', selectedPalette.secondaryColor);
+  
+  // Mise à jour des variables CSS pour les couleurs de Tailwind
+  document.documentElement.style.setProperty('--primary', selectedPalette.primaryColor);
+  document.documentElement.style.setProperty('--primary-foreground', '#ffffff');
+};
+
 const Settings: React.FC = () => {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [currentTab, setCurrentTab] = useState('appearance');
@@ -59,7 +74,11 @@ const Settings: React.FC = () => {
   useEffect(() => {
     const storedSettings = localStorage.getItem('appSettings');
     if (storedSettings) {
-      setSettings(JSON.parse(storedSettings));
+      const parsedSettings = JSON.parse(storedSettings);
+      setSettings(parsedSettings);
+      
+      // Appliquer la palette au chargement
+      applyColorPalette(parsedSettings.colorPalette);
     }
   }, []);
 
@@ -96,8 +115,8 @@ const Settings: React.FC = () => {
     setSettings(newSettings);
     localStorage.setItem('appSettings', JSON.stringify(newSettings));
     
-    // In a real application, we would apply the color palette here
-    // This could involve changing CSS variables or dynamically loading a stylesheet
+    // Appliquer la palette de couleurs
+    applyColorPalette(colorPalette);
     
     toast({
       title: "Palette de couleurs modifiée",

@@ -1,48 +1,14 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Printer, Download, Filter, X } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Progress } from '@/components/ui/progress';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-
-// Types
-interface Eleve {
-  id: string;
-  nom: string;
-  prenom: string;
-  classe: string;
-}
-
-interface Matiere {
-  id: string;
-  nom: string;
-  coefficient: number;
-  uniteEnseignementId: string;
-}
-
-interface UniteEnseignement {
-  id: string;
-  nom: string;
-  coefficient: number;
-}
-
-interface Note {
-  eleveId: string;
-  matiereId: string;
-  valeur: number;
-  appreciation?: string;
-}
-
-interface FilterOptions {
-  session: string;
-  palier: string;
-  classe: string;
-}
+import { Printer, Download } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import BulletinsFilters from '@/components/bulletins/BulletinsFilters';
+import BulletinDetail from '@/components/bulletins/BulletinDetail';
+import BulletinPrintModal from '@/components/bulletins/BulletinPrintModal';
+import { Eleve, Note, UniteEnseignement, Matiere, FilterOptions } from '@/components/bulletins/types';
 
 // Données de démonstration
 const unitesEnseignement: UniteEnseignement[] = [
@@ -106,200 +72,6 @@ const generateRandomNotes = (): Note[] => {
 
 const demoNotes = generateRandomNotes();
 
-// Logo et informations de l'école pour le bulletin (exemple)
-const schoolInfo = {
-  nom: "École Primaire Excellencia",
-  address: "123 Avenue de l'Éducation, Libreville",
-  telephone: "+241 77 123 456",
-  email: "contact@excellencia.edu",
-  logo: "/path/to/logo.png", // Chemin vers le logo de l'école
-  slogan: "Éduquer pour l'avenir"
-};
-
-// Modèle de bulletin (version basique)
-const BulletinTemplate = ({ 
-  eleve, 
-  notes, 
-  unitesEnseignement, 
-  matieres,
-  session = "2024-2025",
-  periode = "1er Trimestre"
-}: { 
-  eleve: Eleve; 
-  notes: Note[]; 
-  unitesEnseignement: UniteEnseignement[]; 
-  matieres: Matiere[];
-  session?: string;
-  periode?: string;
-}) => {
-  // Fonctions de calcul identiques à celles du composant principal
-  const getNoteForMatiereAndEleve = (matiereId: string, eleveId: string): number | null => {
-    const note = notes.find(n => n.eleveId === eleveId && n.matiereId === matiereId);
-    return note ? note.valeur : null;
-  };
-
-  const getAppreciationForMatiereAndEleve = (matiereId: string, eleveId: string): string => {
-    const note = notes.find(n => n.eleveId === eleveId && n.matiereId === matiereId);
-    return note?.appreciation || '';
-  };
-
-  const getMoyenneForUnite = (uniteId: string, eleveId: string): number | null => {
-    const matieresInUnite = matieres.filter(m => m.uniteEnseignementId === uniteId);
-    
-    let totalPoints = 0;
-    let totalCoefficients = 0;
-    
-    matieresInUnite.forEach(matiere => {
-      const note = getNoteForMatiereAndEleve(matiere.id, eleveId);
-      if (note !== null) {
-        totalPoints += note * matiere.coefficient;
-        totalCoefficients += matiere.coefficient;
-      }
-    });
-    
-    if (totalCoefficients === 0) return null;
-    return parseFloat((totalPoints / totalCoefficients).toFixed(1));
-  };
-
-  const getMoyenneGenerale = (eleveId: string): number | null => {
-    let totalPoints = 0;
-    let totalCoefficients = 0;
-    
-    unitesEnseignement.forEach(unite => {
-      const moyenneUnite = getMoyenneForUnite(unite.id, eleveId);
-      if (moyenneUnite !== null) {
-        totalPoints += moyenneUnite * unite.coefficient;
-        totalCoefficients += unite.coefficient;
-      }
-    });
-    
-    if (totalCoefficients === 0) return null;
-    return parseFloat((totalPoints / totalCoefficients).toFixed(1));
-  };
-
-  const getRangEleve = (): string => {
-    // Simuler un rang pour cet exemple
-    return `${Math.floor(Math.random() * 5) + 1}/${eleves.length}`;
-  };
-
-  return (
-    <div className="bulletin-page mx-auto max-w-4xl bg-white p-8 mb-10 print:mb-0">
-      <div className="header flex justify-between items-center mb-8 border-b-2 border-gray-200 pb-4">
-        <div className="school-info">
-          <h1 className="text-2xl font-bold">{schoolInfo.nom}</h1>
-          <p className="text-sm text-gray-500">{schoolInfo.address}</p>
-          <p className="text-sm text-gray-500">Tel: {schoolInfo.telephone}</p>
-          <p className="text-xs text-gray-400 italic">{schoolInfo.slogan}</p>
-        </div>
-        <div className="bulletin-info text-right">
-          <h2 className="text-xl font-semibold">Bulletin de Notes</h2>
-          <p className="text-sm">Session: {session}</p>
-          <p className="text-sm">Période: {periode}</p>
-        </div>
-      </div>
-
-      <div className="student-info mb-6 bg-gray-50 p-4 rounded-lg">
-        <h3 className="text-lg font-semibold mb-2">Informations de l'élève</h3>
-        <div className="grid grid-cols-2">
-          <div>
-            <p><strong>Nom:</strong> {eleve.nom}</p>
-            <p><strong>Prénom:</strong> {eleve.prenom}</p>
-          </div>
-          <div>
-            <p><strong>Classe:</strong> {eleve.classe}</p>
-            <p><strong>Moyenne Générale:</strong> <span className="font-bold">{getMoyenneGenerale(eleve.id)?.toString() || 'N/A'}/20</span></p>
-            <p><strong>Rang:</strong> {getRangEleve()}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grades-table mb-8">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-100">
-              <TableHead style={{ width: '30%' }}>Matière</TableHead>
-              <TableHead style={{ width: '10%' }} className="text-center">Note</TableHead>
-              <TableHead style={{ width: '10%' }} className="text-center">Coef.</TableHead>
-              <TableHead style={{ width: '50%' }}>Appréciation</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {unitesEnseignement.map(unite => (
-              <React.Fragment key={unite.id}>
-                <TableRow className="bg-gray-50">
-                  <TableCell colSpan={4} className="font-semibold">
-                    {unite.nom}
-                  </TableCell>
-                </TableRow>
-
-                {matieres
-                  .filter(matiere => matiere.uniteEnseignementId === unite.id)
-                  .map(matiere => (
-                    <TableRow key={matiere.id}>
-                      <TableCell className="pl-6">
-                        {matiere.nom}
-                      </TableCell>
-                      <TableCell className="text-center font-medium">
-                        {getNoteForMatiereAndEleve(matiere.id, eleve.id)?.toString() || 'N/A'}/20
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {matiere.coefficient}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {getAppreciationForMatiereAndEleve(matiere.id, eleve.id)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-
-                <TableRow>
-                  <TableCell className="font-semibold text-right">
-                    Moyenne {unite.nom.toLowerCase()}:
-                  </TableCell>
-                  <TableCell className="text-center font-bold">
-                    {getMoyenneForUnite(unite.id, eleve.id)?.toString() || 'N/A'}/20
-                  </TableCell>
-                  <TableCell colSpan={2}></TableCell>
-                </TableRow>
-              </React.Fragment>
-            ))}
-
-            <TableRow className="bg-gray-100 border-t-4">
-              <TableCell className="font-bold text-right">
-                Moyenne Générale:
-              </TableCell>
-              <TableCell className="text-center font-bold text-lg">
-                {getMoyenneGenerale(eleve.id)?.toString() || 'N/A'}/20
-              </TableCell>
-              <TableCell colSpan={2}></TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="appreciation-generale p-4 border border-gray-200 rounded mb-8">
-        <h4 className="font-semibold mb-2">Appréciation générale:</h4>
-        <p className="italic">{appreciations[Math.floor(Math.random() * appreciations.length)]}</p>
-      </div>
-
-      <div className="signatures flex justify-between mt-16 pt-4 border-t">
-        <div>
-          <p className="font-semibold">Le Chef d'établissement</p>
-          <div className="h-10"></div>
-          <p>Signature et cachet</p>
-        </div>
-        <div className="text-right">
-          <p className="font-semibold">Date d'émission</p>
-          <p>{new Date().toLocaleDateString('fr-FR')}</p>
-        </div>
-      </div>
-      
-      <div className="footer text-center text-xs text-gray-400 mt-8 pt-4 border-t">
-        <p>{schoolInfo.nom} - {schoolInfo.address} - Tel: {schoolInfo.telephone} - Email: {schoolInfo.email}</p>
-      </div>
-    </div>
-  );
-};
-
 const Bulletins: React.FC = () => {
   const { toast } = useToast();
   const [filters, setFilters] = useState<FilterOptions>({
@@ -311,89 +83,6 @@ const Bulletins: React.FC = () => {
   const [selectedEleve, setSelectedEleve] = useState(eleves[0].id);
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [printAllMode, setPrintAllMode] = useState(false);
-  
-  // Obtenir les notes d'un élève pour une matière spécifique
-  const getNoteForMatiereAndEleve = (matiereId: string, eleveId: string): number | null => {
-    const note = notes.find(n => n.eleveId === eleveId && n.matiereId === matiereId);
-    return note ? note.valeur : null;
-  };
-
-  // Obtenir l'appréciation pour une matière et un élève
-  const getAppreciationForMatiereAndEleve = (matiereId: string, eleveId: string): string => {
-    const note = notes.find(n => n.eleveId === eleveId && n.matiereId === matiereId);
-    return note?.appreciation || '';
-  };
-
-  // Calculer la moyenne pour une unité d'enseignement
-  const getMoyenneForUnite = (uniteId: string, eleveId: string): number | null => {
-    const matieresInUnite = matieres.filter(m => m.uniteEnseignementId === uniteId);
-    
-    let totalPoints = 0;
-    let totalCoefficients = 0;
-    
-    matieresInUnite.forEach(matiere => {
-      const note = getNoteForMatiereAndEleve(matiere.id, eleveId);
-      if (note !== null) {
-        totalPoints += note * matiere.coefficient;
-        totalCoefficients += matiere.coefficient;
-      }
-    });
-    
-    if (totalCoefficients === 0) return null;
-    return parseFloat((totalPoints / totalCoefficients).toFixed(1));
-  };
-
-  // Calculer la moyenne générale
-  const getMoyenneGenerale = (eleveId: string): number | null => {
-    let totalPoints = 0;
-    let totalCoefficients = 0;
-    
-    unitesEnseignement.forEach(unite => {
-      const moyenneUnite = getMoyenneForUnite(unite.id, eleveId);
-      if (moyenneUnite !== null) {
-        totalPoints += moyenneUnite * unite.coefficient;
-        totalCoefficients += unite.coefficient;
-      }
-    });
-    
-    if (totalCoefficients === 0) return null;
-    return parseFloat((totalPoints / totalCoefficients).toFixed(1));
-  };
-
-  // Calculer la moyenne de la classe pour une matière
-  const getMoyenneClasseForMatiere = (matiereId: string): number | null => {
-    const notesForMatiere = notes.filter(n => n.matiereId === matiereId);
-    
-    if (notesForMatiere.length === 0) return null;
-    
-    const sum = notesForMatiere.reduce((acc, note) => acc + note.valeur, 0);
-    return parseFloat((sum / notesForMatiere.length).toFixed(1));
-  };
-
-  // Calculer la moyenne générale de la classe
-  const getMoyenneGeneraleClasse = (): number | null => {
-    return parseFloat(
-      (eleves
-        .map(eleve => getMoyenneGenerale(eleve.id) || 0)
-        .reduce((acc, curr) => acc + curr, 0) / eleves.length)
-        .toFixed(1)
-    );
-  };
-
-  // Déterminer le rang de l'élève
-  const getRangEleve = (eleveId: string): number => {
-    const moyennes = eleves.map(eleve => ({
-      id: eleve.id,
-      moyenne: getMoyenneGenerale(eleve.id) || 0
-    }));
-    
-    // Trier par ordre décroissant
-    moyennes.sort((a, b) => b.moyenne - a.moyenne);
-    
-    // Trouver la position de l'élève
-    const position = moyennes.findIndex(m => m.id === eleveId);
-    return position + 1; // +1 car les index commencent à 0
-  };
 
   // Gérer l'impression des bulletins
   const handlePrint = () => {
@@ -469,310 +158,61 @@ const Bulletins: React.FC = () => {
       </div>
 
       {/* Filtres */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Filter size={18} />
-            Filtres
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Session</label>
-              <Select 
-                value={filters.session} 
-                onValueChange={(value) => updateFilter('session', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Toutes les sessions" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les sessions</SelectItem>
-                  <SelectItem value="2024-2025">2024-2025</SelectItem>
-                  <SelectItem value="2023-2024">2023-2024</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Palier</label>
-              <Select 
-                value={filters.palier} 
-                onValueChange={(value) => updateFilter('palier', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Tous les paliers" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les paliers</SelectItem>
-                  <SelectItem value="trimestre1">1er Trimestre</SelectItem>
-                  <SelectItem value="trimestre2">2ème Trimestre</SelectItem>
-                  <SelectItem value="trimestre3">3ème Trimestre</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Classe</label>
-              <Select 
-                value={filters.classe} 
-                onValueChange={(value) => updateFilter('classe', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Toutes les classes" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les classes</SelectItem>
-                  <SelectItem value="CP">CP</SelectItem>
-                  <SelectItem value="CE1">CE1</SelectItem>
-                  <SelectItem value="CE2">CE2</SelectItem>
-                  <SelectItem value="CM1">CM1</SelectItem>
-                  <SelectItem value="CM2">CM2</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <BulletinsFilters filters={filters} updateFilter={updateFilter} />
 
       {/* Onglets des élèves */}
-      <Card>
-        <CardContent className="pt-6">
-          <Tabs 
-            defaultValue={eleves[0].id} 
-            value={selectedEleve} 
-            onValueChange={setSelectedEleve}
-          >
-            <ScrollArea className="w-full" type="always">
-              <div className="pb-3">
-                <TabsList className="w-full flex-nowrap flex justify-start overflow-x-auto">
-                  {filteredEleves.map(eleve => (
-                    <TabsTrigger 
-                      key={eleve.id} 
-                      value={eleve.id}
-                      className="whitespace-nowrap"
-                    >
-                      {eleve.prenom} {eleve.nom}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </div>
-            </ScrollArea>
-
-            {filteredEleves.map(eleve => (
-              <TabsContent key={eleve.id} value={eleve.id} className="mt-4">
-                <div className="mb-8">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Élève</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-lg font-semibold">{eleve.prenom} {eleve.nom}</p>
-                        <p className="text-muted-foreground">Classe: {eleve.classe}</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Moyenne Générale</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">
-                          {getMoyenneGenerale(eleve.id)?.toString() || 'N/A'} / 20
-                        </div>
-                        <Progress 
-                          value={(getMoyenneGenerale(eleve.id) || 0) * 5} 
-                          className="h-2 mt-2" 
-                        />
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Rang</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">
-                          {getRangEleve(eleve.id)} / {eleves.length}
-                        </div>
-                        <p className="text-muted-foreground">
-                          Moyenne de classe: {getMoyenneGeneraleClasse()?.toString() || 'N/A'} / 20
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <ScrollArea className="h-[calc(100vh-28rem)]" type="always">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-muted/30">
-                          <TableHead colSpan={5} className="text-center font-bold text-lg">
-                            Bulletin de Notes
-                          </TableHead>
-                        </TableRow>
-                        <TableRow className="bg-muted/50">
-                          <TableHead style={{ width: '30%' }}>Matière</TableHead>
-                          <TableHead style={{ width: '10%' }} className="text-center">Note</TableHead>
-                          <TableHead style={{ width: '10%' }} className="text-center">Coef.</TableHead>
-                          <TableHead style={{ width: '10%' }} className="text-center">Moyenne Classe</TableHead>
-                          <TableHead style={{ width: '40%' }}>Appréciation</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {unitesEnseignement.map(unite => (
-                          <React.Fragment key={unite.id}>
-                            <TableRow className="bg-muted/20">
-                              <TableCell colSpan={2} className="font-semibold">
-                                {unite.nom}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {unite.coefficient}
-                              </TableCell>
-                              <TableCell className="text-center">-</TableCell>
-                              <TableCell>-</TableCell>
-                            </TableRow>
-
-                            {matieres
-                              .filter(matiere => matiere.uniteEnseignementId === unite.id)
-                              .map(matiere => (
-                                <TableRow key={matiere.id}>
-                                  <TableCell className="pl-6">
-                                    {matiere.nom}
-                                  </TableCell>
-                                  <TableCell className="text-center font-medium">
-                                    {getNoteForMatiereAndEleve(matiere.id, eleve.id)?.toString() || 'N/A'} / 20
-                                  </TableCell>
-                                  <TableCell className="text-center">
-                                    {matiere.coefficient}
-                                  </TableCell>
-                                  <TableCell className="text-center">
-                                    {getMoyenneClasseForMatiere(matiere.id)?.toString() || 'N/A'}
-                                  </TableCell>
-                                  <TableCell className="max-w-[300px] text-sm">
-                                    {getAppreciationForMatiereAndEleve(matiere.id, eleve.id)}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-
-                            <TableRow className="border-t-2">
-                              <TableCell className="font-semibold text-right">
-                                Moyenne {unite.nom.toLowerCase()}:
-                              </TableCell>
-                              <TableCell className="text-center font-bold">
-                                {getMoyenneForUnite(unite.id, eleve.id)?.toString() || 'N/A'} / 20
-                              </TableCell>
-                              <TableCell colSpan={3}></TableCell>
-                            </TableRow>
-                          </React.Fragment>
-                        ))}
-
-                        <TableRow className="bg-muted/40 border-t-4">
-                          <TableCell className="font-bold text-right">
-                            Moyenne Générale:
-                          </TableCell>
-                          <TableCell className="text-center font-bold text-lg">
-                            {getMoyenneGenerale(eleve.id)?.toString() || 'N/A'} / 20
-                          </TableCell>
-                          <TableCell colSpan={3}></TableCell>
-                        </TableRow>
-                        <TableRow className="bg-muted/30">
-                          <TableCell className="font-semibold text-right">
-                            Rang:
-                          </TableCell>
-                          <TableCell className="text-center font-semibold">
-                            {getRangEleve(eleve.id)} / {eleves.length}
-                          </TableCell>
-                          <TableCell colSpan={3}></TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </ScrollArea>
-
-                  <div className="mt-6 flex justify-end gap-2">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => openPrintPreview(eleve.id)} 
-                      className="flex items-center gap-2"
-                    >
-                      <Printer size={16} />
-                      <span>Imprimer</span>
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        toast({
-                          title: "Export PDF",
-                          description: `Le bulletin de ${eleve.prenom} ${eleve.nom} a été exporté en PDF.`
-                        });
-                      }} 
-                      className="flex items-center gap-2"
-                    >
-                      <Download size={16} />
-                      <span>Exporter PDF</span>
-                    </Button>
-                  </div>
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* Modal d'aperçu d'impression */}
-      <Dialog open={printModalOpen} onOpenChange={setPrintModalOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
-          <DialogHeader className="sticky top-0 z-10 bg-white px-6 py-4 border-b">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-xl">
-                Aperçu avant impression
-              </DialogTitle>
-              <Button variant="outline" size="sm" onClick={handlePrint} className="flex items-center gap-2">
-                <Printer size={16} />
-                <span>Imprimer</span>
-              </Button>
-            </div>
-          </DialogHeader>
-          <ScrollArea className="h-[calc(90vh-8rem)] p-6">
-            {printAllMode ? (
-              <div>
+      <div className="border rounded-lg shadow bg-white">
+        <Tabs 
+          defaultValue={eleves[0].id} 
+          value={selectedEleve} 
+          onValueChange={setSelectedEleve}
+          className="p-6"
+        >
+          <ScrollArea className="w-full" type="always">
+            <div className="pb-3">
+              <TabsList className="w-full flex-nowrap flex justify-start overflow-x-auto">
                 {filteredEleves.map(eleve => (
-                  <BulletinTemplate 
-                    key={eleve.id}
-                    eleve={eleve}
-                    notes={notes}
-                    unitesEnseignement={unitesEnseignement}
-                    matieres={matieres}
-                    session={filters.session !== "all" ? filters.session : "2024-2025"}
-                    periode={filters.palier !== "all" ? 
-                      filters.palier === "trimestre1" ? "1er Trimestre" : 
-                      filters.palier === "trimestre2" ? "2ème Trimestre" : 
-                      "3ème Trimestre" : "1er Trimestre"
-                    }
-                  />
+                  <TabsTrigger 
+                    key={eleve.id} 
+                    value={eleve.id}
+                    className="whitespace-nowrap"
+                  >
+                    {eleve.prenom} {eleve.nom}
+                  </TabsTrigger>
                 ))}
-              </div>
-            ) : (
-              <BulletinTemplate 
-                eleve={eleves.find(e => e.id === selectedEleve) || eleves[0]}
+              </TabsList>
+            </div>
+          </ScrollArea>
+
+          {filteredEleves.map(eleve => (
+            <TabsContent key={eleve.id} value={eleve.id} className="mt-4">
+              <BulletinDetail 
+                eleve={eleve}
                 notes={notes}
                 unitesEnseignement={unitesEnseignement}
                 matieres={matieres}
-                session={filters.session !== "all" ? filters.session : "2024-2025"}
-                periode={filters.palier !== "all" ? 
-                  filters.palier === "trimestre1" ? "1er Trimestre" : 
-                  filters.palier === "trimestre2" ? "2ème Trimestre" : 
-                  "3ème Trimestre" : "1er Trimestre"
-                }
+                eleves={eleves}
+                openPrintPreview={(eleveId) => openPrintPreview(eleveId)}
               />
-            )}
-          </ScrollArea>
-          <DialogFooter className="sticky bottom-0 bg-white px-6 py-4 border-t">
-            <Button variant="outline" onClick={() => setPrintModalOpen(false)} className="flex items-center gap-2">
-              <X size={16} />
-              <span>Fermer</span>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+
+      {/* Modal d'aperçu d'impression */}
+      <BulletinPrintModal 
+        open={printModalOpen}
+        setOpen={setPrintModalOpen}
+        selectedEleve={selectedEleve}
+        printAllMode={printAllMode}
+        eleves={eleves}
+        notes={notes}
+        unitesEnseignement={unitesEnseignement}
+        matieres={matieres}
+        filters={filters}
+        filteredEleves={filteredEleves}
+        handlePrint={handlePrint}
+      />
 
       <style>
         {`

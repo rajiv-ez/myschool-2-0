@@ -1,0 +1,20 @@
+
+:root {
+  --color-primary: #9b87f5; /* Default violet */
+  --color-primary-hover: #7E69AB;
+  --background-color: #ffffff;
+  --text-color: #1a1a1a;
+}
+
+.dark {
+  --background-color: #1a1a1a;
+  --text-color: #ffffff;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
