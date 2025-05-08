@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -49,13 +49,18 @@ import {
   Eye,
   Trash2,
   Download,
-  Filter
+  Filter,
+  Library
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
+import { Livre, Emprunt } from '@/components/bibliotheque/types';
+import LivreForm from '@/components/bibliotheque/livres/LivreForm';
+import EmpruntForm from '@/components/bibliotheque/emprunts/EmpruntForm';
+import MesEmpruntsSection from '@/components/bibliotheque/mes-emprunts/MesEmpruntsSection';
 
-// Données fictives pour les livres
-const livresData = [
+// Generate initial data for the application
+const generateInitialLivres = (): Livre[] => [
   {
     id: 1,
     titre: "Les Misérables",
@@ -118,16 +123,15 @@ const livresData = [
   }
 ];
 
-// Données fictives pour les emprunts
-const empruntsData = [
+const generateInitialEmprunts = (livres: Livre[]): Emprunt[] => [
   {
     id: 101,
     livre_id: 3,
     titre: "Harry Potter à l'école des sorciers",
     emprunteur: "Sophie Mba",
     classe: "CM2",
-    date_emprunt: "15/09/2023",
-    date_retour_prevue: "15/10/2023",
+    date_emprunt: "2023-09-15",
+    date_retour_prevue: "2023-10-15",
     date_retour_reelle: null,
     statut: "En cours"
   },
@@ -137,9 +141,9 @@ const empruntsData = [
     titre: "Le Petit Prince",
     emprunteur: "Jean Ondo",
     classe: "6ème",
-    date_emprunt: "10/09/2023",
-    date_retour_prevue: "10/10/2023",
-    date_retour_reelle: "20/09/2023",
+    date_emprunt: "2023-09-10",
+    date_retour_prevue: "2023-10-10",
+    date_retour_reelle: "2023-09-20",
     statut: "Rendu"
   },
   {
@@ -148,8 +152,8 @@ const empruntsData = [
     titre: "Le Petit Nicolas",
     emprunteur: "Marie Ndong",
     classe: "CM1",
-    date_emprunt: "05/09/2023",
-    date_retour_prevue: "05/10/2023",
+    date_emprunt: "2023-09-05",
+    date_retour_prevue: "2023-10-05",
     date_retour_reelle: null,
     statut: "En retard"
   }
@@ -159,22 +163,45 @@ const Bibliotheque: React.FC = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('livres');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredLivres, setFilteredLivres] = useState(livresData);
-  const [filteredEmprunts, setFilteredEmprunts] = useState(empruntsData);
   
+  // Data state
+  const [livres, setLivres] = useState<Livre[]>(generateInitialLivres());
+  const [emprunts, setEmprunts] = useState<Emprunt[]>(generateInitialEmprunts(livres));
+  
+  // Filtered data
+  const [filteredLivres, setFilteredLivres] = useState<Livre[]>(livres);
+  const [filteredEmprunts, setFilteredEmprunts] = useState<Emprunt[]>(emprunts);
+  
+  // Modal states
   const [isAddLivreModalOpen, setIsAddLivreModalOpen] = useState(false);
-  const [isAddEmpruntModalOpen, setIsAddEmpruntModalOpen] = useState(false);
+  const [isEditLivreModalOpen, setIsEditLivreModalOpen] = useState(false);
   const [isLivreDetailsModalOpen, setIsLivreDetailsModalOpen] = useState(false);
+  const [selectedLivre, setSelectedLivre] = useState<Livre | null>(null);
+  
+  const [isAddEmpruntModalOpen, setIsAddEmpruntModalOpen] = useState(false);
+  const [isEditEmpruntModalOpen, setIsEditEmpruntModalOpen] = useState(false);
   const [isEmpruntDetailsModalOpen, setIsEmpruntDetailsModalOpen] = useState(false);
-  const [selectedLivre, setSelectedLivre] = useState<typeof livresData[0] | null>(null);
-  const [selectedEmprunt, setSelectedEmprunt] = useState<typeof empruntsData[0] | null>(null);
+  const [selectedEmprunt, setSelectedEmprunt] = useState<Emprunt | null>(null);
+  
+  // Filter data when search term changes
+  useEffect(() => {
+    filterData();
+  }, [searchTerm, livres, emprunts, activeTab]);
+  
+  const filterData = () => {
+    if (activeTab === 'livres') {
+      filterLivres();
+    } else if (activeTab === 'emprunts') {
+      filterEmprunts();
+    }
+  };
   
   // Filtrer les livres
   const filterLivres = () => {
     if (searchTerm === '') {
-      setFilteredLivres(livresData);
+      setFilteredLivres(livres);
     } else {
-      setFilteredLivres(livresData.filter(livre => 
+      setFilteredLivres(livres.filter(livre => 
         livre.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         livre.auteur.toLowerCase().includes(searchTerm.toLowerCase()) ||
         livre.categorie.toLowerCase().includes(searchTerm.toLowerCase())
@@ -185,33 +212,153 @@ const Bibliotheque: React.FC = () => {
   // Filtrer les emprunts
   const filterEmprunts = () => {
     if (searchTerm === '') {
-      setFilteredEmprunts(empruntsData);
+      setFilteredEmprunts(emprunts);
     } else {
-      setFilteredEmprunts(empruntsData.filter(emprunt => 
+      setFilteredEmprunts(emprunts.filter(emprunt => 
         emprunt.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         emprunt.emprunteur.toLowerCase().includes(searchTerm.toLowerCase())
       ));
     }
   };
   
-  React.useEffect(() => {
-    if (activeTab === 'livres') {
-      filterLivres();
-    } else {
-      filterEmprunts();
-    }
-  }, [searchTerm, activeTab]);
+  // Livre CRUD operations
+  const handleAddLivre = (newLivre: Livre) => {
+    setLivres([...livres, newLivre]);
+    setIsAddLivreModalOpen(false);
+    toast({
+      title: "Livre ajouté",
+      description: "Le livre a été ajouté au catalogue avec succès."
+    });
+  };
   
-  // Ouvrir la modale de détails du livre
-  const handleLivreDetailsClick = (livre: typeof livresData[0]) => {
+  const handleEditLivre = (updatedLivre: Livre) => {
+    setLivres(livres.map(livre => livre.id === updatedLivre.id ? updatedLivre : livre));
+    setIsEditLivreModalOpen(false);
+    toast({
+      title: "Livre mis à jour",
+      description: "Le livre a été mis à jour avec succès."
+    });
+  };
+  
+  const handleDeleteLivre = (id: number) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce livre ?")) {
+      // Check if the book is currently borrowed
+      const isEmprunte = emprunts.some(e => e.livre_id === id && (e.statut === "En cours" || e.statut === "En retard"));
+      
+      if (isEmprunte) {
+        toast({
+          title: "Action impossible",
+          description: "Ce livre est actuellement emprunté et ne peut pas être supprimé.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setLivres(livres.filter(livre => livre.id !== id));
+      // Also remove any emprunts related to this book
+      setEmprunts(emprunts.filter(emprunt => emprunt.livre_id !== id));
+      
+      toast({
+        title: "Livre supprimé",
+        description: "Le livre a été supprimé du catalogue avec succès."
+      });
+    }
+  };
+  
+  const handleEditLivreClick = (livre: Livre) => {
+    setSelectedLivre(livre);
+    setIsEditLivreModalOpen(true);
+  };
+  
+  const handleLivreDetailsClick = (livre: Livre) => {
     setSelectedLivre(livre);
     setIsLivreDetailsModalOpen(true);
   };
   
-  // Ouvrir la modale de détails de l'emprunt
-  const handleEmpruntDetailsClick = (emprunt: typeof empruntsData[0]) => {
+  // Emprunt CRUD operations
+  const handleAddEmprunt = (newEmprunt: Emprunt) => {
+    setEmprunts([...emprunts, newEmprunt]);
+    
+    // Update livre disponible status
+    setLivres(livres.map(livre => 
+      livre.id === newEmprunt.livre_id 
+        ? { ...livre, disponible: false }
+        : livre
+    ));
+    
+    setIsAddEmpruntModalOpen(false);
+    toast({
+      title: "Emprunt enregistré",
+      description: "Le nouvel emprunt a été enregistré avec succès."
+    });
+  };
+  
+  const handleEditEmprunt = (updatedEmprunt: Emprunt) => {
+    setEmprunts(emprunts.map(emprunt => 
+      emprunt.id === updatedEmprunt.id ? updatedEmprunt : emprunt
+    ));
+    setIsEditEmpruntModalOpen(false);
+    toast({
+      title: "Emprunt mis à jour",
+      description: "L'emprunt a été mis à jour avec succès."
+    });
+  };
+  
+  const handleDeleteEmprunt = (id: number) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet emprunt ?")) {
+      const empruntToDelete = emprunts.find(e => e.id === id);
+      
+      if (empruntToDelete && (empruntToDelete.statut === "En cours" || empruntToDelete.statut === "En retard")) {
+        // Make the book available again
+        setLivres(livres.map(livre => 
+          livre.id === empruntToDelete.livre_id 
+            ? { ...livre, disponible: true }
+            : livre
+        ));
+      }
+      
+      setEmprunts(emprunts.filter(emprunt => emprunt.id !== id));
+      toast({
+        title: "Emprunt supprimé",
+        description: "L'emprunt a été supprimé avec succès."
+      });
+    }
+  };
+  
+  const handleEmpruntDetailsClick = (emprunt: Emprunt) => {
     setSelectedEmprunt(emprunt);
     setIsEmpruntDetailsModalOpen(true);
+  };
+  
+  const handleEditEmpruntClick = (emprunt: Emprunt) => {
+    setSelectedEmprunt(emprunt);
+    setIsEditEmpruntModalOpen(true);
+  };
+  
+  const handleMarkAsReturned = (id: number) => {
+    const emprunt = emprunts.find(e => e.id === id);
+    if (!emprunt) return;
+    
+    const updatedEmprunt = {
+      ...emprunt,
+      date_retour_reelle: new Date().toISOString().split('T')[0],
+      statut: "Rendu" as const
+    };
+    
+    // Update the emprunt
+    setEmprunts(emprunts.map(e => e.id === id ? updatedEmprunt : e));
+    
+    // Make the livre available again
+    setLivres(livres.map(livre => 
+      livre.id === emprunt.livre_id 
+        ? { ...livre, disponible: true }
+        : livre
+    ));
+    
+    toast({
+      title: "Livre rendu",
+      description: "L'emprunt a été marqué comme rendu avec succès."
+    });
   };
 
   return (
@@ -229,42 +376,46 @@ const Bibliotheque: React.FC = () => {
             <Download size={16} />
             <span className="hidden md:inline">Exporter</span>
           </Button>
-          <Button 
-            className="flex items-center gap-2"
-            onClick={() => activeTab === 'livres' ? setIsAddLivreModalOpen(true) : setIsAddEmpruntModalOpen(true)}
-          >
-            <Plus size={16} />
-            <span>
-              {activeTab === 'livres' ? 'Ajouter un livre' : 'Nouvel emprunt'}
-            </span>
-          </Button>
+          {(activeTab === 'livres' || activeTab === 'emprunts') && (
+            <Button 
+              className="flex items-center gap-2"
+              onClick={() => activeTab === 'livres' ? setIsAddLivreModalOpen(true) : setIsAddEmpruntModalOpen(true)}
+            >
+              <Plus size={16} />
+              <span>
+                {activeTab === 'livres' ? 'Ajouter un livre' : 'Nouvel emprunt'}
+              </span>
+            </Button>
+          )}
         </div>
       </div>
       
       <div className="space-y-6">
-        <Card className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle>Recherche</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder={activeTab === 'livres' 
-                  ? "Rechercher par titre, auteur ou catégorie..." 
-                  : "Rechercher par titre ou emprunteur..."
-                }
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        {(activeTab === 'livres' || activeTab === 'emprunts') && (
+          <Card className="mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle>Recherche</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder={activeTab === 'livres' 
+                    ? "Rechercher par titre, auteur ou catégorie..." 
+                    : "Rechercher par titre ou emprunteur..."
+                  }
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-8">
+          <TabsList className="grid grid-cols-3 mb-8">
             <TabsTrigger value="livres" className="flex items-center gap-2">
               <BookOpenText size={16} />
               <span>Livres</span>
@@ -272,6 +423,10 @@ const Bibliotheque: React.FC = () => {
             <TabsTrigger value="emprunts" className="flex items-center gap-2">
               <BookCopy size={16} />
               <span>Emprunts</span>
+            </TabsTrigger>
+            <TabsTrigger value="mes-emprunts" className="flex items-center gap-2">
+              <Library size={16} />
+              <span>Mes Emprunts</span>
             </TabsTrigger>
           </TabsList>
           
@@ -303,7 +458,13 @@ const Bibliotheque: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredLivres.map((livre) => (
+                        {filteredLivres.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                              Aucun livre trouvé
+                            </TableCell>
+                          </TableRow>
+                        ) : filteredLivres.map((livre) => (
                           <TableRow key={livre.id}>
                             <TableCell>{livre.id}</TableCell>
                             <TableCell className="font-medium">{livre.titre}</TableCell>
@@ -335,10 +496,18 @@ const Bibliotheque: React.FC = () => {
                                 >
                                   <Eye size={16} />
                                 </Button>
-                                <Button variant="outline" size="icon">
+                                <Button 
+                                  variant="outline" 
+                                  size="icon"
+                                  onClick={() => handleEditLivreClick(livre)}
+                                >
                                   <Pencil size={16} />
                                 </Button>
-                                <Button variant="outline" size="icon">
+                                <Button 
+                                  variant="outline" 
+                                  size="icon"
+                                  onClick={() => handleDeleteLivre(livre.id)}
+                                >
                                   <Trash2 size={16} />
                                 </Button>
                               </div>
@@ -381,14 +550,20 @@ const Bibliotheque: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredEmprunts.map((emprunt) => (
+                        {filteredEmprunts.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                              Aucun emprunt trouvé
+                            </TableCell>
+                          </TableRow>
+                        ) : filteredEmprunts.map((emprunt) => (
                           <TableRow key={emprunt.id}>
                             <TableCell>{emprunt.id}</TableCell>
                             <TableCell className="font-medium">{emprunt.titre}</TableCell>
                             <TableCell>{emprunt.emprunteur}</TableCell>
                             <TableCell>{emprunt.classe}</TableCell>
-                            <TableCell>{emprunt.date_emprunt}</TableCell>
-                            <TableCell>{emprunt.date_retour_prevue}</TableCell>
+                            <TableCell>{formatDate(emprunt.date_emprunt)}</TableCell>
+                            <TableCell>{formatDate(emprunt.date_retour_prevue)}</TableCell>
                             <TableCell>
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 emprunt.statut === 'Rendu' 
@@ -409,16 +584,29 @@ const Bibliotheque: React.FC = () => {
                                 >
                                   <Eye size={16} />
                                 </Button>
-                                <Button variant="outline" size="icon">
+                                <Button 
+                                  variant="outline" 
+                                  size="icon"
+                                  onClick={() => handleEditEmpruntClick(emprunt)}
+                                >
                                   <Pencil size={16} />
                                 </Button>
                                 <Button 
-                                  variant={emprunt.statut !== 'Rendu' ? 'default' : 'outline'} 
-                                  size="sm"
-                                  disabled={emprunt.statut === 'Rendu'}
+                                  variant="outline" 
+                                  size="icon"
+                                  onClick={() => handleDeleteEmprunt(emprunt.id)}
                                 >
-                                  {emprunt.statut === 'Rendu' ? 'Rendu' : 'Marquer comme rendu'}
+                                  <Trash2 size={16} />
                                 </Button>
+                                {emprunt.statut !== 'Rendu' && (
+                                  <Button 
+                                    variant={emprunt.statut !== 'Rendu' ? 'default' : 'outline'} 
+                                    size="sm"
+                                    onClick={() => handleMarkAsReturned(emprunt.id)}
+                                  >
+                                    Marquer comme rendu
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -430,10 +618,14 @@ const Bibliotheque: React.FC = () => {
               </CardContent>
             </Card>
           </TabsContent>
+          
+          <TabsContent value="mes-emprunts">
+            <MesEmpruntsSection livres={livres} />
+          </TabsContent>
         </Tabs>
       </div>
       
-      {/* Modale d'ajout de livre */}
+      {/* Livres Modals */}
       <Dialog open={isAddLivreModalOpen} onOpenChange={setIsAddLivreModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -442,156 +634,31 @@ const Bibliotheque: React.FC = () => {
               Renseignez les informations du livre à ajouter au catalogue
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="titre">Titre du livre</label>
-              <Input id="titre" placeholder="Titre du livre" />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="auteur">Auteur</label>
-                <Input id="auteur" placeholder="Nom de l'auteur" />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="categorie">Catégorie</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="roman">Roman</SelectItem>
-                    <SelectItem value="conte">Conte</SelectItem>
-                    <SelectItem value="fantasy">Fantasy</SelectItem>
-                    <SelectItem value="jeunesse">Jeunesse</SelectItem>
-                    <SelectItem value="reference">Référence</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="isbn">ISBN</label>
-                <Input id="isbn" placeholder="Numéro ISBN" />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="etat">État</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="neuf">Neuf</SelectItem>
-                    <SelectItem value="bon">Bon état</SelectItem>
-                    <SelectItem value="use">Usé</SelectItem>
-                    <SelectItem value="abime">Abîmé</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
-            </DialogClose>
-            <Button onClick={() => {
-              setIsAddLivreModalOpen(false);
-              toast({
-                title: "Livre ajouté",
-                description: "Le livre a été ajouté au catalogue avec succès."
-              });
-            }}>Ajouter le livre</Button>
-          </DialogFooter>
+          <LivreForm 
+            onSubmit={handleAddLivre}
+            onCancel={() => setIsAddLivreModalOpen(false)}
+          />
         </DialogContent>
       </Dialog>
       
-      {/* Modale d'ajout d'emprunt */}
-      <Dialog open={isAddEmpruntModalOpen} onOpenChange={setIsAddEmpruntModalOpen}>
+      <Dialog open={isEditLivreModalOpen} onOpenChange={setIsEditLivreModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Enregistrer un nouvel emprunt</DialogTitle>
+            <DialogTitle>Modifier un livre</DialogTitle>
             <DialogDescription>
-              Renseignez les informations de l'emprunt
+              Modifiez les informations du livre
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="livre">Livre</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un livre" />
-                </SelectTrigger>
-                <SelectContent>
-                  {livresData
-                    .filter(livre => livre.disponible)
-                    .map(livre => (
-                      <SelectItem key={livre.id} value={livre.id.toString()}>
-                        {livre.titre}
-                      </SelectItem>
-                    ))
-                  }
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="emprunteur">Nom de l'emprunteur</label>
-                <Input id="emprunteur" placeholder="Nom et prénom" />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="classe">Classe</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CP">CP</SelectItem>
-                    <SelectItem value="CE1">CE1</SelectItem>
-                    <SelectItem value="CE2">CE2</SelectItem>
-                    <SelectItem value="CM1">CM1</SelectItem>
-                    <SelectItem value="CM2">CM2</SelectItem>
-                    <SelectItem value="6eme">6ème</SelectItem>
-                    <SelectItem value="5eme">5ème</SelectItem>
-                    <SelectItem value="4eme">4ème</SelectItem>
-                    <SelectItem value="3eme">3ème</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="date_emprunt">Date d'emprunt</label>
-                <Input id="date_emprunt" type="date" />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="date_retour">Date de retour prévue</label>
-                <Input id="date_retour" type="date" />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Annuler</Button>
-            </DialogClose>
-            <Button onClick={() => {
-              setIsAddEmpruntModalOpen(false);
-              toast({
-                title: "Emprunt enregistré",
-                description: "Le nouvel emprunt a été enregistré avec succès."
-              });
-            }}>Enregistrer l'emprunt</Button>
-          </DialogFooter>
+          {selectedLivre && (
+            <LivreForm 
+              livre={selectedLivre}
+              onSubmit={handleEditLivre}
+              onCancel={() => setIsEditLivreModalOpen(false)}
+            />
+          )}
         </DialogContent>
       </Dialog>
       
-      {/* Modale de détails du livre */}
       <Dialog open={isLivreDetailsModalOpen} onOpenChange={setIsLivreDetailsModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -648,15 +715,20 @@ const Bibliotheque: React.FC = () => {
                       <CardTitle className="text-sm">Informations d'emprunt</CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                      <p className="text-sm">
-                        Actuellement emprunté par <span className="font-medium">
-                          {empruntsData.find(e => e.livre_id === selectedLivre.id)?.emprunteur}
-                        </span>
-                      </p>
-                      <p className="text-sm">
-                        Retour prévu le{' '}
-                        {empruntsData.find(e => e.livre_id === selectedLivre.id)?.date_retour_prevue}
-                      </p>
+                      {emprunts
+                        .filter(e => e.livre_id === selectedLivre.id && e.statut !== 'Rendu')
+                        .map(emprunt => (
+                          <div key={emprunt.id}>
+                            <p className="text-sm">
+                              Actuellement emprunté par <span className="font-medium">
+                                {emprunt.emprunteur}
+                              </span>
+                            </p>
+                            <p className="text-sm">
+                              Retour prévu le {formatDate(emprunt.date_retour_prevue)}
+                            </p>
+                          </div>
+                        ))}
                     </CardContent>
                   </Card>
                 )}
@@ -667,12 +739,50 @@ const Bibliotheque: React.FC = () => {
             <DialogClose asChild>
               <Button variant="outline">Fermer</Button>
             </DialogClose>
-            <Button>Modifier</Button>
+            <Button onClick={() => {
+              setIsLivreDetailsModalOpen(false);
+              handleEditLivreClick(selectedLivre!);
+            }}>Modifier</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
-      {/* Modale de détails de l'emprunt */}
+      {/* Emprunts Modals */}
+      <Dialog open={isAddEmpruntModalOpen} onOpenChange={setIsAddEmpruntModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enregistrer un nouvel emprunt</DialogTitle>
+            <DialogDescription>
+              Renseignez les informations de l'emprunt
+            </DialogDescription>
+          </DialogHeader>
+          <EmpruntForm 
+            livres={livres}
+            onSubmit={handleAddEmprunt}
+            onCancel={() => setIsAddEmpruntModalOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isEditEmpruntModalOpen} onOpenChange={setIsEditEmpruntModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Modifier un emprunt</DialogTitle>
+            <DialogDescription>
+              Modifiez les informations de l'emprunt
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEmprunt && (
+            <EmpruntForm 
+              emprunt={selectedEmprunt}
+              livres={livres}
+              onSubmit={handleEditEmprunt}
+              onCancel={() => setIsEditEmpruntModalOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      
       <Dialog open={isEmpruntDetailsModalOpen} onOpenChange={setIsEmpruntDetailsModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -691,11 +801,11 @@ const Bibliotheque: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-muted-foreground">Date d'emprunt</p>
-                    <p>{selectedEmprunt.date_emprunt}</p>
+                    <p>{formatDate(selectedEmprunt.date_emprunt)}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-muted-foreground">Date de retour prévue</p>
-                    <p>{selectedEmprunt.date_retour_prevue}</p>
+                    <p>{formatDate(selectedEmprunt.date_retour_prevue)}</p>
                   </div>
                 </div>
                 
@@ -715,9 +825,27 @@ const Bibliotheque: React.FC = () => {
                   {selectedEmprunt.date_retour_reelle && (
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-muted-foreground">Date de retour réelle</p>
-                      <p>{selectedEmprunt.date_retour_reelle}</p>
+                      <p>{formatDate(selectedEmprunt.date_retour_reelle)}</p>
                     </div>
                   )}
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Informations du livre</p>
+                  <Card>
+                    <CardContent className="p-3">
+                      {livres
+                        .filter(l => l.id === selectedEmprunt.livre_id)
+                        .map(livre => (
+                          <div key={livre.id} className="text-sm">
+                            <p><span className="font-medium">Titre:</span> {livre.titre}</p>
+                            <p><span className="font-medium">Auteur:</span> {livre.auteur}</p>
+                            <p><span className="font-medium">Catégorie:</span> {livre.categorie}</p>
+                            <p><span className="font-medium">État:</span> {livre.etat}</p>
+                          </div>
+                        ))}
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </div>
@@ -727,19 +855,28 @@ const Bibliotheque: React.FC = () => {
               <Button variant="outline">Fermer</Button>
             </DialogClose>
             {selectedEmprunt?.statut !== 'Rendu' && (
-              <Button onClick={() => {
-                setIsEmpruntDetailsModalOpen(false);
-                toast({
-                  title: "Livre rendu",
-                  description: "L'emprunt a été marqué comme rendu avec succès."
-                });
-              }}>Marquer comme rendu</Button>
+              <>
+                <Button onClick={() => {
+                  setIsEmpruntDetailsModalOpen(false);
+                  handleEditEmpruntClick(selectedEmprunt);
+                }} variant="outline">Modifier</Button>
+                <Button onClick={() => {
+                  handleMarkAsReturned(selectedEmprunt.id);
+                  setIsEmpruntDetailsModalOpen(false);
+                }}>Marquer comme rendu</Button>
+              </>
             )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
+};
+
+// Helper function to format date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('fr-FR');
 };
 
 export default Bibliotheque;

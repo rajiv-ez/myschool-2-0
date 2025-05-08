@@ -63,3 +63,38 @@ export interface PaiementSalaire {
   methode_paiement: string;
   statut: 'Payé' | 'En attente' | 'Annulé';
 }
+
+export interface Pointage {
+  id: string;
+  personnel_id: string;
+  nom_complet: string;
+  date: string;
+  heure_arrivee: string;
+  heure_debut_pause?: string;
+  heure_fin_pause?: string;
+  heure_depart?: string;
+  statut: 'Présent' | 'En pause' | 'Absent' | 'Parti';
+  commentaire?: string;
+}
+
+export interface FichePaie {
+  id: string;
+  paiement_id: string;
+  personnel_id: string;
+  nom_complet: string;
+  poste: string;
+  mois: string;
+  annee: string;
+  salaire_base: number;
+  heures_travaillees?: number;
+  primes: PrimeDeduction[];
+  deductions: PrimeDeduction[];
+  total_brut: number;
+  total_net: number;
+  date_generation: string;
+}
+
+export interface PrimeDeduction {
+  libelle: string;
+  montant: number;
+}

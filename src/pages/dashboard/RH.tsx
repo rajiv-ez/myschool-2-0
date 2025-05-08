@@ -16,16 +16,113 @@ import { Search, Plus, Download, UserCog, ClipboardList, Clock, FileSpreadsheet 
 import { useToast } from '@/components/ui/use-toast';
 
 // Import components and types
-import { PersonnelMember, Contrat } from '@/components/rh/types';
+import { PersonnelMember, Contrat, Absence, PaiementSalaire } from '@/components/rh/types';
 import PersonnelTable from '@/components/rh/personnel/PersonnelTable';
 import PersonnelForm from '@/components/rh/personnel/PersonnelForm';
 import PersonnelDetails from '@/components/rh/personnel/PersonnelDetails';
 import ContratsTable from '@/components/rh/contrats/ContratsTable';
 import ContratForm from '@/components/rh/contrats/ContratForm';
 import ContratPreview from '@/components/rh/contrats/ContratPreview';
-import AbsencesStaticContent from '@/components/rh/absences/AbsencesStaticContent';
-import PaieStaticContent from '@/components/rh/paie/PaieStaticContent';
+import AbsencesContent from '@/components/rh/absences/AbsencesContent';
+import PaiementContent from '@/components/rh/paie/PaiementContent';
 import { generateMockPersonnel, generateMockContrats } from '@/components/rh/utils';
+
+// Generate mock data for absences and paiements
+const generateMockAbsences = (personnel: PersonnelMember[]): Absence[] => {
+  return [
+    {
+      id: "1",
+      personnel_id: personnel[0]?.id || "1",
+      nom_complet: personnel[0] ? `${personnel[0].prenom} ${personnel[0].nom}` : "Jean Assoumou",
+      date_debut: "2023-04-10",
+      date_fin: "2023-04-12",
+      motif: "Maladie",
+      justificatif: true,
+      statut: "Validée"
+    },
+    {
+      id: "2",
+      personnel_id: personnel[1]?.id || "2",
+      nom_complet: personnel[1] ? `${personnel[1].prenom} ${personnel[1].nom}` : "Marie Ndong",
+      date_debut: "2023-05-05",
+      date_fin: "2023-05-07",
+      motif: "Raison familiale",
+      justificatif: true,
+      statut: "Validée"
+    },
+    {
+      id: "3",
+      personnel_id: personnel[2]?.id || "3",
+      nom_complet: personnel[2] ? `${personnel[2].prenom} ${personnel[2].nom}` : "Pierre Ondo",
+      date_debut: "2023-06-15",
+      date_fin: "2023-06-16",
+      motif: "Formation professionnelle",
+      justificatif: false,
+      statut: "En attente"
+    }
+  ];
+};
+
+const generateMockPaiements = (personnel: PersonnelMember[]): PaiementSalaire[] => {
+  return [
+    {
+      id: "1",
+      personnel_id: personnel[0]?.id || "1",
+      nom_complet: personnel[0] ? `${personnel[0].prenom} ${personnel[0].nom}` : "Jean Assoumou",
+      mois: "Avril",
+      annee: "2023",
+      montant_base: 450000,
+      primes: 50000,
+      deductions: 25000,
+      montant_final: 475000,
+      date_paiement: "25/04/2023",
+      methode_paiement: "Virement",
+      statut: "Payé"
+    },
+    {
+      id: "2",
+      personnel_id: personnel[1]?.id || "2",
+      nom_complet: personnel[1] ? `${personnel[1].prenom} ${personnel[1].nom}` : "Marie Ndong",
+      mois: "Avril",
+      annee: "2023",
+      montant_base: 450000,
+      primes: 0,
+      deductions: 15000,
+      montant_final: 435000,
+      date_paiement: "25/04/2023",
+      methode_paiement: "Virement",
+      statut: "Payé"
+    },
+    {
+      id: "3",
+      personnel_id: personnel[2]?.id || "3",
+      nom_complet: personnel[2] ? `${personnel[2].prenom} ${personnel[2].nom}` : "Paul Obiang",
+      mois: "Avril",
+      annee: "2023",
+      montant_base: 750000,
+      primes: 75000,
+      deductions: 35000,
+      montant_final: 790000,
+      date_paiement: "25/04/2023",
+      methode_paiement: "Virement",
+      statut: "Payé"
+    },
+    {
+      id: "4",
+      personnel_id: personnel[3]?.id || "4",
+      nom_complet: personnel[3] ? `${personnel[3].prenom} ${personnel[3].nom}` : "Sophie Mba",
+      mois: "Mai",
+      annee: "2023",
+      montant_base: 350000,
+      primes: 0,
+      deductions: 10000,
+      montant_final: 340000,
+      date_paiement: "",
+      methode_paiement: "",
+      statut: "En attente"
+    }
+  ];
+};
 
 const RH: React.FC = () => {
   const { toast } = useToast();
@@ -35,6 +132,9 @@ const RH: React.FC = () => {
   // State for data
   const [personnel, setPersonnel] = useState<PersonnelMember[]>([]);
   const [contrats, setContrats] = useState<Contrat[]>([]);
+  const [absences, setAbsences] = useState<Absence[]>([]);
+  const [paiements, setPaiements] = useState<PaiementSalaire[]>([]);
+  
   const [filteredPersonnel, setFilteredPersonnel] = useState<PersonnelMember[]>([]);
   const [filteredContrats, setFilteredContrats] = useState<Contrat[]>([]);
   
@@ -51,8 +151,11 @@ const RH: React.FC = () => {
   
   // Load initial data
   useEffect(() => {
-    setPersonnel(generateMockPersonnel());
+    const personnelData = generateMockPersonnel();
+    setPersonnel(personnelData);
     setContrats(generateMockContrats());
+    setAbsences(generateMockAbsences(personnelData));
+    setPaiements(generateMockPaiements(personnelData));
   }, []);
   
   // Update filtered data when main data or search term changes
@@ -182,45 +285,49 @@ const RH: React.FC = () => {
             <Download size={16} />
             <span className="hidden md:inline">Exporter</span>
           </Button>
-          <Button 
-            className="flex items-center gap-2"
-            onClick={() => activeTab === 'personnel' 
-              ? setIsAddPersonnelModalOpen(true) 
-              : activeTab === 'contrats'
-              ? setIsAddContratModalOpen(true)
-              : null
-            }
-          >
-            <Plus size={16} />
-            <span>
-              {activeTab === 'personnel' ? 'Ajouter membre' : 
-               activeTab === 'contrats' ? 'Nouveau contrat' : 'Ajouter'}
-            </span>
-          </Button>
+          {(activeTab === 'personnel' || activeTab === 'contrats') && (
+            <Button 
+              className="flex items-center gap-2"
+              onClick={() => activeTab === 'personnel' 
+                ? setIsAddPersonnelModalOpen(true) 
+                : activeTab === 'contrats'
+                ? setIsAddContratModalOpen(true)
+                : null
+              }
+            >
+              <Plus size={16} />
+              <span>
+                {activeTab === 'personnel' ? 'Ajouter membre' : 
+                 activeTab === 'contrats' ? 'Nouveau contrat' : 'Ajouter'}
+              </span>
+            </Button>
+          )}
         </div>
       </div>
       
       <div className="space-y-6">
-        <Card className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle>Recherche</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder={activeTab === 'personnel' 
-                  ? "Rechercher par nom, prénom, poste..." 
-                  : "Rechercher un contrat..."
-                }
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        {(activeTab === 'personnel' || activeTab === 'contrats') && (
+          <Card className="mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle>Recherche</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder={activeTab === 'personnel' 
+                    ? "Rechercher par nom, prénom, poste..." 
+                    : "Rechercher un contrat..."
+                  }
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-4 mb-8">
@@ -291,11 +398,17 @@ const RH: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="absences">
-            <AbsencesStaticContent />
+            <AbsencesContent 
+              personnel={personnel}
+              initialAbsences={absences}
+            />
           </TabsContent>
           
           <TabsContent value="paie">
-            <PaieStaticContent />
+            <PaiementContent 
+              personnel={personnel}
+              initialPaiements={paiements}
+            />
           </TabsContent>
         </Tabs>
       </div>
