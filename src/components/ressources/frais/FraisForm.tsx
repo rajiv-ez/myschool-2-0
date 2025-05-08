@@ -6,28 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DialogFooter } from "@/components/ui/dialog";
-
-interface Session {
-  id: string;
-  name: string;
-  paliers: Palier[];
-}
-
-interface Palier {
-  id: string;
-  name: string;
-  sessionId: string;
-}
-
-interface FraisScolaire {
-  id: string;
-  nom: string;
-  description: string;
-  sessionId: string;
-  palierId?: string;
-  quantite?: number;
-  montant: number;
-}
+import { FraisScolaire, Session, Palier } from './FraisScolaireTypes';
 
 interface FraisFormProps {
   formValues: Omit<FraisScolaire, 'id'>;

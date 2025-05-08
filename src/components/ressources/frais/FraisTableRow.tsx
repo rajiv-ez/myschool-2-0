@@ -3,16 +3,7 @@ import React from 'react';
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from 'lucide-react';
-
-interface FraisScolaire {
-  id: string;
-  nom: string;
-  description: string;
-  sessionId: string;
-  palierId?: string;
-  quantite?: number;
-  montant: number;
-}
+import { FraisScolaire } from './FraisScolaireTypes';
 
 interface FraisTableRowProps {
   frais: FraisScolaire;
@@ -30,7 +21,7 @@ const FraisTableRow: React.FC<FraisTableRowProps> = ({
   onDelete
 }) => {
   return (
-    <TableRow key={frais.id}>
+    <TableRow>
       <TableCell className="font-medium">{frais.nom}</TableCell>
       <TableCell>{frais.description}</TableCell>
       <TableCell>{getSessionName(frais.sessionId)}</TableCell>
