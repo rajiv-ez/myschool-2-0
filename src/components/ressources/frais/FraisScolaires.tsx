@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
-import { Plus } from 'lucide-react';
-import FraisTable from './FraisTable';
+import { Search, Plus } from 'lucide-react';
+import FraisTableRow from './FraisTableRow';
 import FraisForm from './FraisForm';
-import FraisSearch from './FraisSearch';
 import { FraisScolaire, Session, Palier } from './FraisScolaireTypes';
 
 const FraisScolaires: React.FC = () => {
@@ -169,7 +170,15 @@ const FraisScolaires: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <FraisSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <Input 
+            placeholder="Rechercher un frais..." 
+            value={searchQuery} 
+            onChange={(e) => setSearchQuery(e.target.value)} 
+            className="pl-10"
+          />
+        </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
@@ -199,13 +208,41 @@ const FraisScolaires: React.FC = () => {
         </Dialog>
       </div>
 
-      <FraisTable 
-        fraisList={filteredFrais}
-        getSessionName={getSessionName}
-        getPalierName={getPalierName}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <div className="border rounded-md">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nom</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Session</TableHead>
+              <TableHead>Trimestre</TableHead>
+              <TableHead>Quantité</TableHead>
+              <TableHead className="text-right">Montant</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredFrais.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  Aucun frais trouvé
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredFrais.map(frais => (
+                <FraisTableRow 
+                  key={frais.id}
+                  frais={frais}
+                  getSessionName={getSessionName}
+                  getPalierName={getPalierName}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

@@ -64,7 +64,7 @@ const InventorySection: React.FC<InventorySectionProps> = ({
             <SelectContent>
               <SelectItem value="all">Toutes catégories</SelectItem>
               {categories.map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                <SelectItem key={cat} value={cat || "no-category"}>{cat || "Sans catégorie"}</SelectItem>
               ))}
             </SelectContent>
           </Select>
