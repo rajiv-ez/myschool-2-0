@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -775,7 +774,8 @@ const Bulletins: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      <style jsx global>{`
+      <style>
+        {`
         @media print {
           body * {
             visibility: hidden;
@@ -794,7 +794,8 @@ const Bulletins: React.FC = () => {
             page-break-before: always;
           }
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
