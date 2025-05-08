@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -17,7 +16,10 @@ import {
   FileCheck, 
   AlertTriangle, 
   Filter,
-  Search
+  Search,
+  Printer,
+  ArrowDownRight,
+  ArrowUpRight
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -27,6 +29,7 @@ import DateRangeFilter from '@/components/payments/DateRangeFilter';
 import TotalsSummary from '@/components/payments/TotalsSummary';
 import TransactionModal from '@/components/payments/TransactionModal';
 import { useToast } from '@/hooks/use-toast';
+import { Transaction } from '@/components/notes/types';
 
 // Sessions et inscriptions
 const sessions = [
@@ -97,55 +100,55 @@ const paiementsData = [
 ];
 
 // Transactions bilancielles
-const transactions = [
+const transactions: Transaction[] = [
   { 
     id: 1, 
     date: '2024-09-05', 
     description: 'Paiement frais de scolarité - Marie Ndong', 
     amount: 150000, 
-    type: 'income' 
+    type: "income" 
   },
   { 
     id: 2, 
     date: '2024-09-05', 
     description: 'Paiement fournitures - Marie Ndong', 
     amount: 50000, 
-    type: 'income' 
+    type: "income" 
   },
   { 
     id: 3, 
     date: '2024-09-10', 
     description: 'Paiement acompte - Paul Obiang', 
     amount: 75000, 
-    type: 'income' 
+    type: "income" 
   },
   { 
     id: 4, 
     date: '2024-09-15', 
     description: 'Achat de fournitures scolaires', 
     amount: 120000, 
-    type: 'expense' 
+    type: "expense" 
   },
   { 
     id: 5, 
     date: '2024-09-20', 
     description: 'Paiement salaires enseignants', 
     amount: 500000, 
-    type: 'expense' 
+    type: "expense" 
   },
   { 
     id: 6, 
     date: '2024-09-25', 
     description: 'Paiement électricité', 
     amount: 45000, 
-    type: 'expense' 
+    type: "expense" 
   },
   { 
     id: 7, 
     date: '2024-10-05', 
     description: 'Paiement mensualité - Marie Ndong', 
     amount: 25000, 
-    type: 'income' 
+    type: "income" 
   }
 ];
 

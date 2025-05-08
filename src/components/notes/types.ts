@@ -25,3 +25,11 @@ export interface FilterOptions {
   subject: string;
   period: string;
 }
+
+export interface Transaction {
+  id: number;
+  date: string;
+  description: string;
+  amount: number;
+  type: "income" | "expense";
+}
