@@ -115,9 +115,25 @@ const PersonnelForm: React.FC<PersonnelFormProps> = ({
   };
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    // Make sure all required fields are included with proper types
     onSubmit({
       id: personnel?.id || Math.random().toString(36).substring(2, 11),
-      ...values,
+      nom: values.nom,
+      prenom: values.prenom,
+      dateNaissance: values.dateNaissance,
+      lieuNaissance: values.lieuNaissance,
+      genre: values.genre,
+      adresse: values.adresse,
+      tel1: values.tel1,
+      tel2: values.tel2,
+      whatsapp: values.whatsapp,
+      email: values.email,
+      poste: values.poste,
+      matieres: values.matieres,
+      niveaux: values.niveaux,
+      statut: values.statut,
+      date_embauche: values.date_embauche,
+      photo: values.photo,
     });
   };
 

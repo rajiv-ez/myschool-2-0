@@ -147,10 +147,17 @@ const ContratForm: React.FC<ContratFormProps> = ({
   };
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    // Make sure all required fields are included
     onSubmit({
       id: contrat?.id || Math.random().toString(36).substring(2, 11),
-      ...values,
-      clauses,
+      personnel_id: values.personnel_id,
+      nom_complet: values.nom_complet,
+      type_contrat: values.type_contrat,
+      date_debut: values.date_debut,
+      date_fin: values.date_fin,
+      salaire: values.salaire,
+      statut: values.statut,
+      clauses: clauses,
     });
   };
 
