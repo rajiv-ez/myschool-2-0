@@ -89,7 +89,7 @@ const FraisForm: React.FC<FraisFormProps> = ({
             Trimestre
           </Label>
           <Select 
-            value={formValues.palierId}
+            value={formValues.palierId || "no-palier"}
             onValueChange={(value) => setFormValues({...formValues, palierId: value === "no-palier" ? undefined : value})}
             disabled={!formValues.sessionId}
           >
