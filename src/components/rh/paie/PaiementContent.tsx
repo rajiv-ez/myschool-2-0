@@ -129,7 +129,7 @@ const PaiementContent: React.FC<PaiementContentProps> = ({
   const handlePayClick = (paiement: PaiementSalaire) => {
     const updatedPaiement = {
       ...paiement,
-      statut: "Payé",
+      statut: "Payé" as const,
       date_paiement: new Date().toLocaleDateString('fr-FR')
     };
     

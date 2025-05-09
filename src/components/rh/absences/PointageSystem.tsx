@@ -92,7 +92,7 @@ const PointageSystem: React.FC<PointageSystemProps> = ({ personnel, onClose }) =
           ...p,
           heure_arrivee: currentTime,
           commentaire: comment || p.commentaire,
-          statut: 'Présent'
+          statut: 'Présent' as const
         };
       }
       return p;
@@ -114,7 +114,7 @@ const PointageSystem: React.FC<PointageSystemProps> = ({ personnel, onClose }) =
         return {
           ...p,
           heure_debut_pause: currentTime,
-          statut: 'En pause'
+          statut: 'En pause' as const
         };
       }
       return p;
@@ -136,7 +136,7 @@ const PointageSystem: React.FC<PointageSystemProps> = ({ personnel, onClose }) =
         return {
           ...p,
           heure_fin_pause: currentTime,
-          statut: 'Présent'
+          statut: 'Présent' as const
         };
       }
       return p;
@@ -158,7 +158,7 @@ const PointageSystem: React.FC<PointageSystemProps> = ({ personnel, onClose }) =
         return {
           ...p,
           heure_depart: currentTime,
-          statut: 'Parti'
+          statut: 'Parti' as const
         };
       }
       return p;
