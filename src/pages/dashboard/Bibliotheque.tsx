@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Card, 
@@ -600,7 +599,7 @@ const Bibliotheque: React.FC = () => {
                                 </Button>
                                 {emprunt.statut !== 'Rendu' && (
                                   <Button 
-                                    variant={emprunt.statut !== 'Rendu' ? 'default' : 'outline'} 
+                                    variant="default"
                                     size="sm"
                                     onClick={() => handleMarkAsReturned(emprunt.id)}
                                   >
@@ -854,7 +853,7 @@ const Bibliotheque: React.FC = () => {
             <DialogClose asChild>
               <Button variant="outline">Fermer</Button>
             </DialogClose>
-            {selectedEmprunt?.statut !== 'Rendu' && (
+            {selectedEmprunt && selectedEmprunt.statut !== 'Rendu' && (
               <>
                 <Button onClick={() => {
                   setIsEmpruntDetailsModalOpen(false);
