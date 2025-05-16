@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { 
   Tabs, 
@@ -29,16 +29,40 @@ import {
   UserCog,
   Settings,
   Layout,
-  Package
+  Package,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+// Interface pour les onglets
+interface DashboardTab {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  path: string;
+}
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
   const currentPath = location.pathname.split('/')[2] || '';
   const isMobile = useIsMobile();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
-  const tabs = [
+  // Récupérer le type de disposition depuis localStorage
+  const [layoutType, setLayoutType] = useState<'tabs' | 'sidebar'>('tabs');
+  
+  useEffect(() => {
+    const storedSettings = localStorage.getItem('appSettings');
+    if (storedSettings) {
+      const parsedSettings = JSON.parse(storedSettings);
+      setLayoutType(parsedSettings.layoutType || 'tabs');
+    }
+  }, []);
+  
+  const tabs: DashboardTab[] = [
     { id: 'inscriptions', label: 'Inscriptions', icon: <UserPlus size={18} />, path: '/dashboard/inscriptions' },
     { id: 'personnes', label: 'Élèves & Tuteurs', icon: <Users size={18} />, path: '/dashboard/personnes' },
     { id: 'sessions', label: 'Sessions & Paliers', icon: <Calendar size={18} />, path: '/dashboard/sessions' },
@@ -65,49 +89,100 @@ const DashboardLayout: React.FC = () => {
 
   useEffect(() => {
     const activeTabEl = document.querySelector(`[data-tab-id='${activeTab}']`);
-    if (scrollRef.current && activeTabEl) {
+    if (scrollRef.current && activeTabEl && layoutType === 'tabs') {
       const parent = scrollRef.current;
       const tabRect = (activeTabEl as HTMLElement).getBoundingClientRect();
       const parentRect = parent.getBoundingClientRect();
       const scrollLeft = tabRect.left - parentRect.left + parent.scrollLeft - 16;
       parent.scrollTo({ left: scrollLeft, behavior: 'smooth' });
     }
-  }, [activeTab]);
+  }, [activeTab, layoutType]);
+
+  // Rendu de la barre latérale
+  const renderSidebar = () => {
+    return (
+      <div className={cn(
+        "h-[calc(100vh-64px)] flex-shrink-0 border-r bg-background transition-all duration-300",
+        isSidebarCollapsed ? "w-16" : "w-64"
+      )}>
+        <div className="flex justify-end p-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0" 
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          >
+            {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </Button>
+        </div>
+        
+        <ScrollArea className="h-[calc(100%-40px)]">
+          <div className="space-y-1 p-2">
+            {tabs.map((tab) => (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.id ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start", 
+                  isSidebarCollapsed ? "px-2" : "px-3"
+                )}
+                asChild
+              >
+                <Link to={tab.path} className="flex items-center gap-2">
+                  {tab.icon}
+                  {!isSidebarCollapsed && <span>{tab.label}</span>}
+                </Link>
+              </Button>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <div className="container mx-auto px-4 py-6 flex-grow">
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold">Mon École</h1>
-          <p className="text-muted-foreground">Gérez votre établissement scolaire en toute simplicité</p>
-        </div>
+      <div className="flex flex-grow">
+        {layoutType === 'sidebar' && renderSidebar()}
+        
+        <div className={cn(
+          "container mx-auto px-4 py-6 flex-grow",
+          layoutType === 'sidebar' && !isMobile && (isSidebarCollapsed ? "ml-16" : "ml-64")
+        )}>
+          <div className="mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold">Mon École</h1>
+            <p className="text-muted-foreground">Gérez votre établissement scolaire en toute simplicité</p>
+          </div>
 
-        <div className="w-full mb-6 overflow-x-auto" ref={scrollRef}>
-          <Tabs value={activeTab} className="w-max">
-            <TabsList className="flex space-x-2">
-              {tabs.map(tab => (
-                <TabsTrigger 
-                  key={tab.id} 
-                  value={tab.id}
-                  className="flex items-center gap-2 whitespace-nowrap"
-                  asChild
-                  data-tab-id={tab.id}
-                >
-                  <Link to={tab.path}>
-                    {tab.icon}
-                    {tab.label}
-                  </Link>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
+          {layoutType === 'tabs' && (
+            <div className="w-full mb-6 overflow-x-auto" ref={scrollRef}>
+              <Tabs value={activeTab} className="w-max">
+                <TabsList className="flex space-x-2">
+                  {tabs.map(tab => (
+                    <TabsTrigger 
+                      key={tab.id} 
+                      value={tab.id}
+                      className="flex items-center gap-2 whitespace-nowrap"
+                      asChild
+                      data-tab-id={tab.id}
+                    >
+                      <Link to={tab.path}>
+                        {tab.icon}
+                        {tab.label}
+                      </Link>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border min-h-[600px] max-h-[calc(100vh-220px)] overflow-auto">
-          <div className="h-full w-full">
-            <Outlet />
+          <div className="bg-white p-6 rounded-lg shadow-sm border min-h-[600px] max-h-[calc(100vh-220px)] overflow-auto">
+            <div className="h-full w-full">
+              <Outlet />
+            </div>
           </div>
         </div>
       </div>

@@ -165,8 +165,13 @@ const Settings: React.FC = () => {
     localStorage.setItem('appSettings', JSON.stringify(newSettings));
     toast({
       title: "Disposition modifiée",
-      description: `Disposition ${layoutType === 'tabs' ? 'en onglets' : 'avec barre latérale'} appliquée. Veuillez rafraîchir la page pour appliquer les changements`,
+      description: `Disposition ${layoutType === 'tabs' ? 'en onglets' : 'avec barre latérale'} appliquée.`,
     });
+    
+    // Recharger la page pour appliquer les changements
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   };
 
   // Handle save all settings
