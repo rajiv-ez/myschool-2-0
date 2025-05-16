@@ -51,13 +51,14 @@ const DashboardLayout: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
-  // Récupérer le type de disposition depuis localStorage
+  // Récupérer le type de disposition depuis localStorage avec 'tabs' comme valeur par défaut
   const [layoutType, setLayoutType] = useState<'tabs' | 'sidebar'>('tabs');
   
   useEffect(() => {
     const storedSettings = localStorage.getItem('appSettings');
     if (storedSettings) {
       const parsedSettings = JSON.parse(storedSettings);
+      // Use tabs as default if not specified
       setLayoutType(parsedSettings.layoutType || 'tabs');
     }
   }, []);
