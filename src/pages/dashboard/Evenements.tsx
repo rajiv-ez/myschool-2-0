@@ -32,12 +32,34 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
-import frLocale from '@fullcalendar/core/locales/fr';
 import { format, parse } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import EventForm from '@/components/events/EventForm';
 import EventDetails from '@/components/events/EventDetails';
 import EventDeleteConfirmation from '@/components/events/EventDeleteConfirmation';
+
+// Définir la locale française manuellement au lieu d'importer le module
+const frenchLocale = {
+  code: 'fr',
+  week: {
+    dow: 1, // Lundi est le premier jour de la semaine
+    doy: 4  // La première semaine de l'année contient le 4 janvier
+  },
+  buttonText: {
+    prev: 'Précédent',
+    next: 'Suivant',
+    today: 'Aujourd\'hui',
+    year: 'Année',
+    month: 'Mois',
+    week: 'Semaine',
+    day: 'Jour',
+    list: 'Liste'
+  },
+  weekText: 'Sem.',
+  allDayText: 'Toute la journée',
+  moreLinkText: 'en plus',
+  noEventsText: 'Aucun événement à afficher'
+};
 
 // Données fictives pour les événements
 const eventsData = [
@@ -418,7 +440,7 @@ const Evenements = () => {
               weekends={true}
               dateClick={handleDateClick}
               eventClick={handleEventClick}
-              locale={frLocale}
+              locale={frenchLocale}
               timeZone="local"
               height="100%"
               ref={(ref) => ref && handleCalendarReady(ref.getApi())}
