@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { PersonnelMember, Pointage } from '../types';
@@ -193,7 +194,7 @@ const PointageSystem: React.FC<PointageSystemProps> = ({ personnel, onClose }) =
   const historyPointages = pointages.filter(p => p.date !== today);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full">
       <Tabs defaultValue="today" value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="grid grid-cols-2">
           <TabsTrigger value="today">Pointage du jour</TabsTrigger>
@@ -227,40 +228,60 @@ const PointageSystem: React.FC<PointageSystemProps> = ({ personnel, onClose }) =
             </Button>
           </div>
           
-          <ScrollArea className="h-[400px] w-full">
-            <div className="w-full min-w-[700px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Personnel</TableHead>
-                    <TableHead>Heure d'arrivée</TableHead>
-                    <TableHead>Pause</TableHead>
-                    <TableHead>Retour de pause</TableHead>
-                    <TableHead>Heure de départ</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {todayPointages.map((pointage) => (
-                    <TableRow key={pointage.id}>
-                      <TableCell className="font-medium">{pointage.nom_complet}</TableCell>
-                      <TableCell>{pointage.heure_arrivee || '-'}</TableCell>
-                      <TableCell>{pointage.heure_debut_pause || '-'}</TableCell>
-                      <TableCell>{pointage.heure_fin_pause || '-'}</TableCell>
-                      <TableCell>{pointage.heure_depart || '-'}</TableCell>
-                      <TableCell>{getStatusBadge(pointage.statut)}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {pointage.heure_arrivee && !pointage.heure_debut_pause && !pointage.heure_depart && (
-                            <>
-                              <Button 
-                                variant="outline" 
+          <div className="rounded-md border">
+            <ScrollArea className="h-[350px] md:h-[400px] w-full">
+              <div className="min-w-[700px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Personnel</TableHead>
+                      <TableHead>Heure d'arrivée</TableHead>
+                      <TableHead>Pause</TableHead>
+                      <TableHead>Retour de pause</TableHead>
+                      <TableHead>Heure de départ</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {todayPointages.map((pointage) => (
+                      <TableRow key={pointage.id}>
+                        <TableCell className="font-medium">{pointage.nom_complet}</TableCell>
+                        <TableCell>{pointage.heure_arrivee || '-'}</TableCell>
+                        <TableCell>{pointage.heure_debut_pause || '-'}</TableCell>
+                        <TableCell>{pointage.heure_fin_pause || '-'}</TableCell>
+                        <TableCell>{pointage.heure_depart || '-'}</TableCell>
+                        <TableCell>{getStatusBadge(pointage.statut)}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {pointage.heure_arrivee && !pointage.heure_debut_pause && !pointage.heure_depart && (
+                              <>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleStartBreak(pointage.id)}
+                                >
+                                  <Timer size={14} className="mr-1" /> Pause
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleDeparture(pointage.id)}
+                                >
+                                  <TimerOff size={14} className="mr-1" /> Départ
+                                </Button>
+                              </>
+                            )}
+                            {pointage.heure_debut_pause && !pointage.heure_fin_pause && (
+                              <Button
+                                variant="outline"
                                 size="sm"
-                                onClick={() => handleStartBreak(pointage.id)}
+                                onClick={() => handleEndBreak(pointage.id)}
                               >
-                                <Timer size={14} className="mr-1" /> Pause
+                                <CheckCircle size={14} className="mr-1" /> Fin pause
                               </Button>
+                            )}
+                            {pointage.heure_fin_pause && !pointage.heure_depart && (
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -268,77 +289,61 @@ const PointageSystem: React.FC<PointageSystemProps> = ({ personnel, onClose }) =
                               >
                                 <TimerOff size={14} className="mr-1" /> Départ
                               </Button>
-                            </>
-                          )}
-                          {pointage.heure_debut_pause && !pointage.heure_fin_pause && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEndBreak(pointage.id)}
-                            >
-                              <CheckCircle size={14} className="mr-1" /> Fin pause
-                            </Button>
-                          )}
-                          {pointage.heure_fin_pause && !pointage.heure_depart && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleDeparture(pointage.id)}
-                            >
-                              <TimerOff size={14} className="mr-1" /> Départ
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </ScrollArea>
+          </div>
         </TabsContent>
         
         <TabsContent value="history">
-          <ScrollArea className="h-[400px] w-full">
-            <div className="w-full min-w-[700px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Personnel</TableHead>
-                    <TableHead>Arrivée</TableHead>
-                    <TableHead>Pause</TableHead>
-                    <TableHead>Fin pause</TableHead>
-                    <TableHead>Départ</TableHead>
-                    <TableHead>Statut</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {historyPointages.length === 0 ? (
+          <div className="rounded-md border">
+            <ScrollArea className="h-[350px] md:h-[400px] w-full">
+              <div className="min-w-[700px]">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        Aucun historique de pointage
-                      </TableCell>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Personnel</TableHead>
+                      <TableHead>Arrivée</TableHead>
+                      <TableHead>Pause</TableHead>
+                      <TableHead>Fin pause</TableHead>
+                      <TableHead>Départ</TableHead>
+                      <TableHead>Statut</TableHead>
                     </TableRow>
-                  ) : (
-                    historyPointages
-                      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                      .map((pointage) => (
-                        <TableRow key={pointage.id}>
-                          <TableCell>{new Date(pointage.date).toLocaleDateString('fr-FR')}</TableCell>
-                          <TableCell className="font-medium">{pointage.nom_complet}</TableCell>
-                          <TableCell>{pointage.heure_arrivee || '-'}</TableCell>
-                          <TableCell>{pointage.heure_debut_pause || '-'}</TableCell>
-                          <TableCell>{pointage.heure_fin_pause || '-'}</TableCell>
-                          <TableCell>{pointage.heure_depart || '-'}</TableCell>
-                          <TableCell>{getStatusBadge(pointage.statut)}</TableCell>
-                        </TableRow>
-                      ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
+                  </TableHeader>
+                  <TableBody>
+                    {historyPointages.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          Aucun historique de pointage
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      historyPointages
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                        .map((pointage) => (
+                          <TableRow key={pointage.id}>
+                            <TableCell>{new Date(pointage.date).toLocaleDateString('fr-FR')}</TableCell>
+                            <TableCell className="font-medium">{pointage.nom_complet}</TableCell>
+                            <TableCell>{pointage.heure_arrivee || '-'}</TableCell>
+                            <TableCell>{pointage.heure_debut_pause || '-'}</TableCell>
+                            <TableCell>{pointage.heure_fin_pause || '-'}</TableCell>
+                            <TableCell>{pointage.heure_depart || '-'}</TableCell>
+                            <TableCell>{getStatusBadge(pointage.statut)}</TableCell>
+                          </TableRow>
+                        ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </ScrollArea>
+          </div>
         </TabsContent>
       </Tabs>
 
