@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
-import { Search, Plus, Edit, Trash2 } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Filter } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Session {
   id: string;
@@ -58,6 +60,21 @@ const FraisScolaires: React.FC = () => {
       quantite: 50,
       montant: 15000 
     },
+    { 
+      id: '4', 
+      nom: 'Frais d\'inscription', 
+      description: 'Frais d\'inscription pour l\'année scolaire', 
+      sessionId: '2',
+      montant: 55000 
+    },
+    { 
+      id: '5', 
+      nom: 'Mensualité Septembre', 
+      description: 'Mensualité pour le mois de septembre', 
+      sessionId: '2',
+      palierId: '4',
+      montant: 27000 
+    },
   ]);
 
   // Sample data for sessions and paliers
@@ -78,6 +95,8 @@ const FraisScolaires: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFrais, setCurrentFrais] = useState<FraisScolaire | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
+  const [filterSessionId, setFilterSessionId] = useState<string>('');
+  const [filteredFrais, setFilteredFrais] = useState<FraisScolaire[]>(fraisList);
 
   // Form values
   const [formValues, setFormValues] = useState<Omit<FraisScolaire, 'id'>>({
@@ -170,11 +189,25 @@ const FraisScolaires: React.FC = () => {
     }
   };
 
-  // Filter frais based on search query
-  const filteredFrais = fraisList.filter(frais => 
-    frais.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    frais.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Apply filters (search and session)
+  useEffect(() => {
+    let result = [...fraisList];
+    
+    // Filter by search query
+    if (searchQuery) {
+      result = result.filter(frais => 
+        frais.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        frais.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Filter by session
+    if (filterSessionId) {
+      result = result.filter(frais => frais.sessionId === filterSessionId);
+    }
+    
+    setFilteredFrais(result);
+  }, [searchQuery, filterSessionId, fraisList]);
 
   // Get session and palier names for display
   const getSessionName = (id: string) => {
@@ -187,18 +220,75 @@ const FraisScolaires: React.FC = () => {
     if (!session) return '-';
     return session.paliers.find(p => p.id === palierId)?.name || '-';
   };
+  
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchQuery('');
+    setFilterSessionId('');
+    
+    toast({
+      title: "Filtres réinitialisés",
+      description: "Tous les filtres ont été réinitialisés"
+    });
+  };
 
   return (
     <div className="space-y-6">
+      {/* Filters */}
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle className="text-lg">Filtrer les frais scolaires</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="grid grid-cols-1 gap-2 flex-1">
+              <Label>Session</Label>
+              <Select value={filterSessionId} onValueChange={setFilterSessionId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Toutes les sessions" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Toutes les sessions</SelectItem>
+                  {sessions.map(session => (
+                    <SelectItem key={session.id} value={session.id}>
+                      {session.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="relative flex-1">
+              <Label>Recherche</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input 
+                  placeholder="Rechercher un frais..." 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Button 
+                variant="outline" 
+                onClick={resetFilters}
+                className="flex items-center gap-2"
+              >
+                <Filter size={16} />
+                <span>Réinitialiser</span>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
       <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <Input 
-            placeholder="Rechercher un frais..." 
-            value={searchQuery} 
-            onChange={(e) => setSearchQuery(e.target.value)} 
-            className="pl-10"
-          />
+        <div>
+          <h2 className="text-xl font-semibold">Frais Scolaires</h2>
+          <p className="text-muted-foreground">{filteredFrais.length} frais trouvés</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>

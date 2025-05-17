@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Table, 
@@ -110,7 +110,7 @@ const MesPaiements: React.FC = () => {
   const [filteredPaiements, setFilteredPaiements] = useState(paiementsData);
   
   // Appliquer les filtres
-  React.useEffect(() => {
+  useEffect(() => {
     let result = [...paiementsData];
     
     // Filtre par recherche
@@ -137,7 +137,23 @@ const MesPaiements: React.FC = () => {
       }
     }
     
-    // Filtre par dates (à implémenter avec les données réelles)
+    // Filtre par dates
+    if (startDate && endDate) {
+      const startTimestamp = new Date(startDate).getTime();
+      const endTimestamp = new Date(endDate).getTime();
+      
+      result = result.filter(paiement => {
+        if (paiement.date === '-') return false;
+        
+        const parts = paiement.date.split('/');
+        if (parts.length !== 3) return false;
+        
+        const paiementDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        const paiementTimestamp = paiementDate.getTime();
+        
+        return paiementTimestamp >= startTimestamp && paiementTimestamp <= endTimestamp;
+      });
+    }
     
     setFilteredPaiements(result);
   }, [searchQuery, selectedEleve, selectedClasse, startDate, endDate]);
@@ -180,17 +196,54 @@ const MesPaiements: React.FC = () => {
     setSelectedEleve('all');
     setSelectedClasse('all');
     setSearchQuery('');
+    
+    toast({
+      title: "Filtres réinitialisés",
+      description: "Tous les filtres ont été réinitialisés"
+    });
   };
 
   // Filtrer par période
   const filterByDateRange = () => {
-    // Dans une implémentation réelle, cette fonction filtrerait 
-    // les paiements en fonction des dates sélectionnées
+    // Cette fonction est appelée lorsque le bouton "Filtrer" est cliqué
+    // L'état est déjà mis à jour automatiquement par le useEffect
     toast({
       title: "Filtre appliqué",
-      description: `Affichage des paiements du ${startDate} au ${endDate}`
+      description: `Affichage des paiements du ${formatDisplayDate(startDate)} au ${formatDisplayDate(endDate)}`
     });
   };
+  
+  // Formater la date pour l'affichage
+  const formatDisplayDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR');
+  };
+  
+  // Calculer les totaux pour les cartes
+  const totalPaye = filteredPaiements
+    .filter(p => p.statut === 'Payé' || p.statut === 'Partiellement payé')
+    .reduce((sum, p) => sum + p.montantValue, 0);
+  
+  const resteAPayer = filteredPaiements
+    .filter(p => p.statut === 'À payer')
+    .reduce((sum, p) => sum + p.montantValue, 0);
+  
+  // Trouver la prochaine échéance
+  const prochaineEcheance = filteredPaiements
+    .filter(p => p.statut === 'À payer')
+    .sort((a, b) => {
+      if (a.echeance === b.echeance) return 0;
+      if (a.echeance === '-') return 1;
+      if (b.echeance === '-') return -1;
+      
+      const partsA = a.echeance.split('/');
+      const partsB = b.echeance.split('/');
+      
+      const dateA = new Date(`${partsA[2]}-${partsA[1]}-${partsA[0]}`);
+      const dateB = new Date(`${partsB[2]}-${partsB[1]}-${partsB[0]}`);
+      
+      return dateA.getTime() - dateB.getTime();
+    })[0]?.echeance || 'Aucune';
 
   return (
     <div>
@@ -206,7 +259,7 @@ const MesPaiements: React.FC = () => {
             <CreditCard size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">275 000 FCFA</p>
+            <p className="text-2xl font-bold">{totalPaye.toLocaleString()} FCFA</p>
           </CardContent>
         </Card>
         <Card>
@@ -215,7 +268,7 @@ const MesPaiements: React.FC = () => {
             <FileText size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">75 000 FCFA</p>
+            <p className="text-2xl font-bold">{resteAPayer.toLocaleString()} FCFA</p>
           </CardContent>
         </Card>
         <Card>
@@ -233,7 +286,7 @@ const MesPaiements: React.FC = () => {
             <AlertTriangle size={16} className="text-amber-600" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">01/12/2024</p>
+            <p className="text-2xl font-bold">{prochaineEcheance}</p>
           </CardContent>
         </Card>
       </div>
@@ -370,7 +423,7 @@ const MesPaiements: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Aperçu du reçu</DialogTitle>
           </DialogHeader>
-          <div className="p-4 border rounded-md">
+          <div className="p-4 border rounded-md printable-content">
             <div className="mb-4 text-center">
               <h3 className="font-bold text-xl">École Primaire La Réussite</h3>
               <p className="text-sm text-muted-foreground">Reçu de paiement</p>

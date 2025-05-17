@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -11,7 +11,11 @@ import {
   TableRow, 
   TableCell 
 } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Calendar, 
   Filter, 
@@ -22,13 +26,44 @@ import {
   FileText, 
   ArrowDownRight,
   ArrowUpRight,
-  Printer
+  Printer,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DateRangeFilter from '@/components/payments/DateRangeFilter';
 import TotalsSummary from '@/components/payments/TotalsSummary';
 import TransactionModal from '@/components/payments/TransactionModal';
 import { Transaction } from '@/components/notes/types';
+import { v4 as uuidv4 } from 'uuid';
+
+// Catégories de dépenses
+const categoriesDepenses = [
+  { id: '1', name: 'Matériel' },
+  { id: '2', name: 'Maintenance' },
+  { id: '3', name: 'Salaires' },
+  { id: '4', name: 'Charges' },
+  { id: '5', name: 'Transport' },
+  { id: '6', name: 'Alimentation' },
+];
+
+// Classes pour les paiements
+const classes = [
+  { id: '1', name: 'CP' },
+  { id: '2', name: 'CE1' },
+  { id: '3', name: 'CE2' },
+  { id: '4', name: 'CM1' },
+  { id: '5', name: 'CM2' },
+];
+
+// Types de paiement
+const typesPaiement = [
+  { id: '1', name: 'Frais de scolarité' },
+  { id: '2', name: 'Fournitures scolaires' },
+  { id: '3', name: 'Cantine' },
+  { id: '4', name: 'Transport' },
+  { id: '5', name: 'Activités parascolaires' },
+];
 
 // Données fictives pour démonstration
 const paiementsData = [
@@ -37,6 +72,7 @@ const paiementsData = [
     nom: 'Jean Assoumou',
     classe: 'CM2',
     montant: '150000',
+    montantValue: 150000,
     type: 'Frais de scolarité',
     date: '2024-05-10',
     statut: 'Payé'
@@ -46,6 +82,7 @@ const paiementsData = [
     nom: 'Marie Ndong',
     classe: 'CE1',
     montant: '120000',
+    montantValue: 120000,
     type: 'Frais de scolarité',
     date: '2024-05-09',
     statut: 'Payé'
@@ -55,6 +92,7 @@ const paiementsData = [
     nom: 'Pierre Obiang',
     classe: 'CP',
     montant: '100000',
+    montantValue: 100000,
     type: 'Frais de scolarité',
     date: '2024-05-12',
     statut: 'En attente'
@@ -64,6 +102,7 @@ const paiementsData = [
     nom: 'Sophie Mba',
     classe: 'CM1',
     montant: '135000',
+    montantValue: 135000,
     type: 'Frais de scolarité',
     date: '2024-05-15',
     statut: 'En attente'
@@ -76,6 +115,7 @@ const depensesData = [
     id: 1,
     description: 'Achat de fournitures scolaires',
     montant: '350000',
+    montantValue: 350000,
     date: '2024-05-05',
     categorie: 'Matériel',
     beneficiaire: 'Papeterie Centrale'
@@ -84,6 +124,7 @@ const depensesData = [
     id: 2,
     description: 'Réparation climatisation',
     montant: '120000',
+    montantValue: 120000,
     date: '2024-05-03',
     categorie: 'Maintenance',
     beneficiaire: 'Technicien Clim'
@@ -92,6 +133,7 @@ const depensesData = [
     id: 3,
     description: 'Salaires personnel enseignant',
     montant: '2500000',
+    montantValue: 2500000,
     date: '2024-05-01',
     categorie: 'Salaires',
     beneficiaire: 'Personnel'
@@ -100,6 +142,7 @@ const depensesData = [
     id: 4,
     description: 'Facture électricité',
     montant: '180000',
+    montantValue: 180000,
     date: '2024-05-02',
     categorie: 'Charges',
     beneficiaire: 'SEEG'
@@ -107,7 +150,7 @@ const depensesData = [
 ];
 
 // Transactions bilancielles
-const transactions: Transaction[] = [
+const initialTransactions: Transaction[] = [
   { 
     id: 1, 
     date: '2024-09-05', 
@@ -162,60 +205,119 @@ const transactions: Transaction[] = [
 const Paiements: React.FC = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('recettes');
-  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isAddPaiementModalOpen, setIsAddPaiementModalOpen] = useState(false);
+  const [isAddDepenseModalOpen, setIsAddDepenseModalOpen] = useState(false);
+  const [isEditPaiementModalOpen, setIsEditPaiementModalOpen] = useState(false);
+  const [isEditDepenseModalOpen, setIsEditDepenseModalOpen] = useState(false);
+  const [isDeletePaiementModalOpen, setIsDeletePaiementModalOpen] = useState(false);
+  const [isDeleteDepenseModalOpen, setIsDeleteDepenseModalOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredPaiements, setFilteredPaiements] = useState(paiementsData);
-  const [filteredDepenses, setFilteredDepenses] = useState(depensesData);
+  const [paiements, setPaiements] = useState([...paiementsData]);
+  const [depenses, setDepenses] = useState([...depensesData]);
+  const [filteredPaiements, setFilteredPaiements] = useState(paiements);
+  const [filteredDepenses, setFilteredDepenses] = useState(depenses);
   const [startDate, setStartDate] = useState("2024-09-01");
   const [endDate, setEndDate] = useState("2024-10-31");
+  const [transactions, setTransactions] = useState([...initialTransactions]);
   const [filteredTransactions, setFilteredTransactions] = useState(transactions);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  // Filtrer les données en fonction du terme de recherche
-  const handleSearch = (tab: string, term: string) => {
-    setSearchTerm(term);
+  // Formulaire d'ajout/édition de paiement
+  const [paiementForm, setPaiementForm] = useState({
+    nom: '',
+    classe: '',
+    montant: '',
+    type: '',
+    date: new Date().toISOString().split('T')[0],
+    statut: 'En attente'
+  });
+  
+  // Formulaire d'ajout/édition de dépense
+  const [depenseForm, setDepenseForm] = useState({
+    description: '',
+    montant: '',
+    date: new Date().toISOString().split('T')[0],
+    categorie: '',
+    beneficiaire: ''
+  });
+  
+  // Filtrer les paiements
+  useEffect(() => {
+    // Filtrer les paiements en fonction du terme de recherche
+    let filtered = [...paiements];
     
-    if (tab === 'recettes') {
-      const filtered = paiementsData.filter(paiement =>
-        paiement.nom.toLowerCase().includes(term.toLowerCase()) ||
-        paiement.classe.toLowerCase().includes(term.toLowerCase()) ||
-        paiement.type.toLowerCase().includes(term.toLowerCase())
+    if (searchTerm) {
+      filtered = filtered.filter(paiement =>
+        paiement.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        paiement.classe.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        paiement.type.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredPaiements(filtered);
-    } else if (tab === 'depenses') {
-      const filtered = depensesData.filter(depense =>
-        depense.description.toLowerCase().includes(term.toLowerCase()) ||
-        depense.beneficiaire.toLowerCase().includes(term.toLowerCase()) ||
-        depense.categorie.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredDepenses(filtered);
     }
+    
+    setFilteredPaiements(filtered);
+  }, [searchTerm, paiements]);
+  
+  // Filtrer les dépenses
+  useEffect(() => {
+    // Filtrer les dépenses en fonction du terme de recherche
+    let filtered = [...depenses];
+    
+    if (searchTerm) {
+      filtered = filtered.filter(depense =>
+        depense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        depense.beneficiaire.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        depense.categorie.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    setFilteredDepenses(filtered);
+  }, [searchTerm, depenses]);
+  
+  // Synchroniser les transactions
+  useEffect(() => {
+    // Cette fonction met à jour les transactions en fonction des paiements et dépenses
+    const newTransactions: Transaction[] = [
+      ...paiements.map(p => ({
+        id: p.id,
+        date: p.date,
+        description: `Paiement ${p.type} - ${p.nom}`,
+        amount: parseInt(p.montant),
+        type: 'income' as const
+      })),
+      ...depenses.map(d => ({
+        id: d.id + 1000, // Pour éviter les conflits d'ID
+        date: d.date,
+        description: d.description,
+        amount: parseInt(d.montant),
+        type: 'expense' as const
+      }))
+    ];
+    
+    setTransactions(newTransactions);
+    
+    // Appliquer le filtre de date aux transactions
+    filterTransactionsByDate(newTransactions);
+  }, [paiements, depenses]);
+  
+  // Filtrer les transactions par date
+  const filterTransactionsByDate = (transactionsToFilter = transactions) => {
+    const startTimestamp = new Date(startDate).getTime();
+    const endTimestamp = new Date(endDate).getTime();
+    
+    const filtered = transactionsToFilter.filter(transaction => {
+      const transactionDate = new Date(transaction.date).getTime();
+      return transactionDate >= startTimestamp && transactionDate <= endTimestamp;
+    });
+    
+    setFilteredTransactions(filtered);
   };
   
   // Gérer le changement d'onglet
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setSearchTerm('');
-    
-    // Réinitialiser les listes filtrées
-    if (value === 'recettes') {
-      setFilteredPaiements(paiementsData);
-    } else if (value === 'depenses') {
-      setFilteredDepenses(depensesData);
-    }
-  };
-  
-  // Filtrer les transactions par date
-  const filterTransactions = () => {
-    const startTimestamp = new Date(startDate).getTime();
-    const endTimestamp = new Date(endDate).getTime();
-    
-    const filtered = transactions.filter(transaction => {
-      const transactionDate = new Date(transaction.date).getTime();
-      return transactionDate >= startTimestamp && transactionDate <= endTimestamp;
-    });
-    
-    setFilteredTransactions(filtered);
   };
   
   // Calculer les totaux
@@ -231,7 +333,12 @@ const Paiements: React.FC = () => {
   const resetFilters = () => {
     setStartDate("2024-09-01");
     setEndDate("2024-10-31");
-    setFilteredTransactions(transactions);
+    setSearchTerm('');
+    filterTransactionsByDate();
+    toast({
+      title: "Filtres réinitialisés",
+      description: "Les filtres ont été réinitialisés avec succès"
+    });
   };
 
   // Gérer l'impression du bilan
@@ -241,6 +348,303 @@ const Paiements: React.FC = () => {
       title: "Impression",
       description: "L'état financier a été envoyé à l'impression."
     });
+  };
+  
+  // Ajouter un nouveau paiement
+  const handleAddPaiement = () => {
+    // Validation des champs obligatoires
+    if (!paiementForm.nom || !paiementForm.classe || !paiementForm.montant || !paiementForm.type) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Créer le nouveau paiement
+    const newPaiement = {
+      id: paiements.length > 0 ? Math.max(...paiements.map(p => p.id)) + 1 : 1,
+      nom: paiementForm.nom,
+      classe: paiementForm.classe,
+      montant: paiementForm.montant,
+      montantValue: parseInt(paiementForm.montant),
+      type: paiementForm.type,
+      date: paiementForm.date,
+      statut: paiementForm.statut
+    };
+    
+    // Ajouter le paiement à la liste
+    setPaiements([...paiements, newPaiement]);
+    
+    // Réinitialiser le formulaire et fermer la modal
+    setPaiementForm({
+      nom: '',
+      classe: '',
+      montant: '',
+      type: '',
+      date: new Date().toISOString().split('T')[0],
+      statut: 'En attente'
+    });
+    
+    setIsAddPaiementModalOpen(false);
+    
+    toast({
+      title: "Paiement ajouté",
+      description: `Le paiement de ${newPaiement.nom} a été ajouté avec succès`
+    });
+  };
+  
+  // Ajouter une nouvelle dépense
+  const handleAddDepense = () => {
+    // Validation des champs obligatoires
+    if (!depenseForm.description || !depenseForm.montant || !depenseForm.categorie || !depenseForm.beneficiaire) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Créer la nouvelle dépense
+    const newDepense = {
+      id: depenses.length > 0 ? Math.max(...depenses.map(d => d.id)) + 1 : 1,
+      description: depenseForm.description,
+      montant: depenseForm.montant,
+      montantValue: parseInt(depenseForm.montant),
+      date: depenseForm.date,
+      categorie: depenseForm.categorie,
+      beneficiaire: depenseForm.beneficiaire
+    };
+    
+    // Ajouter la dépense à la liste
+    setDepenses([...depenses, newDepense]);
+    
+    // Réinitialiser le formulaire et fermer la modal
+    setDepenseForm({
+      description: '',
+      montant: '',
+      date: new Date().toISOString().split('T')[0],
+      categorie: '',
+      beneficiaire: ''
+    });
+    
+    setIsAddDepenseModalOpen(false);
+    
+    toast({
+      title: "Dépense ajoutée",
+      description: `La dépense "${newDepense.description}" a été ajoutée avec succès`
+    });
+  };
+  
+  // Éditer un paiement existant
+  const handleEditPaiement = () => {
+    if (!selectedItemId) return;
+    
+    // Validation des champs obligatoires
+    if (!paiementForm.nom || !paiementForm.classe || !paiementForm.montant || !paiementForm.type) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Mettre à jour le paiement dans la liste
+    const updatedPaiements = paiements.map(p => 
+      p.id === selectedItemId 
+        ? {
+            ...p,
+            nom: paiementForm.nom,
+            classe: paiementForm.classe,
+            montant: paiementForm.montant,
+            montantValue: parseInt(paiementForm.montant),
+            type: paiementForm.type,
+            date: paiementForm.date,
+            statut: paiementForm.statut
+          }
+        : p
+    );
+    
+    setPaiements(updatedPaiements);
+    setIsEditPaiementModalOpen(false);
+    
+    toast({
+      title: "Paiement mis à jour",
+      description: "Le paiement a été mis à jour avec succès"
+    });
+  };
+  
+  // Éditer une dépense existante
+  const handleEditDepense = () => {
+    if (!selectedItemId) return;
+    
+    // Validation des champs obligatoires
+    if (!depenseForm.description || !depenseForm.montant || !depenseForm.categorie || !depenseForm.beneficiaire) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Mettre à jour la dépense dans la liste
+    const updatedDepenses = depenses.map(d => 
+      d.id === selectedItemId 
+        ? {
+            ...d,
+            description: depenseForm.description,
+            montant: depenseForm.montant,
+            montantValue: parseInt(depenseForm.montant),
+            date: depenseForm.date,
+            categorie: depenseForm.categorie,
+            beneficiaire: depenseForm.beneficiaire
+          }
+        : d
+    );
+    
+    setDepenses(updatedDepenses);
+    setIsEditDepenseModalOpen(false);
+    
+    toast({
+      title: "Dépense mise à jour",
+      description: "La dépense a été mise à jour avec succès"
+    });
+  };
+  
+  // Supprimer un paiement
+  const handleDeletePaiement = () => {
+    if (!selectedItemId) return;
+    
+    const updatedPaiements = paiements.filter(p => p.id !== selectedItemId);
+    setPaiements(updatedPaiements);
+    setIsDeletePaiementModalOpen(false);
+    
+    toast({
+      title: "Paiement supprimé",
+      description: "Le paiement a été supprimé avec succès"
+    });
+  };
+  
+  // Supprimer une dépense
+  const handleDeleteDepense = () => {
+    if (!selectedItemId) return;
+    
+    const updatedDepenses = depenses.filter(d => d.id !== selectedItemId);
+    setDepenses(updatedDepenses);
+    setIsDeleteDepenseModalOpen(false);
+    
+    toast({
+      title: "Dépense supprimée",
+      description: "La dépense a été supprimée avec succès"
+    });
+  };
+  
+  // Ouvrir la modal d'édition d'un paiement
+  const openEditPaiementModal = (id: number) => {
+    const paiement = paiements.find(p => p.id === id);
+    if (paiement) {
+      setPaiementForm({
+        nom: paiement.nom,
+        classe: paiement.classe,
+        montant: paiement.montant,
+        type: paiement.type,
+        date: paiement.date,
+        statut: paiement.statut
+      });
+      setSelectedItemId(id);
+      setIsEditPaiementModalOpen(true);
+    }
+  };
+  
+  // Ouvrir la modal d'édition d'une dépense
+  const openEditDepenseModal = (id: number) => {
+    const depense = depenses.find(d => d.id === id);
+    if (depense) {
+      setDepenseForm({
+        description: depense.description,
+        montant: depense.montant,
+        date: depense.date,
+        categorie: depense.categorie,
+        beneficiaire: depense.beneficiaire
+      });
+      setSelectedItemId(id);
+      setIsEditDepenseModalOpen(true);
+    }
+  };
+  
+  // Ouvrir la modal de suppression d'un paiement
+  const openDeletePaiementModal = (id: number) => {
+    setSelectedItemId(id);
+    setIsDeletePaiementModalOpen(true);
+  };
+  
+  // Ouvrir la modal de suppression d'une dépense
+  const openDeleteDepenseModal = (id: number) => {
+    setSelectedItemId(id);
+    setIsDeleteDepenseModalOpen(true);
+  };
+  
+  // Calculer les statistiques des recettes
+  const totalRecettes = paiements.reduce((acc, curr) => acc + curr.montantValue, 0);
+  const paiementsCeMois = paiements
+    .filter(p => {
+      const month = new Date(p.date).getMonth();
+      const year = new Date(p.date).getFullYear();
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      return month === currentMonth && year === currentYear;
+    })
+    .reduce((acc, curr) => acc + curr.montantValue, 0);
+  
+  const paiementsEnAttente = paiements
+    .filter(p => p.statut === 'En attente')
+    .reduce((acc, curr) => acc + curr.montantValue, 0);
+  
+  // Calculer les statistiques des dépenses
+  const totalDepenses = depenses.reduce((acc, curr) => acc + curr.montantValue, 0);
+  const depensesCeMois = depenses
+    .filter(d => {
+      const month = new Date(d.date).getMonth();
+      const year = new Date(d.date).getFullYear();
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      return month === currentMonth && year === currentYear;
+    })
+    .reduce((acc, curr) => acc + curr.montantValue, 0);
+  
+  // Trouver la catégorie de dépense principale
+  const categoriePrincipale = (() => {
+    const categoriesSum: { [key: string]: number } = {};
+    
+    depenses.forEach(d => {
+      if (categoriesSum[d.categorie]) {
+        categoriesSum[d.categorie] += d.montantValue;
+      } else {
+        categoriesSum[d.categorie] = d.montantValue;
+      }
+    });
+    
+    let maxCategory = '';
+    let maxSum = 0;
+    
+    Object.entries(categoriesSum).forEach(([category, sum]) => {
+      if (sum > maxSum) {
+        maxSum = sum;
+        maxCategory = category;
+      }
+    });
+    
+    return maxCategory;
+  })();
+  
+  // Formater la date pour l'affichage
+  const formatDisplayDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR');
   };
 
   return (
@@ -260,7 +664,12 @@ const Paiements: React.FC = () => {
           </Button>
           <Button
             className="flex items-center gap-2"
-            onClick={() => setIsOpenModal(true)}
+            onClick={() => activeTab === 'recettes' 
+              ? setIsAddPaiementModalOpen(true) 
+              : activeTab === 'depenses' 
+              ? setIsAddDepenseModalOpen(true)
+              : null
+            }
           >
             <Plus size={16} />
             <span>{activeTab === 'recettes' ? 'Ajouter paiement' : activeTab === 'depenses' ? 'Ajouter dépense' : 'Nouvelle entrée'}</span>
@@ -291,7 +700,7 @@ const Paiements: React.FC = () => {
                       placeholder="Rechercher par nom, classe ou type..."
                       className="pl-8 h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
                       value={searchTerm}
-                      onChange={(e) => handleSearch('recettes', e.target.value)}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
                   <Button variant="outline" className="flex items-center gap-1">
@@ -314,15 +723,15 @@ const Paiements: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-green-50 p-4 rounded-lg">
                     <div className="text-green-600 font-medium">Total recettes</div>
-                    <div className="text-2xl font-bold">3 875 000 FCFA</div>
+                    <div className="text-2xl font-bold">{totalRecettes.toLocaleString()} FCFA</div>
                   </div>
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="text-blue-600 font-medium">Paiements ce mois</div>
-                    <div className="text-2xl font-bold">1 245 000 FCFA</div>
+                    <div className="text-2xl font-bold">{paiementsCeMois.toLocaleString()} FCFA</div>
                   </div>
                   <div className="bg-amber-50 p-4 rounded-lg">
                     <div className="text-amber-600 font-medium">En attente</div>
-                    <div className="text-2xl font-bold">235 000 FCFA</div>
+                    <div className="text-2xl font-bold">{paiementsEnAttente.toLocaleString()} FCFA</div>
                   </div>
                 </div>
               </CardContent>
@@ -351,7 +760,13 @@ const Paiements: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredPaiements.map((paiement) => (
+                      {filteredPaiements.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                            Aucun paiement trouvé
+                          </TableCell>
+                        </TableRow>
+                      ) : filteredPaiements.map((paiement) => (
                         <TableRow key={paiement.id}>
                           <TableCell>{paiement.id}</TableCell>
                           <TableCell className="font-medium">{paiement.nom}</TableCell>
@@ -368,8 +783,12 @@ const Paiements: React.FC = () => {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
-                              <Button variant="outline" size="sm">Voir</Button>
-                              <Button variant="ghost" size="sm">Modifier</Button>
+                              <Button variant="outline" size="sm" onClick={() => openEditPaiementModal(paiement.id)}>
+                                <Edit size={16} />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => openDeletePaiementModal(paiement.id)}>
+                                <Trash2 size={16} />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -398,7 +817,7 @@ const Paiements: React.FC = () => {
                       placeholder="Rechercher par description, bénéficiaire..."
                       className="pl-8 h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
                       value={searchTerm}
-                      onChange={(e) => handleSearch('depenses', e.target.value)}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
                   <Button variant="outline" className="flex items-center gap-1">
@@ -421,15 +840,15 @@ const Paiements: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-red-50 p-4 rounded-lg">
                     <div className="text-red-600 font-medium">Total dépenses</div>
-                    <div className="text-2xl font-bold">3 150 000 FCFA</div>
+                    <div className="text-2xl font-bold">{totalDepenses.toLocaleString()} FCFA</div>
                   </div>
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="text-blue-600 font-medium">Dépenses ce mois</div>
-                    <div className="text-2xl font-bold">950 000 FCFA</div>
+                    <div className="text-2xl font-bold">{depensesCeMois.toLocaleString()} FCFA</div>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg">
                     <div className="text-purple-600 font-medium">Catégorie principale</div>
-                    <div className="text-2xl font-bold">Salaires</div>
+                    <div className="text-2xl font-bold">{categoriePrincipale}</div>
                   </div>
                 </div>
               </CardContent>
@@ -457,7 +876,13 @@ const Paiements: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredDepenses.map((depense) => (
+                      {filteredDepenses.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                            Aucune dépense trouvée
+                          </TableCell>
+                        </TableRow>
+                      ) : filteredDepenses.map((depense) => (
                         <TableRow key={depense.id}>
                           <TableCell>{depense.id}</TableCell>
                           <TableCell className="font-medium">{depense.description}</TableCell>
@@ -467,8 +892,12 @@ const Paiements: React.FC = () => {
                           <TableCell>{depense.beneficiaire}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
-                              <Button variant="outline" size="sm">Voir</Button>
-                              <Button variant="ghost" size="sm">Modifier</Button>
+                              <Button variant="outline" size="sm" onClick={() => openEditDepenseModal(depense.id)}>
+                                <Edit size={16} />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => openDeleteDepenseModal(depense.id)}>
+                                <Trash2 size={16} />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -503,7 +932,7 @@ const Paiements: React.FC = () => {
             endDate={endDate}
             onStartDateChange={setStartDate}
             onEndDateChange={setEndDate}
-            onFilter={filterTransactions}
+            onFilter={() => filterTransactionsByDate()}
             onReset={resetFilters}
           />
           
@@ -562,7 +991,7 @@ const Paiements: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ArrowUpRight size={16} className="text-red-500" />
-                  Dépenses
+                  Sorties
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -590,7 +1019,7 @@ const Paiements: React.FC = () => {
                       {filteredTransactions.filter(t => t.type === 'expense').length === 0 && (
                         <TableRow>
                           <TableCell colSpan={3} className="text-center py-4 text-muted-foreground">
-                            Aucune dépense trouvée pour cette période
+                            Aucune sortie trouvée pour cette période
                           </TableCell>
                         </TableRow>
                       )}
@@ -612,17 +1041,398 @@ const Paiements: React.FC = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Modal pour ajouter */}
-      <Dialog open={isOpenModal} onOpenChange={setIsOpenModal}>
-        <DialogContent>
+      {/* Modal pour ajouter un paiement */}
+      <Dialog open={isAddPaiementModalOpen} onOpenChange={setIsAddPaiementModalOpen}>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {activeTab === 'recettes' ? 'Ajouter un paiement' : 'Ajouter une dépense'}
-            </DialogTitle>
+            <DialogTitle>Ajouter un paiement</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p>Formulaire à implémenter</p>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="nom" className="text-right">Nom</Label>
+                <Input
+                  id="nom"
+                  value={paiementForm.nom}
+                  onChange={(e) => setPaiementForm({...paiementForm, nom: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Nom de l'élève"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="classe" className="text-right">Classe</Label>
+                <Select 
+                  value={paiementForm.classe}
+                  onValueChange={(value) => setPaiementForm({...paiementForm, classe: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Sélectionner une classe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map(classe => (
+                      <SelectItem key={classe.id} value={classe.name}>
+                        {classe.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="type" className="text-right">Type</Label>
+                <Select 
+                  value={paiementForm.type}
+                  onValueChange={(value) => setPaiementForm({...paiementForm, type: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Sélectionner un type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {typesPaiement.map(type => (
+                      <SelectItem key={type.id} value={type.name}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="montant" className="text-right">Montant</Label>
+                <Input
+                  id="montant"
+                  type="text"
+                  value={paiementForm.montant}
+                  onChange={(e) => setPaiementForm({...paiementForm, montant: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Ex: 150000"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="date" className="text-right">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={paiementForm.date}
+                  onChange={(e) => setPaiementForm({...paiementForm, date: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="statut" className="text-right">Statut</Label>
+                <Select 
+                  value={paiementForm.statut}
+                  onValueChange={(value) => setPaiementForm({...paiementForm, statut: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Statut du paiement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="En attente">En attente</SelectItem>
+                    <SelectItem value="Payé">Payé</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddPaiementModalOpen(false)}>Annuler</Button>
+            <Button onClick={handleAddPaiement}>Ajouter</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal pour ajouter une dépense */}
+      <Dialog open={isAddDepenseModalOpen} onOpenChange={setIsAddDepenseModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Ajouter une dépense</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="description" className="text-right">Description</Label>
+                <Input
+                  id="description"
+                  value={depenseForm.description}
+                  onChange={(e) => setDepenseForm({...depenseForm, description: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Description de la dépense"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="categorie" className="text-right">Catégorie</Label>
+                <Select 
+                  value={depenseForm.categorie}
+                  onValueChange={(value) => setDepenseForm({...depenseForm, categorie: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Sélectionner une catégorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categoriesDepenses.map(cat => (
+                      <SelectItem key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="beneficiaire" className="text-right">Bénéficiaire</Label>
+                <Input
+                  id="beneficiaire"
+                  value={depenseForm.beneficiaire}
+                  onChange={(e) => setDepenseForm({...depenseForm, beneficiaire: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Nom du bénéficiaire"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="montant" className="text-right">Montant</Label>
+                <Input
+                  id="montant"
+                  type="text"
+                  value={depenseForm.montant}
+                  onChange={(e) => setDepenseForm({...depenseForm, montant: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Ex: 150000"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="date" className="text-right">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={depenseForm.date}
+                  onChange={(e) => setDepenseForm({...depenseForm, date: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDepenseModalOpen(false)}>Annuler</Button>
+            <Button onClick={handleAddDepense}>Ajouter</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal pour éditer un paiement */}
+      <Dialog open={isEditPaiementModalOpen} onOpenChange={setIsEditPaiementModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Modifier un paiement</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="nom" className="text-right">Nom</Label>
+                <Input
+                  id="nom"
+                  value={paiementForm.nom}
+                  onChange={(e) => setPaiementForm({...paiementForm, nom: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="classe" className="text-right">Classe</Label>
+                <Select 
+                  value={paiementForm.classe}
+                  onValueChange={(value) => setPaiementForm({...paiementForm, classe: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Sélectionner une classe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map(classe => (
+                      <SelectItem key={classe.id} value={classe.name}>
+                        {classe.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="type" className="text-right">Type</Label>
+                <Select 
+                  value={paiementForm.type}
+                  onValueChange={(value) => setPaiementForm({...paiementForm, type: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Sélectionner un type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {typesPaiement.map(type => (
+                      <SelectItem key={type.id} value={type.name}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="montant" className="text-right">Montant</Label>
+                <Input
+                  id="montant"
+                  type="text"
+                  value={paiementForm.montant}
+                  onChange={(e) => setPaiementForm({...paiementForm, montant: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="date" className="text-right">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={paiementForm.date}
+                  onChange={(e) => setPaiementForm({...paiementForm, date: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="statut" className="text-right">Statut</Label>
+                <Select 
+                  value={paiementForm.statut}
+                  onValueChange={(value) => setPaiementForm({...paiementForm, statut: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Statut du paiement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="En attente">En attente</SelectItem>
+                    <SelectItem value="Payé">Payé</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditPaiementModalOpen(false)}>Annuler</Button>
+            <Button onClick={handleEditPaiement}>Mettre à jour</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal pour éditer une dépense */}
+      <Dialog open={isEditDepenseModalOpen} onOpenChange={setIsEditDepenseModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Modifier une dépense</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="description" className="text-right">Description</Label>
+                <Input
+                  id="description"
+                  value={depenseForm.description}
+                  onChange={(e) => setDepenseForm({...depenseForm, description: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="categorie" className="text-right">Catégorie</Label>
+                <Select 
+                  value={depenseForm.categorie}
+                  onValueChange={(value) => setDepenseForm({...depenseForm, categorie: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Sélectionner une catégorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categoriesDepenses.map(cat => (
+                      <SelectItem key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="beneficiaire" className="text-right">Bénéficiaire</Label>
+                <Input
+                  id="beneficiaire"
+                  value={depenseForm.beneficiaire}
+                  onChange={(e) => setDepenseForm({...depenseForm, beneficiaire: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="montant" className="text-right">Montant</Label>
+                <Input
+                  id="montant"
+                  type="text"
+                  value={depenseForm.montant}
+                  onChange={(e) => setDepenseForm({...depenseForm, montant: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="date" className="text-right">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={depenseForm.date}
+                  onChange={(e) => setDepenseForm({...depenseForm, date: e.target.value})}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDepenseModalOpen(false)}>Annuler</Button>
+            <Button onClick={handleEditDepense}>Mettre à jour</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal pour confirmer la suppression d'un paiement */}
+      <Dialog open={isDeletePaiementModalOpen} onOpenChange={setIsDeletePaiementModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Supprimer un paiement</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Êtes-vous sûr de vouloir supprimer ce paiement ? Cette action est irréversible.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeletePaiementModalOpen(false)}>Annuler</Button>
+            <Button variant="destructive" onClick={handleDeletePaiement}>Supprimer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modal pour confirmer la suppression d'une dépense */}
+      <Dialog open={isDeleteDepenseModalOpen} onOpenChange={setIsDeleteDepenseModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Supprimer une dépense</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Êtes-vous sûr de vouloir supprimer cette dépense ? Cette action est irréversible.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDepenseModalOpen(false)}>Annuler</Button>
+            <Button variant="destructive" onClick={handleDeleteDepense}>Supprimer</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
