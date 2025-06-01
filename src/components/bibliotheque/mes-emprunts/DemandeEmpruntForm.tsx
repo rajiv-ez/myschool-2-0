@@ -79,7 +79,7 @@ const DemandeEmpruntForm: React.FC<DemandeEmpruntFormProps> = ({
               <FormLabel>Livre</FormLabel>
               <Select 
                 onValueChange={(value) => field.onChange(parseInt(value))} 
-                defaultValue={field.value ? field.value.toString() : undefined}
+                defaultValue={field.value && field.value > 0 ? field.value.toString() : undefined}
               >
                 <FormControl>
                   <SelectTrigger>
