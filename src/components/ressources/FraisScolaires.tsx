@@ -95,7 +95,7 @@ const FraisScolaires: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFrais, setCurrentFrais] = useState<FraisScolaire | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
-  const [filterSessionId, setFilterSessionId] = useState<string>('');
+  const [filterSessionId, setFilterSessionId] = useState<string>('all');
   const [filteredFrais, setFilteredFrais] = useState<FraisScolaire[]>(fraisList);
 
   // Form values
@@ -202,7 +202,7 @@ const FraisScolaires: React.FC = () => {
     }
     
     // Filter by session
-    if (filterSessionId) {
+    if (filterSessionId && filterSessionId !== 'all') {
       result = result.filter(frais => frais.sessionId === filterSessionId);
     }
     
@@ -224,7 +224,7 @@ const FraisScolaires: React.FC = () => {
   // Reset all filters
   const resetFilters = () => {
     setSearchQuery('');
-    setFilterSessionId('');
+    setFilterSessionId('all');
     
     toast({
       title: "Filtres réinitialisés",
@@ -248,7 +248,7 @@ const FraisScolaires: React.FC = () => {
                   <SelectValue placeholder="Toutes les sessions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les sessions</SelectItem>
+                  <SelectItem value="all">Toutes les sessions</SelectItem>
                   {sessions.map(session => (
                     <SelectItem key={session.id} value={session.id}>
                       {session.name}
@@ -361,7 +361,7 @@ const FraisScolaires: React.FC = () => {
                     Trimestre
                   </Label>
                   <Select 
-                    value={formValues.palierId}
+                    value={formValues.palierId || "no-palier"}
                     onValueChange={(value) => setFormValues({...formValues, palierId: value === "no-palier" ? undefined : value})}
                     disabled={!formValues.sessionId}
                   >
