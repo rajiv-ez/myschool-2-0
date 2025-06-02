@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useApiWithFallback } from '@/hooks/useApiWithFallback';
 import { academicService } from '@/services/academicService';
-import { Session, Palier } from '@/types/academic';
-import { FraisScolaire } from '@/types';
+import { Session, Palier, FraisScolaire } from '@/types';
 
 const FraisScolaires: React.FC = () => {
   const { toast } = useToast();

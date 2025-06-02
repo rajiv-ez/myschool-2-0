@@ -1,8 +1,8 @@
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
-// Configuration de base d'axios
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+// Configuration de base d'axios - utilisation de la syntaxe Vite
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
