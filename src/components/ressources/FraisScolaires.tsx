@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,33 +8,31 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
-import { Search, Plus, Edit, Trash2, Filter } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Filter, Wifi, WifiOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-interface Session {
-  id: string;
-  name: string;
-  paliers: Palier[];
-}
-
-interface Palier {
-  id: string;
-  name: string;
-  sessionId: string;
-}
-
-interface FraisScolaire {
-  id: string;
-  nom: string;
-  description: string;
-  sessionId: string;
-  palierId?: string;
-  quantite?: number;
-  montant: number;
-}
+import { Badge } from '@/components/ui/badge';
+import { useApiWithFallback } from '@/hooks/useApiWithFallback';
+import { academicService } from '@/services/academicService';
+import { Session, Palier } from '@/types/academic';
+import { FraisScolaire } from '@/types';
 
 const FraisScolaires: React.FC = () => {
   const { toast } = useToast();
+
+  // Utilisation du hook pour récupérer les sessions et paliers
+  const { 
+    data: sessions, 
+    loading: sessionsLoading, 
+    fromApi: sessionsFromApi 
+  } = useApiWithFallback(() => academicService.getSessions(), []);
+
+  const { 
+    data: paliers, 
+    loading: paliersLoading, 
+    fromApi: paliersFromApi 
+  } = useApiWithFallback(() => academicService.getPaliers(), []);
+
+  // Données fictives pour les frais scolaires (en attendant le service backend)
   const [fraisList, setFraisList] = useState<FraisScolaire[]>([
     { 
       id: '1', 
@@ -77,19 +74,6 @@ const FraisScolaires: React.FC = () => {
     },
   ]);
 
-  // Sample data for sessions and paliers
-  const [sessions, setSessions] = useState<Session[]>([
-    { id: '1', name: 'Année scolaire 2023-2024', paliers: [
-      { id: '1', name: 'Trimestre 1', sessionId: '1' },
-      { id: '2', name: 'Trimestre 2', sessionId: '1' },
-      { id: '3', name: 'Trimestre 3', sessionId: '1' },
-    ]},
-    { id: '2', name: 'Année scolaire 2024-2025', paliers: [
-      { id: '4', name: 'Trimestre 1', sessionId: '2' },
-      { id: '5', name: 'Trimestre 2', sessionId: '2' },
-    ]},
-  ]);
-
   // State for the form dialog
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -107,8 +91,8 @@ const FraisScolaires: React.FC = () => {
   });
 
   // Filter paliers based on selected session
-  const filteredPaliers = selectedSessionId 
-    ? sessions.find(s => s.id === selectedSessionId)?.paliers || []
+  const filteredPaliers = selectedSessionId && paliers
+    ? paliers.filter(p => p.session === selectedSessionId)
     : [];
 
   // Reset form values
@@ -211,14 +195,12 @@ const FraisScolaires: React.FC = () => {
 
   // Get session and palier names for display
   const getSessionName = (id: string) => {
-    return sessions.find(s => s.id === id)?.name || '';
+    return sessions?.find(s => s.id === id)?.nom || 'Session inconnue';
   };
 
   const getPalierName = (sessionId: string, palierId?: string) => {
-    if (!palierId) return '-';
-    const session = sessions.find(s => s.id === sessionId);
-    if (!session) return '-';
-    return session.paliers.find(p => p.id === palierId)?.name || '-';
+    if (!palierId || !paliers) return '-';
+    return paliers.find(p => p.id === palierId)?.nom || '-';
   };
   
   // Reset all filters
@@ -232,8 +214,22 @@ const FraisScolaires: React.FC = () => {
     });
   };
 
+  const isOnline = sessionsFromApi || paliersFromApi;
+
   return (
     <div className="space-y-6">
+      {/* Indicateur de statut de connexion */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Frais Scolaires</h2>
+          <p className="text-muted-foreground">{filteredFrais.length} frais trouvés</p>
+        </div>
+        <Badge variant={isOnline ? "default" : "secondary"} className="flex items-center gap-2">
+          {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
+          {isOnline ? "En ligne" : "Hors ligne"}
+        </Badge>
+      </div>
+
       {/* Filters */}
       <Card className="mb-4">
         <CardHeader>
@@ -243,15 +239,15 @@ const FraisScolaires: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="grid grid-cols-1 gap-2 flex-1">
               <Label>Session</Label>
-              <Select value={filterSessionId} onValueChange={setFilterSessionId}>
+              <Select value={filterSessionId} onValueChange={setFilterSessionId} disabled={sessionsLoading}>
                 <SelectTrigger>
                   <SelectValue placeholder="Toutes les sessions" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes les sessions</SelectItem>
-                  {sessions.map(session => (
+                  {sessions?.map(session => (
                     <SelectItem key={session.id} value={session.id}>
-                      {session.name}
+                      {session.nom}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -342,14 +338,15 @@ const FraisScolaires: React.FC = () => {
                       setFormValues({...formValues, sessionId: value, palierId: undefined});
                       setSelectedSessionId(value);
                     }}
+                    disabled={sessionsLoading}
                   >
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Sélectionner une session" />
                     </SelectTrigger>
                     <SelectContent>
-                      {sessions.map(session => (
+                      {sessions?.map(session => (
                         <SelectItem key={session.id} value={session.id}>
-                          {session.name}
+                          {session.nom}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -363,7 +360,7 @@ const FraisScolaires: React.FC = () => {
                   <Select 
                     value={formValues.palierId || "no-palier"}
                     onValueChange={(value) => setFormValues({...formValues, palierId: value === "no-palier" ? undefined : value})}
-                    disabled={!formValues.sessionId}
+                    disabled={!formValues.sessionId || paliersLoading}
                   >
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Sélectionner un trimestre (optionnel)" />
@@ -372,7 +369,7 @@ const FraisScolaires: React.FC = () => {
                       <SelectItem value="no-palier">Aucun trimestre spécifique</SelectItem>
                       {filteredPaliers.map(palier => (
                         <SelectItem key={palier.id} value={palier.id}>
-                          {palier.name}
+                          {palier.nom}
                         </SelectItem>
                       ))}
                     </SelectContent>
