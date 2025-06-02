@@ -14,7 +14,12 @@ export * from './users';
 // Frais types
 export * from './frais';
 
-// Re-export existing types for backward compatibility (sans conflits)
-export * from '../components/notes/types';
+// Re-export specific types to avoid conflicts
+export { Student, Subject, Grade, Transaction } from '../components/notes/types';
+export type { FilterOptions as NotesFilterOptions } from '../components/notes/types';
+
+// Bulletins types
 export * from '../components/bulletins/types';
+
+// Bibliotheque types
 export * from '../components/bibliotheque/types';
