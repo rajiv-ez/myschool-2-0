@@ -345,7 +345,7 @@ const AbsencesContent: React.FC<AbsencesContentProps> = ({
       </Dialog>
 
       <Dialog open={isPointageModalOpen} onOpenChange={setIsPointageModalOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>Système de pointage</DialogTitle>
           </DialogHeader>
