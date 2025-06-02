@@ -1,4 +1,5 @@
 
+
 // Academic types
 export * from './academic';
 
@@ -15,11 +16,12 @@ export * from './users';
 export * from './frais';
 
 // Re-export specific types to avoid conflicts
-export { Student, Subject, Grade, Transaction } from '../components/notes/types';
+export type { Student, Subject, Grade, Transaction } from '../components/notes/types';
 export type { FilterOptions as NotesFilterOptions } from '../components/notes/types';
 
-// Bulletins types
-export * from '../components/bulletins/types';
+// Bulletins types - explicit exports to avoid conflicts
+export type { Bulletin, BulletinNote, BulletinFilterOptions } from '../components/bulletins/types';
 
-// Bibliotheque types
-export * from '../components/bibliotheque/types';
+// Bibliotheque types - explicit exports to avoid conflicts  
+export type { Livre, Emprunt, DemandeEmprunt, EmpruntFilterOptions } from '../components/bibliotheque/types';
+
