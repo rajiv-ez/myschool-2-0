@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Tabs, 
@@ -15,73 +15,95 @@ import {
   TableRow, 
   TableCell 
 } from '@/components/ui/table';
-import { Link } from 'react-router-dom';
-
-// Données fictives pour démonstration
-const elevesData = [
-  { 
-    id: 1, 
-    nom: 'Ndong', 
-    prenom: 'Marie', 
-    dateNaissance: '12/05/2014', 
-    classe: 'CM1',
-    tuteurs: 2
-  },
-  { 
-    id: 2, 
-    nom: 'Obiang', 
-    prenom: 'Paul', 
-    dateNaissance: '03/09/2016', 
-    classe: 'CE2',
-    tuteurs: 1
-  },
-  { 
-    id: 3, 
-    nom: 'Mba', 
-    prenom: 'Sophie', 
-    dateNaissance: '22/11/2013', 
-    classe: 'CM2',
-    tuteurs: 2
-  },
-  { 
-    id: 4, 
-    nom: 'Ondo', 
-    prenom: 'Jean', 
-    dateNaissance: '14/07/2012', 
-    classe: '6ème',
-    tuteurs: 1
-  }
-];
-
-const tuteursData = [
-  { 
-    id: 1, 
-    nom: 'Ndong', 
-    prenom: 'Pierre', 
-    telephone: '+241 74 12 36 45', 
-    email: 'pierre.ndong@example.com',
-    eleves: 1
-  },
-  { 
-    id: 2, 
-    nom: 'Mba', 
-    prenom: 'Jeanne', 
-    telephone: '+241 66 89 74 12', 
-    email: 'jeanne.mba@example.com',
-    eleves: 2
-  },
-  { 
-    id: 3, 
-    nom: 'Obiang', 
-    prenom: 'Thomas', 
-    telephone: '+241 77 45 23 69', 
-    email: 'thomas.obiang@example.com',
-    eleves: 1
-  }
-];
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useApiWithFallback } from '@/hooks/useApiWithFallback';
+import { usersService } from '@/services/usersService';
+import { User, Eleve, Tuteur, RelationEleveTuteur } from '@/types/users';
+import { AlertCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Personnes: React.FC = () => {
   const [activeTab, setActiveTab] = useState('eleves');
+
+  // Chargement des données avec les nouveaux services
+  const { data: users, loading: usersLoading, error: usersError } = useApiWithFallback(
+    () => usersService.getUsers(),
+    []
+  );
+
+  const { data: eleves, loading: elevesLoading, error: elevesError } = useApiWithFallback(
+    () => usersService.getEleves(),
+    []
+  );
+
+  const { data: tuteurs, loading: tuteursLoading, error: tuteursError } = useApiWithFallback(
+    () => usersService.getTuteurs(),
+    []
+  );
+
+  const { data: relations, loading: relationsLoading, error: relationsError } = useApiWithFallback(
+    () => usersService.getRelations(),
+    []
+  );
+
+  // Fonction pour obtenir les données utilisateur par ID
+  const getUserById = (id: number): User | undefined => {
+    return users?.find(user => user.id === id);
+  };
+
+  // Fonction pour obtenir le nombre de tuteurs d'un élève
+  const getTuteursCount = (eleveUserId: number): number => {
+    if (!relations) return 0;
+    return relations.filter(relation => relation.eleve === eleveUserId).length;
+  };
+
+  // Fonction pour obtenir le nombre d'élèves d'un tuteur
+  const getElevesCount = (tuteurUserId: number): number => {
+    if (!relations) return 0;
+    return relations.filter(relation => relation.tuteur === tuteurUserId).length;
+  };
+
+  // Formatage de la date de naissance
+  const formatDateNaissance = (dateStr: string): string => {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('fr-FR');
+    } catch {
+      return dateStr;
+    }
+  };
+
+  if (usersLoading || elevesLoading || tuteursLoading || relationsLoading) {
+    return (
+      <div>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold">Élèves & Tuteurs</h2>
+          <p className="text-muted-foreground">Gérez les informations des élèves et de leurs tuteurs</p>
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (usersError || elevesError || tuteursError || relationsError) {
+    return (
+      <div>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold">Élèves & Tuteurs</h2>
+          <p className="text-muted-foreground">Gérez les informations des élèves et de leurs tuteurs</p>
+        </div>
+        <Card>
+          <CardContent className="flex items-center gap-2 p-6">
+            <AlertCircle className="h-5 w-5 text-red-500" />
+            <p className="text-red-700">Erreur lors du chargement des données</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -101,29 +123,36 @@ const Personnes: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
+                  <TableHead>Matricule</TableHead>
                   <TableHead>Nom</TableHead>
                   <TableHead>Prénom</TableHead>
                   <TableHead>Date de naissance</TableHead>
-                  <TableHead>Classe</TableHead>
+                  <TableHead>Genre</TableHead>
+                  <TableHead>Téléphone</TableHead>
                   <TableHead>Tuteurs</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {elevesData.map((eleve) => (
-                  <TableRow key={eleve.id}>
-                    <TableCell>{eleve.id}</TableCell>
-                    <TableCell className="font-medium">{eleve.nom}</TableCell>
-                    <TableCell>{eleve.prenom}</TableCell>
-                    <TableCell>{eleve.dateNaissance}</TableCell>
-                    <TableCell>{eleve.classe}</TableCell>
-                    <TableCell>{eleve.tuteurs}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm">Voir détails</Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {eleves?.map((eleve) => {
+                  const user = getUserById(eleve.user);
+                  if (!user) return null;
+                  
+                  return (
+                    <TableRow key={eleve.id}>
+                      <TableCell className="font-medium">{eleve.matricule}</TableCell>
+                      <TableCell>{user.nom}</TableCell>
+                      <TableCell>{user.prenom}</TableCell>
+                      <TableCell>{formatDateNaissance(user.date_naissance)}</TableCell>
+                      <TableCell>{user.genre}</TableCell>
+                      <TableCell>{user.tel1}</TableCell>
+                      <TableCell>{getTuteursCount(user.id)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm">Voir détails</Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
@@ -134,29 +163,36 @@ const Personnes: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
                   <TableHead>Nom</TableHead>
                   <TableHead>Prénom</TableHead>
                   <TableHead>Téléphone</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>WhatsApp</TableHead>
+                  <TableHead>Profession</TableHead>
                   <TableHead>Élèves</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tuteursData.map((tuteur) => (
-                  <TableRow key={tuteur.id}>
-                    <TableCell>{tuteur.id}</TableCell>
-                    <TableCell className="font-medium">{tuteur.nom}</TableCell>
-                    <TableCell>{tuteur.prenom}</TableCell>
-                    <TableCell>{tuteur.telephone}</TableCell>
-                    <TableCell>{tuteur.email}</TableCell>
-                    <TableCell>{tuteur.eleves}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm">Voir détails</Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {tuteurs?.map((tuteur) => {
+                  const user = getUserById(tuteur.user);
+                  if (!user) return null;
+                  
+                  return (
+                    <TableRow key={tuteur.id}>
+                      <TableCell className="font-medium">{user.nom}</TableCell>
+                      <TableCell>{user.prenom}</TableCell>
+                      <TableCell>{user.tel1}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.whatsapp || '-'}</TableCell>
+                      <TableCell>{tuteur.profession}</TableCell>
+                      <TableCell>{getElevesCount(user.id)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm">Voir détails</Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
