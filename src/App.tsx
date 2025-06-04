@@ -28,6 +28,10 @@ import Settings from "./pages/dashboard/Settings";
 import ClassroomConfig from "./pages/dashboard/ClassroomConfig";
 import GestionRessources from "./pages/dashboard/GestionRessources";
 
+import Login from "./pages/test/Login";
+import ApiTesterPage from "./pages/test/ApiTesterPage";
+import TestArchivesPage from "./pages/test/TestArchivesPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -39,6 +43,10 @@ const App = () => (
         <Routes>
           {/* Routes principales */}
           <Route path="/" element={<Index />} />
+          
+          <Route path="/tester" element={<ApiTesterPage />} />
+          <Route path="/tester-archives" element={<TestArchivesPage />} />
+          <Route path="/login" element={<Login />} />
           
           {/* Routes du Dashboard */}
           <Route path="/dashboard" element={<DashboardLayout />}>

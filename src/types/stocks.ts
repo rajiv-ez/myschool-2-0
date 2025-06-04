@@ -1,30 +1,29 @@
-
 export interface CategorieArticle {
-  id: string;
+  id: number;
   nom: string;
-  description: string;
+  description: string | null;
 }
 
 export interface Article {
-  id: string;
+  id: number;
   nom: string;
-  description: string;
-  categorie: string; // FK to CategorieArticle
+  description: string | null;
+  categorie: number;
   quantite: number;
-  seuil?: number;
-  etat: 'neuf' | 'bon etat' | 'utilisé' | 'à reparer' | 'hors service';
-  date_achat: string; // ISO date string
-  prix_achat: number;
-  prix_vente?: number;
+  seuil: number | null;
+  etat: 'neuf' | 'bon' | 'utilise' | 'reparer' | 'hors_service';
+  date_achat: string;
+  prix_achat: string;
+  prix_vente: string | null;
 }
 
 export interface DemandeActif {
-  id: string;
-  demandeur: string; // FK to Staff
-  article: string; // FK to Article
+  id: number;
+  demandeur: number;
+  article: number;
   quantite: number;
   motif: string;
-  date: string; // ISO date string
-  statut: 'en attente' | 'approuvée' | 'refusée';
-  motif_refus?: string;
+  date: string;
+  statut: 'en_attente' | 'approuvee' | 'refusee';
+  motif_refus: string | null;
 }

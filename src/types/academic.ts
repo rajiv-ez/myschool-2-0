@@ -1,60 +1,60 @@
-
+// src/types/academic.ts
 export interface Session {
-  id: string;
+  id: number;
   nom: string;
-  debut: string; // ISO date string
-  fin: string; // ISO date string
+  debut: string;
+  fin: string;
   en_cours: boolean;
   auto_activer_palier: boolean;
 }
 
 export interface Palier {
-  id: string;
-  session: string; // FK to Session
+  id: number;
+  session: number;
   nom: string;
-  debut: string; // ISO date string
-  fin: string; // ISO date string
+  debut: string;
+  fin: string;
   en_cours: boolean;
 }
 
 export interface Niveau {
-  id: string;
+  id: number;
   nom: string;
 }
 
 export interface Filiere {
-  id: string;
-  niveau: string; // FK to Niveau
+  id: number;
+  niveau: number;
   nom: string;
   description: string;
 }
 
 export interface Specialite {
-  id: string;
-  filiere: string; // FK to Filiere
+  id: number;
+  filiere: number;
   nom: string;
   description: string;
 }
 
 export interface Classe {
-  id: string;
-  specialite: string; // FK to Specialite
+  id: number;
+  specialite: number;
   nom: string;
   description: string;
 }
 
 export interface ClasseSession {
-  id: string;
-  classe: string; // FK to Classe
-  session: string; // FK to Session
+  id: number;
+  classe: number;
+  session: number;
   capacite: number;
 }
 
 export interface Inscription {
-  id: string;
-  eleve: string; // FK to Eleve
-  classe_session: string; // FK to ClasseSession
-  date_inscription: string; // ISO date string
+  id: number;
+  eleve: number;
+  classe_session: number;
+  date_inscription: string;
   est_reinscription: boolean;
   decision_conseil?: string;
   motif_reinscription?: string;

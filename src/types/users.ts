@@ -1,44 +1,46 @@
-
 export interface User {
-  id: string;
+  id: number;
   email: string;
   nom: string;
   prenom: string;
-  genre: string;
-  date_naissance: string; // ISO date string
+  genre: 'M' | 'F' | 'A';
+  date_naissance: string;
   lieu_naissance: string;
   adresse: string;
   tel1: string;
-  tel2: string;
-  whatsapp: string;
-  photo?: string;
+  tel2?: string;
+  whatsapp?: string;
+  photo?: string | null;
+  is_staff: boolean;
+  is_active: boolean;
 }
 
 export interface Staff {
-  id: string;
-  user: string; // FK to User
-  poste: string; // FK to hr.poste
-  date_embauche: string; // ISO date string
+  id: number;
+  user: number;
+  poste: number;
+  date_embauche: string;
   statut: 'ACTIF' | 'CONGE' | 'SUSPENDU' | 'INACTIF';
-  domaines: string[]; // Many-to-many with teaching.domaine
-  niveaux: string[]; // Many-to-many with academic.niveau
+  domaines: number[];
+  niveaux: number[];
 }
 
 export interface Tuteur {
-  id: string;
-  user: string; // FK to User
+  id: number;
+  user: number;
   profession: string;
 }
 
 export interface Eleve {
-  id: string;
-  user: string; // FK to User
+  id: number;
+  user: number;
   matricule: string;
+  tuteurs: number[];
 }
 
 export interface RelationEleveTuteur {
-  id: string;
-  eleve: string; // FK to Eleve
-  tuteur: string; // FK to Tuteur
+  id: number;
+  eleve: number;
+  tuteur: number;
   relation: string;
 }

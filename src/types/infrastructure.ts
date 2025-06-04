@@ -1,6 +1,6 @@
 
 export interface Succursale {
-  id: string;
+  id: number;
   nom: string;
   adresse: string;
   ville: string;
@@ -9,14 +9,14 @@ export interface Succursale {
 }
 
 export interface Batiment {
-  id: string;
-  succursale: string; // FK to Succursale
+  id: number;
+  succursale: number; // FK to Succursale
   nom: string;
 }
 
 export interface Salle {
-  id: string;
-  batiment: string; // FK to Batiment
+  id: number;
+  batiment: number; // FK to Batiment
   nom: string;
   capacite: number;
 }

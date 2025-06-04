@@ -2,11 +2,17 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
 // Configuration de base d'axios - utilisation de la syntaxe Vite
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+const protocol = window.location.protocol; //ex: 'http:' ou 'https:'
+const hostname = window.location.hostname; //ex: 'csleguide.localhost' ou 'myschool.com'
+const port = import.meta.env.MODE === 'development' ? ':8000' : ''; // en prod souvent sans port
+
+const API_BASE_URL = `${protocol}//${hostname}${port}`; // ex: 'http://csleguide.localhost:8000' ou 'https://myschool.com'
+//const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://csleguide.localhost:8000';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000, // 5 secondes de timeout
+  timeout: 300000, // 300 secondes de timeout
   headers: {
     'Content-Type': 'application/json',
   },
@@ -52,11 +58,17 @@ export async function fetchWithFallback<T>(
 apiClient.interceptors.request.use(
   (config) => {
     // Ajouter le token d'authentification si disponible
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+    const token = localStorage.getItem('token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Token ${token}`;
+  }
+
+  // Supprimer Content-Type si fichier envoyé
+  if (config.data instanceof FormData && config.headers) {
+    delete config.headers['Content-Type'];
+  }
+
+  return config;
   },
   (error) => {
     return Promise.reject(error);
@@ -69,7 +81,7 @@ apiClient.interceptors.response.use(
     // Gestion centralisée des erreurs
     if (error.response?.status === 401) {
       // Token expiré ou invalide
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem('token');
       console.warn('Token expired, redirecting to login...');
     }
     return Promise.reject(error);

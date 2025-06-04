@@ -35,64 +35,67 @@ const FraisScolaires: React.FC = () => {
   // Données fictives pour les frais scolaires (en attendant le service backend)
   const [fraisList, setFraisList] = useState<FraisScolaire[]>([
     { 
-      id: '1', 
+      id: 1, 
       nom: 'Frais d\'inscription', 
       description: 'Frais d\'inscription pour l\'année scolaire', 
-      sessionId: '1',
-      montant: 50000 
+      session: 1,
+      palier: 1,
+      montant: '50000',
+      quantite: 1,
+      est_actif: true,
+      est_immateriel: false,
+      est_obligatoire: true,
+      concerne_toutes_classes: false,
+      date_creation: '2024-09-01',
+      echeance: '2024-10-01',
+      classes: []
     },
     { 
-      id: '2', 
+      id: 2, 
       nom: 'Mensualité Octobre', 
       description: 'Mensualité pour le mois d\'octobre', 
-      sessionId: '1',
-      palierId: '1',
-      montant: 25000 
-    },
-    { 
-      id: '3', 
-      nom: 'Tenue scolaire', 
-      description: 'Uniforme obligatoire', 
-      sessionId: '1',
-      quantite: 50,
-      montant: 15000 
-    },
-    { 
-      id: '4', 
-      nom: 'Frais d\'inscription', 
-      description: 'Frais d\'inscription pour l\'année scolaire', 
-      sessionId: '2',
-      montant: 55000 
-    },
-    { 
-      id: '5', 
-      nom: 'Mensualité Septembre', 
-      description: 'Mensualité pour le mois de septembre', 
-      sessionId: '2',
-      palierId: '4',
-      montant: 27000 
-    },
+      session: 1,
+      palier: 1,
+      montant: '25000',
+      quantite: 1,
+      est_actif: true,
+      est_immateriel: false,
+      est_obligatoire: true,
+      concerne_toutes_classes: false,
+      date_creation: '2024-09-01',
+      echeance: '2024-10-01',
+      classes: []
+    }
   ]);
 
   // State for the form dialog
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFrais, setCurrentFrais] = useState<FraisScolaire | null>(null);
-  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
-  const [filterSessionId, setFilterSessionId] = useState<string>('all');
+  const [selectedsession, setSelectedsession] = useState<string>('');
+  const [filtersession, setFiltersession] = useState<string>('all');
   const [filteredFrais, setFilteredFrais] = useState<FraisScolaire[]>(fraisList);
 
   // Form values
   const [formValues, setFormValues] = useState<Omit<FraisScolaire, 'id'>>({
     nom: '',
     description: '',
-    sessionId: '',
-    montant: 0
+    session: 0,
+    montant: '0',
+    quantite: 1,
+    est_actif: true,
+    est_immateriel: false,
+    est_obligatoire: true,
+    concerne_toutes_classes: false,
+    palier: undefined,
+    date_creation: '',
+    echeance: '',
+    classes: [],
   });
 
   // Filter paliers based on selected session
-  const filteredPaliers = selectedSessionId && paliers
-    ? paliers.filter(p => p.session === selectedSessionId)
+  const filteredPaliers = selectedsession && paliers
+    ? paliers.filter(p => String(p.session) === String(selectedsession))
     : [];
 
   // Reset form values
@@ -100,10 +103,19 @@ const FraisScolaires: React.FC = () => {
     setFormValues({
       nom: '',
       description: '',
-      sessionId: '',
-      montant: 0
+      session: 0,
+      montant: '0',
+      quantite: 1,
+      est_actif: true,
+      est_immateriel: false,
+      est_obligatoire: true,
+      concerne_toutes_classes: false,
+      palier: undefined,
+      date_creation: '',
+      echeance: '',
+      classes: [],
     });
-    setSelectedSessionId('');
+    setSelectedsession('');
     setCurrentFrais(null);
   };
 
@@ -111,7 +123,12 @@ const FraisScolaires: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formValues.nom || !formValues.description || !formValues.sessionId || formValues.montant <= 0) {
+    if (
+      !formValues.nom ||
+      !formValues.description ||
+      !formValues.session ||
+      Number(formValues.montant) <= 0
+    ) {
       toast({
         title: "Champs requis",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -133,7 +150,7 @@ const FraisScolaires: React.FC = () => {
       // Create new
       const newFrais: FraisScolaire = {
         ...formValues,
-        id: uuidv4()
+        id: Number(uuidv4())
       };
       setFraisList(prev => [...prev, newFrais]);
       toast({
@@ -150,22 +167,29 @@ const FraisScolaires: React.FC = () => {
   const handleEdit = (frais: FraisScolaire) => {
     setCurrentFrais(frais);
     setFormValues({
-      nom: frais.nom,
-      description: frais.description,
-      sessionId: frais.sessionId,
-      palierId: frais.palierId,
-      quantite: frais.quantite,
-      montant: frais.montant
-    });
-    setSelectedSessionId(frais.sessionId);
+          nom: frais.nom,
+          description: frais.description,
+          session: frais.session,
+          palier: frais.palier,
+          quantite: frais.quantite,
+          montant: frais.montant,
+          est_actif: frais.est_actif,
+          est_immateriel: frais.est_immateriel,
+          est_obligatoire: frais.est_obligatoire,
+          concerne_toutes_classes: frais.concerne_toutes_classes,
+          date_creation: frais.date_creation,
+          echeance: frais.echeance,
+          classes: frais.classes,
+        });
+    setSelectedsession(String(frais.session));
     setIsOpen(true);
   };
 
   // Handle delete action
-  const handleDelete = (id: string) => {
-    const fraisToDelete = fraisList.find(f => f.id === id);
+  const handleDelete = (id: number) => {
+    const fraisToDelete = fraisList.find(f => Number(f.id) === Number(id));
     if (fraisToDelete) {
-      setFraisList(prev => prev.filter(f => f.id !== id));
+      setFraisList(prev => prev.filter(f => Number(f.id) !== Number(id)));
       toast({
         title: "Frais supprimé",
         description: `${fraisToDelete.nom} a été supprimé`
@@ -186,27 +210,27 @@ const FraisScolaires: React.FC = () => {
     }
     
     // Filter by session
-    if (filterSessionId && filterSessionId !== 'all') {
-      result = result.filter(frais => frais.sessionId === filterSessionId);
+    if (filtersession && filtersession !== 'all') {
+      result = result.filter(frais => Number(frais.session) === Number(filtersession));
     }
     
     setFilteredFrais(result);
-  }, [searchQuery, filterSessionId, fraisList]);
+  }, [searchQuery, filtersession, fraisList]);
 
   // Get session and palier names for display
-  const getSessionName = (id: string) => {
-    return sessions?.find(s => s.id === id)?.nom || 'Session inconnue';
+  const getSessionName = (id: number) => {
+    return sessions?.find(s => Number(s.id) === Number(id))?.nom || 'Session inconnue';
   };
 
-  const getPalierName = (sessionId: string, palierId?: string) => {
-    if (!palierId || !paliers) return '-';
-    return paliers.find(p => p.id === palierId)?.nom || '-';
+  const getPalierName = (session: number, palier?: number) => {
+    if (!palier || !paliers) return '-';
+    return paliers.find(p => Number(p.id) === Number(palier))?.nom || '-';
   };
   
   // Reset all filters
   const resetFilters = () => {
     setSearchQuery('');
-    setFilterSessionId('all');
+    setFiltersession('all');
     
     toast({
       title: "Filtres réinitialisés",
@@ -239,14 +263,14 @@ const FraisScolaires: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="grid grid-cols-1 gap-2 flex-1">
               <Label>Session</Label>
-              <Select value={filterSessionId} onValueChange={setFilterSessionId} disabled={sessionsLoading}>
+              <Select value={filtersession} onValueChange={setFiltersession} disabled={sessionsLoading}>
                 <SelectTrigger>
                   <SelectValue placeholder="Toutes les sessions" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes les sessions</SelectItem>
                   {sessions?.map(session => (
-                    <SelectItem key={session.id} value={session.id}>
+                    <SelectItem key={session.id} value={String(session.id)}>
                       {session.nom}
                     </SelectItem>
                   ))}
@@ -333,10 +357,10 @@ const FraisScolaires: React.FC = () => {
                     Session*
                   </Label>
                   <Select 
-                    value={formValues.sessionId}
+                    value={String(formValues.session)}
                     onValueChange={(value) => {
-                      setFormValues({...formValues, sessionId: value, palierId: undefined});
-                      setSelectedSessionId(value);
+                      setFormValues({...formValues, session: Number(value), palier: undefined});
+                      setSelectedsession(value);
                     }}
                     disabled={sessionsLoading}
                   >
@@ -345,7 +369,7 @@ const FraisScolaires: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {sessions?.map(session => (
-                        <SelectItem key={session.id} value={session.id}>
+                        <SelectItem key={session.id} value={String(session.id)}>
                           {session.nom}
                         </SelectItem>
                       ))}
@@ -358,9 +382,9 @@ const FraisScolaires: React.FC = () => {
                     Trimestre
                   </Label>
                   <Select 
-                    value={formValues.palierId || "no-palier"}
-                    onValueChange={(value) => setFormValues({...formValues, palierId: value === "no-palier" ? undefined : value})}
-                    disabled={!formValues.sessionId || paliersLoading}
+                    value={formValues.palier !== undefined ? String(formValues.palier) : "no-palier"}
+                    onValueChange={(value) => setFormValues({...formValues, palier: value === "no-palier" ? undefined : Number(value)})}
+                    disabled={!formValues.session || paliersLoading}
                   >
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Sélectionner un trimestre (optionnel)" />
@@ -368,7 +392,7 @@ const FraisScolaires: React.FC = () => {
                     <SelectContent>
                       <SelectItem value="no-palier">Aucun trimestre spécifique</SelectItem>
                       {filteredPaliers.map(palier => (
-                        <SelectItem key={palier.id} value={palier.id}>
+                        <SelectItem key={palier.id} value={String(palier.id)}>
                           {palier.nom}
                         </SelectItem>
                       ))}
@@ -398,7 +422,7 @@ const FraisScolaires: React.FC = () => {
                     id="montant"
                     type="number"
                     value={formValues.montant}
-                    onChange={(e) => setFormValues({...formValues, montant: parseFloat(e.target.value) || 0})}
+                    onChange={(e) => setFormValues({...formValues, montant: String(parseFloat(e.target.value)) || '0'})}
                     className="col-span-3"
                     required
                   />
@@ -442,8 +466,8 @@ const FraisScolaires: React.FC = () => {
                 <TableRow key={frais.id}>
                   <TableCell className="font-medium">{frais.nom}</TableCell>
                   <TableCell>{frais.description}</TableCell>
-                  <TableCell>{getSessionName(frais.sessionId)}</TableCell>
-                  <TableCell>{getPalierName(frais.sessionId, frais.palierId)}</TableCell>
+                  <TableCell>{getSessionName((frais.session))}</TableCell>
+                  <TableCell>{getPalierName(frais.session, frais.palier)}</TableCell>
                   <TableCell>{frais.quantite !== undefined ? frais.quantite : '-'}</TableCell>
                   <TableCell className="text-right">{frais.montant.toLocaleString()} FCFA</TableCell>
                   <TableCell className="text-right">
