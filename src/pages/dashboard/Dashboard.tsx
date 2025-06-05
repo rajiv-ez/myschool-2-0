@@ -323,7 +323,7 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
         </CardContent>
-      </div>
+      </Card>
     </div>
   );
 
