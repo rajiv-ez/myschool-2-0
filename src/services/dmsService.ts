@@ -1,5 +1,5 @@
 import { fetchWithFallback, ApiResponse } from './api';
-import { Archive, TypeArchive, ModeleDocument, ChampsModele } from '../types/dms';
+import { Archive, TypeArchive, ModeleDocument, ChampsModele, DocumentGenere  } from '../types/dms';
 
 const mockTypeArchives: TypeArchive[] = [
   { id: 1, nom: 'Inscriptions', nom_modele: 'Inscription', app_label: 'academic', champs_affichage: ['classe_session', 'eleve', 'session'] },
@@ -12,9 +12,9 @@ const mockArchives: Archive[] = [
 const mockModeles: ModeleDocument[] = [
   {
     id: 1,
-    nom: 'Attestation de Scolarité',
+    nom: 'Attestation de Réussite',
     description: "Modèle d'attestation",
-    template: 'documents/templates/attestationscolarite.docx',
+    template: 'documents/templates/attestationreussite.docx',
   },
 ];
 
@@ -25,6 +25,21 @@ const mockChamps: ChampsModele[] = [
     label: 'Nom de famille',
     type: 'char',
     required: true,
+  },
+  { 
+    id: 2, 
+    modele_document: 1, 
+    label: 'Mention', type: 'char', required: true, options: 'Passble;Bien;Très bien' },
+];
+
+const mockDocuments: DocumentGenere[] = [
+  {
+    id: 1,
+    modele: 1,
+    donnees: { 'Nom élève': 'Jean Dupont', 'Mention': 'Très bien' },
+    fichier_genere: 'documents/generated/attestation_jean.pdf',
+    cree_par: 1,
+    date_creation: '2025-06-05',
   },
 ];
 
@@ -37,7 +52,11 @@ export const dmsService = {
 
   getModelesDocuments: (): Promise<ApiResponse<ModeleDocument[]>> => 
     fetchWithFallback('/api/dms/modeles-documents/', mockModeles),
-  
+
   getChampsModeles: (): Promise<ApiResponse<ChampsModele[]>> =>
     fetchWithFallback('/api/dms/champs/', mockChamps),
+
+  getDocumentsGeneres: (): Promise<ApiResponse<DocumentGenere[]>> => 
+    fetchWithFallback('/api/dms/documents-generes/', mockDocuments),
+
 };

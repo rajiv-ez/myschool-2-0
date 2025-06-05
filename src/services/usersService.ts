@@ -70,9 +70,9 @@ const mockRelations: RelationEleveTuteur[] = [
 ];
 
 export const usersService = {
-  getUsers: () => fetchWithFallback('/api/users/users/', mockUsers),
-  getStaffs: () => fetchWithFallback('/api/users/staff/', mockStaff),
-  getTuteurs: () => fetchWithFallback('/api/users/tuteurs/', mockTuteurs),
-  getEleves: () => fetchWithFallback('/api/users/eleves/', mockEleves),
-  getRelations: () => fetchWithFallback('/api/users/relations/', mockRelations),
+  getUsers: () => fetchWithFallback('/api/accounts/users/', mockUsers),
+  getStaffs: () => fetchWithFallback('/api/accounts/staff/', mockStaff),
+  getTuteurs: () => fetchWithFallback('/api/accounts/tuteurs/', mockTuteurs),
+  getEleves: () => fetchWithFallback('/api/accounts/eleves/', mockEleves),
+  getRelations: () => fetchWithFallback('/api/accounts/relations/', mockRelations),
 };

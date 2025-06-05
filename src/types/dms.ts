@@ -34,6 +34,16 @@ export interface ChampsModele {
   modele_document: number;
   label: string;
   type: 'char' | 'text';
+  options?: string;
   help_text?: string;
   required: boolean;
+}
+
+export interface DocumentGenere {
+  id: number;
+  modele: number;
+  donnees: Record<string, string>;
+  fichier_genere?: string;
+  cree_par: number;
+  date_creation: string;
 }
