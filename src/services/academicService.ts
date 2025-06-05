@@ -1,4 +1,3 @@
-
 // src/services/academicService.ts
 import { fetchWithFallback } from './api';
 import {
@@ -53,24 +52,17 @@ const mockFilieres: Filiere[] = [
   { id: 4, niveau: 2, nom: 'Générale', description: 'Programme général' },
 ];
 
-const mockSpecialites: Specialite[] = [
-  { id: 1, filiere: 1, nom: 'Sciences', description: 'Spécialité sciences' },
-  { id: 2, filiere: 2, nom: 'Lettres', description: 'Spécialité lettres' },
-  { id: 3, filiere: 3, nom: 'Économie', description: 'Spécialité économie' },
-  { id: 4, filiere: 4, nom: 'Générale', description: 'Spécialité générale' },
-];
-
 const mockClasses: Classe[] = [
-  { id: 1, specialite: 4, nom: 'CP', description: 'Cours Préparatoire' },
-  { id: 2, specialite: 4, nom: 'CE1', description: 'Cours Élémentaire 1' },
-  { id: 3, specialite: 4, nom: 'CM1', description: 'Cours Moyen 1' },
-  { id: 4, specialite: 1, nom: 'Terminale S', description: 'Terminale Scientifique' },
+  { id: 1, specialite: 1, nom: 'CP', description: 'Cours Préparatoire' },
+  { id: 2, specialite: 1, nom: 'CE1', description: 'Cours Élémentaire 1' },
+  { id: 3, specialite: 1, nom: 'CM1', description: 'Cours Moyen 1' },
+  { id: 4, specialite: 2, nom: 'Terminale S', description: 'Terminale Scientifique' },
 ];
 
 const mockClasseSessions: ClasseSession[] = [
-  { id: 1, classe: 1, session: 2, capacite: 30 },
-  { id: 2, classe: 2, session: 2, capacite: 25 },
-  { id: 3, classe: 3, session: 2, capacite: 20 },
+  { id: 1, classe: 1, session: 1, capacite: 30 },
+  { id: 2, classe: 2, session: 1, capacite: 25 },
+  { id: 3, classe: 3, session: 1, capacite: 20 },
   { id: 4, classe: 4, session: 2, capacite: 30 },
 ];
 
@@ -93,241 +85,26 @@ const mockInscriptions: Inscription[] = [
   },
 ];
 
-// Variables pour gérer les données en mode offline
-let localSessions = [...mockSessions];
-let localPaliers = [...mockPaliers];
-let localNiveaux = [...mockNiveaux];
-let localFilieres = [...mockFilieres];
-let localSpecialites = [...mockSpecialites];
-let localClasses = [...mockClasses];
-let localClasseSessions = [...mockClasseSessions];
-let localInscriptions = [...mockInscriptions];
-
 export const academicService = {
-  // Sessions
-  getSessions: () => fetchWithFallback('/api/academic/sessions/', localSessions),
+  getSessions: () => fetchWithFallback('/api/academic/sessions/', mockSessions),
 
-  createSession: async (session: Omit<Session, 'id'>) => {
-    try {
-      const response = await fetchWithFallback('/api/academic/sessions/', session, { method: 'POST', data: session });
-      if (!response.fromApi) {
-        const newSession: Session = { ...session, id: Math.max(...localSessions.map(s => s.id), 0) + 1 };
-        localSessions.push(newSession);
-        return { data: newSession, fromApi: false };
-      }
-      return response;
-    } catch (error) {
-      const newSession: Session = { ...session, id: Math.max(...localSessions.map(s => s.id), 0) + 1 };
-      localSessions.push(newSession);
-      return { data: newSession, fromApi: false };
-    }
+  createSession: (session: Omit<Session, 'id'>) => {
+    const newSession: Session = { ...session, id: Date.now() };
+    return fetchWithFallback('/api/academic/sessions/', newSession, { method: 'POST', data: session });
   },
 
-  updateSession: async (id: number, session: Partial<Session>) => {
-    try {
-      const response = await fetchWithFallback(`/api/academic/sessions/${id}/`, session, { method: 'PUT', data: session });
-      if (!response.fromApi) {
-        const index = localSessions.findIndex(s => s.id === id);
-        if (index !== -1) {
-          localSessions[index] = { ...localSessions[index], ...session };
-          return { data: localSessions[index], fromApi: false };
-        }
-      }
-      return response;
-    } catch (error) {
-      const index = localSessions.findIndex(s => s.id === id);
-      if (index !== -1) {
-        localSessions[index] = { ...localSessions[index], ...session };
-        return { data: localSessions[index], fromApi: false };
-      }
-      throw error;
-    }
-  },
-
-  deleteSession: async (id: number) => {
-    try {
-      const response = await fetchWithFallback(`/api/academic/sessions/${id}/`, {}, { method: 'DELETE' });
-      if (!response.fromApi) {
-        localSessions = localSessions.filter(s => s.id !== id);
-        return { data: { success: true }, fromApi: false };
-      }
-      return response;
-    } catch (error) {
-      localSessions = localSessions.filter(s => s.id !== id);
-      return { data: { success: true }, fromApi: false };
-    }
-  },
-
-  // Paliers
-  getPaliers: () => fetchWithFallback('/api/academic/paliers/', localPaliers),
+  getPaliers: () => fetchWithFallback('/api/academic/paliers/', mockPaliers),
 
   getPaliersBySession: (sessionId: number) => {
-    const filtered = localPaliers.filter(p => p.session === sessionId);
+    const filtered = mockPaliers.filter(p => p.session === sessionId);
     return fetchWithFallback(`/api/academic/sessions/${sessionId}/paliers/`, filtered);
   },
 
-  createPalier: async (palier: Omit<Palier, 'id'>) => {
-    try {
-      const response = await fetchWithFallback('/api/academic/paliers/', palier, { method: 'POST', data: palier });
-      if (!response.fromApi) {
-        const newPalier: Palier = { ...palier, id: Math.max(...localPaliers.map(p => p.id), 0) + 1 };
-        localPaliers.push(newPalier);
-        return { data: newPalier, fromApi: false };
-      }
-      return response;
-    } catch (error) {
-      const newPalier: Palier = { ...palier, id: Math.max(...localPaliers.map(p => p.id), 0) + 1 };
-      localPaliers.push(newPalier);
-      return { data: newPalier, fromApi: false };
-    }
-  },
+  getNiveaux: () => fetchWithFallback('/api/academic/niveaux/', mockNiveaux),
+  getFilieres: () => fetchWithFallback('/api/academic/filieres/', mockFilieres),
+  getClasses: () => fetchWithFallback('/api/academic/classes/', mockClasses),
 
-  updatePalier: async (id: number, palier: Partial<Palier>) => {
-    try {
-      const response = await fetchWithFallback(`/api/academic/paliers/${id}/`, palier, { method: 'PUT', data: palier });
-      if (!response.fromApi) {
-        const index = localPaliers.findIndex(p => p.id === id);
-        if (index !== -1) {
-          localPaliers[index] = { ...localPaliers[index], ...palier };
-          return { data: localPaliers[index], fromApi: false };
-        }
-      }
-      return response;
-    } catch (error) {
-      const index = localPaliers.findIndex(p => p.id === id);
-      if (index !== -1) {
-        localPaliers[index] = { ...localPaliers[index], ...palier };
-        return { data: localPaliers[index], fromApi: false };
-      }
-      throw error;
-    }
-  },
+  getClasseSessions: () => fetchWithFallback('/api/academic/classe-sessions/', mockClasseSessions),
 
-  deletePalier: async (id: number) => {
-    try {
-      const response = await fetchWithFallback(`/api/academic/paliers/${id}/`, {}, { method: 'DELETE' });
-      if (!response.fromApi) {
-        localPaliers = localPaliers.filter(p => p.id !== id);
-        return { data: { success: true }, fromApi: false };
-      }
-      return response;
-    } catch (error) {
-      localPaliers = localPaliers.filter(p => p.id !== id);
-      return { data: { success: true }, fromApi: false };
-    }
-  },
-
-  // Structure académique
-  getNiveaux: () => fetchWithFallback('/api/academic/niveaux/', localNiveaux),
-  getFilieres: () => fetchWithFallback('/api/academic/filieres/', localFilieres),
-  getSpecialites: () => fetchWithFallback('/api/academic/specialites/', localSpecialites),
-  getClasses: () => fetchWithFallback('/api/academic/classes/', localClasses),
-
-  // Classes sessions
-  getClasseSessions: () => fetchWithFallback('/api/academic/classe-sessions/', localClasseSessions),
-
-  createClasseSession: async (classeSession: Omit<ClasseSession, 'id'>) => {
-    try {
-      const response = await fetchWithFallback('/api/academic/classe-sessions/', classeSession, { method: 'POST', data: classeSession });
-      if (!response.fromApi) {
-        const newClasseSession: ClasseSession = { ...classeSession, id: Math.max(...localClasseSessions.map(cs => cs.id), 0) + 1 };
-        localClasseSessions.push(newClasseSession);
-        return { data: newClasseSession, fromApi: false };
-      }
-      return response;
-    } catch (error) {
-      const newClasseSession: ClasseSession = { ...classeSession, id: Math.max(...localClasseSessions.map(cs => cs.id), 0) + 1 };
-      localClasseSessions.push(newClasseSession);
-      return { data: newClasseSession, fromApi: false };
-    }
-  },
-
-  updateClasseSession: async (id: number, classeSession: Partial<ClasseSession>) => {
-    try {
-      const response = await fetchWithFallback(`/api/academic/classe-sessions/${id}/`, classeSession, { method: 'PUT', data: classeSession });
-      if (!response.fromApi) {
-        const index = localClasseSessions.findIndex(cs => cs.id === id);
-        if (index !== -1) {
-          localClasseSessions[index] = { ...localClasseSessions[index], ...classeSession };
-          return { data: localClasseSessions[index], fromApi: false };
-        }
-      }
-      return response;
-    } catch (error) {
-      const index = localClasseSessions.findIndex(cs => cs.id === id);
-      if (index !== -1) {
-        localClasseSessions[index] = { ...localClasseSessions[index], ...classeSession };
-        return { data: localClasseSessions[index], fromApi: false };
-      }
-      throw error;
-    }
-  },
-
-  deleteClasseSession: async (id: number) => {
-    try {
-      const response = await fetchWithFallback(`/api/academic/classe-sessions/${id}/`, {}, { method: 'DELETE' });
-      if (!response.fromApi) {
-        localClasseSessions = localClasseSessions.filter(cs => cs.id !== id);
-        return { data: { success: true }, fromApi: false };
-      }
-      return response;
-    } catch (error) {
-      localClasseSessions = localClasseSessions.filter(cs => cs.id !== id);
-      return { data: { success: true }, fromApi: false };
-    }
-  },
-
-  // Inscriptions
-  getInscriptions: () => fetchWithFallback('/api/academic/inscriptions/', localInscriptions),
-
-  createInscription: async (inscription: Omit<Inscription, 'id'>) => {
-    try {
-      const response = await fetchWithFallback('/api/academic/inscriptions/', inscription, { method: 'POST', data: inscription });
-      if (!response.fromApi) {
-        const newInscription: Inscription = { ...inscription, id: Math.max(...localInscriptions.map(i => i.id), 0) + 1 };
-        localInscriptions.push(newInscription);
-        return { data: newInscription, fromApi: false };
-      }
-      return response;
-    } catch (error) {
-      const newInscription: Inscription = { ...inscription, id: Math.max(...localInscriptions.map(i => i.id), 0) + 1 };
-      localInscriptions.push(newInscription);
-      return { data: newInscription, fromApi: false };
-    }
-  },
-
-  updateInscription: async (id: number, inscription: Partial<Inscription>) => {
-    try {
-      const response = await fetchWithFallback(`/api/academic/inscriptions/${id}/`, inscription, { method: 'PUT', data: inscription });
-      if (!response.fromApi) {
-        const index = localInscriptions.findIndex(i => i.id === id);
-        if (index !== -1) {
-          localInscriptions[index] = { ...localInscriptions[index], ...inscription };
-          return { data: localInscriptions[index], fromApi: false };
-        }
-      }
-      return response;
-    } catch (error) {
-      const index = localInscriptions.findIndex(i => i.id === id);
-      if (index !== -1) {
-        localInscriptions[index] = { ...localInscriptions[index], ...inscription };
-        return { data: localInscriptions[index], fromApi: false };
-      }
-      throw error;
-    }
-  },
-
-  deleteInscription: async (id: number) => {
-    try {
-      const response = await fetchWithFallback(`/api/academic/inscriptions/${id}/`, {}, { method: 'DELETE' });
-      if (!response.fromApi) {
-        localInscriptions = localInscriptions.filter(i => i.id !== id);
-        return { data: { success: true }, fromApi: false };
-      }
-      return response;
-    } catch (error) {
-      localInscriptions = localInscriptions.filter(i => i.id !== id);
-      return { data: { success: true }, fromApi: false };
-    }
-  },
+  getInscriptions: () => fetchWithFallback('/api/academic/inscriptions/', mockInscriptions),
 };
