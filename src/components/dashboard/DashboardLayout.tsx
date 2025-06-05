@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { 
@@ -31,7 +30,8 @@ import {
   Layout,
   Package,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -64,6 +64,7 @@ const DashboardLayout: React.FC = () => {
   }, []);
   
   const tabs: DashboardTab[] = [
+    { id: 'blackboard', label: 'Tableau d\'annonces', icon: <MessageSquare size={18} />, path: '/dashboard/blackboard' },
     { id: 'inscriptions', label: 'Inscriptions', icon: <UserPlus size={18} />, path: '/dashboard/inscriptions' },
     { id: 'personnes', label: 'Élèves & Tuteurs', icon: <Users size={18} />, path: '/dashboard/personnes' },
     { id: 'sessions', label: 'Sessions & Paliers', icon: <Calendar size={18} />, path: '/dashboard/sessions' },
@@ -86,7 +87,7 @@ const DashboardLayout: React.FC = () => {
     { id: 'settings', label: 'Paramètres', icon: <Settings size={18} />, path: '/dashboard/settings' }
   ];
   
-  const activeTab = tabs.find(tab => location.pathname.includes(tab.id))?.id || 'inscriptions';
+  const activeTab = tabs.find(tab => location.pathname.includes(tab.id))?.id || 'blackboard';
 
   useEffect(() => {
     const activeTabEl = document.querySelector(`[data-tab-id='${activeTab}']`);

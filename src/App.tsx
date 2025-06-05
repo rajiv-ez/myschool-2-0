@@ -11,6 +11,7 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 
 // Dashboard pages
 import Dashboard from "./pages/dashboard/Dashboard";
+import Blackboard from "./pages/dashboard/Blackboard";
 import Inscriptions from "./pages/dashboard/Inscriptions";
 import Personnes from "./pages/dashboard/Personnes";
 import Sessions from "./pages/dashboard/Sessions";
@@ -50,7 +51,9 @@ const App = () => {
             
             {/* Dashboard routes */}
             <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<Dashboard />} />
+              <Route index element={<Blackboard />} />
+              <Route path="blackboard" element={<Blackboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="inscriptions" element={<Inscriptions />} />
               <Route path="personnes" element={<Personnes />} />
               <Route path="sessions" element={<Sessions />} />
