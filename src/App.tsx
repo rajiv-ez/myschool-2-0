@@ -6,9 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import SchoolListing from "./pages/SchoolListing";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 
 // Dashboard pages
+import Dashboard from "./pages/dashboard/Dashboard";
 import Inscriptions from "./pages/dashboard/Inscriptions";
 import Personnes from "./pages/dashboard/Personnes";
 import Sessions from "./pages/dashboard/Sessions";
@@ -43,9 +45,12 @@ const App = () => {
             {/* Main route */}
             <Route path="/" element={<Index />} />
             
+            {/* Schools listing route */}
+            <Route path="/schools" element={<SchoolListing />} />
+            
             {/* Dashboard routes */}
             <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<Inscriptions />} />
+              <Route index element={<Dashboard />} />
               <Route path="inscriptions" element={<Inscriptions />} />
               <Route path="personnes" element={<Personnes />} />
               <Route path="sessions" element={<Sessions />} />

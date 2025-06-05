@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Home, LayoutDashboard, MessageSquare, LogIn } from 'lucide-react';
+import { Home, School, MessageSquare, LogIn } from 'lucide-react';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,9 +34,9 @@ const Navbar = () => {
           </Button>
           
           <Button variant="ghost" asChild>
-            <Link to="/dashboard" className="flex items-center gap-1">
-              <LayoutDashboard size={18} />
-              Mon École
+            <Link to="/schools" className="flex items-center gap-1">
+              <School size={18} />
+              Nos Écoles
             </Link>
           </Button>
 
@@ -81,9 +81,9 @@ const Navbar = () => {
             </Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
-              <LayoutDashboard className="mr-2" size={18} />
-              Mon École
+            <Link to="/schools" onClick={() => setIsMenuOpen(false)}>
+              <School className="mr-2" size={18} />
+              Nos Écoles
             </Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start" asChild>
