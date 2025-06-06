@@ -68,6 +68,7 @@ const DashboardLayout: React.FC = () => {
     { id: 'dashboard', label: 'Tableau de bord', icon: <MessageSquare size={18} />, path: '/dashboard/dashboard' },
     { id: 'inscriptions', label: 'Inscriptions', icon: <UserPlus size={18} />, path: '/dashboard/inscriptions' },
     { id: 'personnes', label: 'Élèves & Tuteurs', icon: <Users size={18} />, path: '/dashboard/personnes' },
+    { id: 'users', label: 'Gestion Utilisateurs', icon: <UserCog size={18} />, path: '/dashboard/users' },
     { id: 'sessions', label: 'Sessions & Paliers', icon: <Calendar size={18} />, path: '/dashboard/sessions' },
     { id: 'evenements', label: 'Événements', icon: <CalendarDays size={18} />, path: '/dashboard/evenements' },
     { id: 'evenements2', label: 'Événements (v2)', icon: <CalendarDays size={18} />, path: '/dashboard/evenements2' },

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -10,18 +10,11 @@ import {
   Monitor,
   LayoutList,
   LayoutPanelLeft,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
-
+import { useToast } from '@/hooks/use-toast';
 import { usePreferencesStore } from '@/stores/usePreferencesStore';
-import { useEffect } from 'react';
-
-// Theme and layout settings interface
-interface AppSettings {
-  theme: 'light' | 'dark' | 'system';
-  couleur: string;
-  layoutType: 'tabs' | 'sidebar';
-}
 
 // Color palettes
 const couleurs = [
@@ -35,10 +28,8 @@ const couleurs = [
 
 // Function to convert a hexadecimal color to HSL
 const hexToHSL = (hex: string): { h: number, s: number, l: number } | null => {
-  // Remove the # if present
   hex = hex.replace('#', '');
   
-  // Convert hexadecimal values to RGB
   const r = parseInt(hex.substring(0, 2), 16) / 255;
   const g = parseInt(hex.substring(2, 4), 16) / 255;
   const b = parseInt(hex.substring(4, 6), 16) / 255;
@@ -61,41 +52,147 @@ const hexToHSL = (hex: string): { h: number, s: number, l: number } | null => {
   return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
 };
 
-// Variable CSS for colors
-const applyCouleur= (palette: string) => {
+const applyCouleur = (palette: string) => {
   const selectedPalette = couleurs.find(p => p.id === palette);
   
   if (!selectedPalette) return;
 
   document.documentElement.style.setProperty('--color-primary', selectedPalette.primaryColor);
   document.documentElement.style.setProperty('--color-primary-hover', selectedPalette.secondaryColor);
-  
-  // Update CSS variables for Tailwind colors
   document.documentElement.style.setProperty('--primary', selectedPalette.primaryColor);
   document.documentElement.style.setProperty('--primary-foreground', '#ffffff');
   
-  // Update custom CSS variables for shadcn/ui
   const hslPrimary = hexToHSL(selectedPalette.primaryColor);
   if (hslPrimary) {
     document.documentElement.style.setProperty('--primary', `${hslPrimary.h} ${hslPrimary.s}% ${hslPrimary.l}%`);
   }
 };
 
-interface AppearanceSettingsProps {
-  settings: AppSettings;
-  onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
-  onCouleurChange: (couleur: string) => void;
-  onLayoutTypeChange: (layoutType: 'tabs' | 'sidebar') => void;
-  onSaveSettings: () => void;
-}
+const AppearanceSettings: React.FC = () => {
+  const { 
+    preferences, 
+    loading, 
+    error, 
+    loadPreferences, 
+    savePreferences, 
+    updateLocalPreferences 
+  } = usePreferencesStore();
+  const { toast } = useToast();
 
-const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
-  settings,
-  onThemeChange,
-  onCouleurChange,
-  onLayoutTypeChange,
-  onSaveSettings
-}) => {
+  useEffect(() => {
+    loadPreferences();
+  }, [loadPreferences]);
+
+  useEffect(() => {
+    if (preferences) {
+      // Apply theme
+      if (preferences.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (preferences.theme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else if (preferences.theme === 'system') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+
+      // Apply color palette
+      applyCouleur(preferences.couleur);
+    }
+  }, [preferences]);
+
+  const handleThemeChange = async (theme: 'light' | 'dark' | 'system') => {
+    updateLocalPreferences({ theme });
+    
+    try {
+      await savePreferences({ theme });
+      toast({
+        title: "Thème modifié",
+        description: `Thème ${theme === 'light' ? 'clair' : theme === 'dark' ? 'sombre' : 'système'} appliqué`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder le thème",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCouleurChange = async (couleur: string) => {
+    updateLocalPreferences({ couleur: couleur as any });
+    applyCouleur(couleur);
+    
+    try {
+      await savePreferences({ couleur: couleur as any });
+      toast({
+        title: "Palette de couleurs modifiée",
+        description: `Palette ${couleurs.find(p => p.id === couleur)?.name} appliquée`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder la palette",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleLayoutTypeChange = async (layoutType: 'tabs' | 'sidebar') => {
+    if (layoutType === preferences?.disposition) return;
+    
+    updateLocalPreferences({ disposition: layoutType });
+    
+    try {
+      await savePreferences({ disposition: layoutType });
+      toast({
+        title: "Disposition modifiée",
+        description: `Disposition ${layoutType === 'tabs' ? 'en onglets' : 'avec barre latérale'} appliquée.`,
+      });
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder la disposition",
+        variant: "destructive"
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Chargement des préférences...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-destructive">{error}</p>
+        <Button onClick={loadPreferences} className="mt-4">
+          Réessayer
+        </Button>
+      </div>
+    );
+  }
+
+  if (!preferences) {
+    return (
+      <div className="text-center p-8">
+        <p>Aucune préférence trouvée</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <Card>
@@ -107,8 +204,8 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
         </CardHeader>
         <CardContent>
           <RadioGroup 
-            defaultValue={settings.theme} 
-            onValueChange={(value) => onThemeChange(value as 'light' | 'dark' | 'system')}
+            value={preferences.theme} 
+            onValueChange={(value) => handleThemeChange(value as 'light' | 'dark' | 'system')}
             className="grid grid-cols-3 gap-4"
           >
             <div>
@@ -116,7 +213,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
               <Label 
                 htmlFor="light" 
                 className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer
-                  ${settings.theme === 'light' ? 'border-primary' : ''}
+                  ${preferences.theme === 'light' ? 'border-primary' : ''}
                 `}
               >
                 <Sun className="mb-3 h-6 w-6" />
@@ -134,7 +231,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
               <Label 
                 htmlFor="dark" 
                 className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer
-                  ${settings.theme === 'dark' ? 'border-primary' : ''}
+                  ${preferences.theme === 'dark' ? 'border-primary' : ''}
                 `}
               >
                 <Moon className="mb-3 h-6 w-6" />
@@ -152,7 +249,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
               <Label 
                 htmlFor="system" 
                 className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer
-                  ${settings.theme === 'system' ? 'border-primary' : ''}
+                  ${preferences.theme === 'system' ? 'border-primary' : ''}
                 `}
               >
                 <Monitor className="mb-3 h-6 w-6" />
@@ -180,10 +277,10 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
             {couleurs.map((palette) => (
               <button
                 key={palette.id}
-                onClick={() => onCouleurChange(palette.id as AppSettings['couleur'])}
+                onClick={() => handleCouleurChange(palette.id)}
                 className={`
                   relative flex flex-col items-center rounded-md border-2 border-muted p-4 hover:border-accent
-                  ${settings.couleur=== palette.id ? 'border-primary' : ''}
+                  ${preferences.couleur === palette.id ? 'border-primary' : ''}
                 `}
               >
                 <div className="flex space-x-2 mb-2">
@@ -198,7 +295,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
                 </div>
                 <span className="text-sm font-medium">{palette.name}</span>
                 
-                {settings.couleur=== palette.id && (
+                {preferences.couleur === palette.id && (
                   <div className="absolute top-2 right-2 text-primary">
                     <Check size={16} />
                   </div>
@@ -218,8 +315,8 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
         </CardHeader>
         <CardContent>
           <RadioGroup 
-            value={settings.layoutType}
-            onValueChange={(value) => onLayoutTypeChange(value as 'tabs' | 'sidebar')}
+            value={preferences.disposition}
+            onValueChange={(value) => handleLayoutTypeChange(value as 'tabs' | 'sidebar')}
             className="grid grid-cols-2 gap-4"
           >
             <div>
@@ -227,7 +324,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
               <Label 
                 htmlFor="tabs" 
                 className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer
-                  ${settings.layoutType === 'tabs' ? 'border-primary' : ''}
+                  ${preferences.disposition === 'tabs' ? 'border-primary' : ''}
                 `}
               >
                 <LayoutList className="mb-3 h-6 w-6" />
@@ -245,7 +342,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
               <Label 
                 htmlFor="sidebar" 
                 className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer
-                  ${settings.layoutType === 'sidebar' ? 'border-primary' : ''}
+                  ${preferences.disposition === 'sidebar' ? 'border-primary' : ''}
                 `}
               >
                 <LayoutPanelLeft className="mb-3 h-6 w-6" />
@@ -260,15 +357,8 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
           </RadioGroup>
         </CardContent>
       </Card>
-
-      <div className="flex justify-end mt-6">
-        <Button onClick={onSaveSettings}>
-          Enregistrer les modifications
-        </Button>
-      </div>
     </>
   );
 };
 
 export { AppearanceSettings, applyCouleur, couleurs };
-export type { AppSettings };

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,30 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SchoolListing from "./pages/SchoolListing";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
-
-// Dashboard pages
-import Dashboard from "./pages/dashboard/Dashboard";
-import Blackboard from "./pages/dashboard/Blackboard";
-import Inscriptions from "./pages/dashboard/Inscriptions";
-import Personnes from "./pages/dashboard/Personnes";
-import Sessions from "./pages/dashboard/Sessions";
-import Evenements from "./pages/dashboard/Evenements";
-import Evenements2 from "./pages/dashboard/Evenements2";
-import Locaux from "./pages/dashboard/Locaux";
-import ClassroomConfig from "./pages/dashboard/ClassroomConfig";
-import Academics from "./pages/dashboard/Academics";
-import Education from "./pages/dashboard/Education";
-import Presence from "./pages/dashboard/Presence";
-import Notes from "./pages/dashboard/Notes";
-import ReleveNotes from "./pages/dashboard/ReleveNotes";
-import Bulletins from "./pages/dashboard/Bulletins";
-import Archives from "./pages/dashboard/Archives";
-import Bibliotheque from "./pages/dashboard/Bibliotheque";
-import RH from "./pages/dashboard/RH";
-import GestionRessources from "./pages/dashboard/GestionRessources";
-import Paiements from "./pages/dashboard/Paiements";
-import MesPaiements from "./pages/dashboard/MesPaiements";
-import Settings from "./pages/dashboard/Settings";
+import Login from "./pages/Login";
+import Users from "./pages/dashboard/Users";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +23,9 @@ const App = () => {
             {/* Main route */}
             <Route path="/" element={<Index />} />
             
+            {/* Login route */}
+            <Route path="/login" element={<Login />} />
+            
             {/* Schools listing route */}
             <Route path="/schools" element={<SchoolListing />} />
             
@@ -56,6 +36,7 @@ const App = () => {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="inscriptions" element={<Inscriptions />} />
               <Route path="personnes" element={<Personnes />} />
+              <Route path="users" element={<Users />} />
               <Route path="sessions" element={<Sessions />} />
               <Route path="evenements" element={<Evenements />} />
               <Route path="evenements2" element={<Evenements2 />} />

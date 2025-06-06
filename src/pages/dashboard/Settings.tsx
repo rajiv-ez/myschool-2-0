@@ -1,105 +1,25 @@
 
-import React, { useState, useEffect } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { AppearanceSettings, applyCouleur, couleurs, AppSettings } from '@/components/settings/AppearanceSettings';
+import React, { useState } from 'react';
+import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
+import ProfileSettings from '@/components/settings/ProfileSettings';
+import SecuritySettings from '@/components/settings/SecuritySettings';
 import SettingsSidebar from '@/components/settings/SettingsSidebar';
 import PlaceholderSettings from '@/components/settings/PlaceholderSettings';
 
-// Default settings with tabs as the default layout
-const defaultSettings: AppSettings = {
-  theme: 'light',
-  couleur: 'purple',
-  layoutType: 'tabs'
-};
-
 const Settings: React.FC = () => {
-  const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [currentTab, setCurrentTab] = useState('appearance');
-  const { toast } = useToast();
 
-  // Load settings from localStorage on component mount
-  useEffect(() => {
-    const storedSettings = localStorage.getItem('appSettings');
-    if (storedSettings) {
-      const parsedSettings = JSON.parse(storedSettings);
-      setSettings({
-        ...defaultSettings,
-        ...parsedSettings
-      });
-      
-      // Apply the color palette at loading
-      applyCouleur(parsedSettings.couleur || defaultSettings.couleur);
+  const renderContent = () => {
+    switch (currentTab) {
+      case 'appearance':
+        return <AppearanceSettings />;
+      case 'profile':
+        return <ProfileSettings />;
+      case 'security':
+        return <SecuritySettings />;
+      default:
+        return <PlaceholderSettings currentTab={currentTab} />;
     }
-  }, []);
-
-  // Update theme when settings change
-  useEffect(() => {
-    if (settings.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else if (settings.theme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else if (settings.theme === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
-  }, [settings.theme]);
-
-  // Handle theme change
-  const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
-    const newSettings = { ...settings, theme };
-    setSettings(newSettings);
-    localStorage.setItem('appSettings', JSON.stringify(newSettings));
-    toast({
-      title: "Thème modifié",
-      description: `Thème ${theme === 'light' ? 'clair' : theme === 'dark' ? 'sombre' : 'système'} appliqué`,
-    });
-  };
-
-  // Handle color palette change
-  const handlecouleurChange = (couleur: string) => {
-    const newSettings = { ...settings, couleur };
-    setSettings(newSettings);
-    localStorage.setItem('appSettings', JSON.stringify(newSettings));
-    
-    // Apply the color palette
-    applyCouleur(couleur);
-    
-    toast({
-      title: "Palette de couleurs modifiée",
-      description: `Palette ${couleurs.find(p => p.id === couleur)?.name} appliquée`,
-    });
-  };
-
-  // Handle layout type change
-  const handleLayoutTypeChange = (layoutType: 'tabs' | 'sidebar') => {
-    // If already on the selected layout, no need to reload
-    if (layoutType === settings.layoutType) return;
-    
-    const newSettings = { ...settings, layoutType };
-    setSettings(newSettings);
-    localStorage.setItem('appSettings', JSON.stringify(newSettings));
-    toast({
-      title: "Disposition modifiée",
-      description: `Disposition ${layoutType === 'tabs' ? 'en onglets' : 'avec barre latérale'} appliquée.`,
-    });
-    
-    // Reload the page to apply the changes
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
-  };
-
-  // Handle save all settings
-  const handleSaveSettings = () => {
-    localStorage.setItem('appSettings', JSON.stringify(settings));
-    toast({
-      title: "Paramètres enregistrés",
-      description: "Vos préférences ont été enregistrées avec succès",
-    });
   };
 
   return (
@@ -110,22 +30,9 @@ const Settings: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6">
-        {/* Settings Sidebar */}
         <SettingsSidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
-
-        {/* Settings Content */}
         <div className="space-y-6">
-          {currentTab === 'appearance' ? (
-            <AppearanceSettings 
-              settings={settings}
-              onThemeChange={handleThemeChange}
-              onCouleurChange={handlecouleurChange}
-              onLayoutTypeChange={handleLayoutTypeChange}
-              onSaveSettings={handleSaveSettings}
-            />
-          ) : (
-            <PlaceholderSettings currentTab={currentTab} />
-          )}
+          {renderContent()}
         </div>
       </div>
     </div>
