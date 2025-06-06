@@ -34,6 +34,7 @@ export interface ChampsModele {
   modele_document: number;
   label: string;
   type: 'char' | 'text';
+  tag_name: string; // nom du champ dans le modèle
   options?: string;
   help_text?: string;
   required: boolean;

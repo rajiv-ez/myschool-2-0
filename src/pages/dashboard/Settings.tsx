@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { AppearanceSettings, applyColorPalette, colorPalettes, AppSettings } from '@/components/settings/AppearanceSettings';
+import { AppearanceSettings, applyCouleur, couleurs, AppSettings } from '@/components/settings/AppearanceSettings';
 import SettingsSidebar from '@/components/settings/SettingsSidebar';
 import PlaceholderSettings from '@/components/settings/PlaceholderSettings';
 
 // Default settings with tabs as the default layout
 const defaultSettings: AppSettings = {
   theme: 'light',
-  colorPalette: 'purple',
+  couleur: 'purple',
   layoutType: 'tabs'
 };
 
@@ -28,7 +28,7 @@ const Settings: React.FC = () => {
       });
       
       // Apply the color palette at loading
-      applyColorPalette(parsedSettings.colorPalette || defaultSettings.colorPalette);
+      applyCouleur(parsedSettings.couleur || defaultSettings.couleur);
     }
   }, []);
 
@@ -60,17 +60,17 @@ const Settings: React.FC = () => {
   };
 
   // Handle color palette change
-  const handleColorPaletteChange = (colorPalette: string) => {
-    const newSettings = { ...settings, colorPalette };
+  const handlecouleurChange = (couleur: string) => {
+    const newSettings = { ...settings, couleur };
     setSettings(newSettings);
     localStorage.setItem('appSettings', JSON.stringify(newSettings));
     
     // Apply the color palette
-    applyColorPalette(colorPalette);
+    applyCouleur(couleur);
     
     toast({
       title: "Palette de couleurs modifiée",
-      description: `Palette ${colorPalettes.find(p => p.id === colorPalette)?.name} appliquée`,
+      description: `Palette ${couleurs.find(p => p.id === couleur)?.name} appliquée`,
     });
   };
 
@@ -119,7 +119,7 @@ const Settings: React.FC = () => {
             <AppearanceSettings 
               settings={settings}
               onThemeChange={handleThemeChange}
-              onColorPaletteChange={handleColorPaletteChange}
+              onCouleurChange={handlecouleurChange}
               onLayoutTypeChange={handleLayoutTypeChange}
               onSaveSettings={handleSaveSettings}
             />

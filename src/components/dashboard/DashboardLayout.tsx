@@ -65,6 +65,7 @@ const DashboardLayout: React.FC = () => {
   
   const tabs: DashboardTab[] = [
     { id: 'blackboard', label: 'Tableau d\'annonces', icon: <MessageSquare size={18} />, path: '/dashboard/blackboard' },
+    { id: 'dashboard', label: 'Tableau de bord', icon: <MessageSquare size={18} />, path: '/dashboard/dashboard' },
     { id: 'inscriptions', label: 'Inscriptions', icon: <UserPlus size={18} />, path: '/dashboard/inscriptions' },
     { id: 'personnes', label: 'Élèves & Tuteurs', icon: <Users size={18} />, path: '/dashboard/personnes' },
     { id: 'sessions', label: 'Sessions & Paliers', icon: <Calendar size={18} />, path: '/dashboard/sessions' },

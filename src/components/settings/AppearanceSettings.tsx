@@ -13,15 +13,18 @@ import {
   Check
 } from 'lucide-react';
 
+import { usePreferencesStore } from '@/stores/usePreferencesStore';
+import { useEffect } from 'react';
+
 // Theme and layout settings interface
 interface AppSettings {
   theme: 'light' | 'dark' | 'system';
-  colorPalette: string;
+  couleur: string;
   layoutType: 'tabs' | 'sidebar';
 }
 
 // Color palettes
-const colorPalettes = [
+const couleurs = [
   { id: 'purple', name: 'Violet', primaryColor: '#9b87f5', secondaryColor: '#7E69AB' },
   { id: 'blue', name: 'Bleu', primaryColor: '#0EA5E9', secondaryColor: '#0284C7' },
   { id: 'green', name: 'Vert', primaryColor: '#10B981', secondaryColor: '#059669' },
@@ -59,8 +62,8 @@ const hexToHSL = (hex: string): { h: number, s: number, l: number } | null => {
 };
 
 // Variable CSS for colors
-const applyColorPalette = (palette: string) => {
-  const selectedPalette = colorPalettes.find(p => p.id === palette);
+const applyCouleur= (palette: string) => {
+  const selectedPalette = couleurs.find(p => p.id === palette);
   
   if (!selectedPalette) return;
 
@@ -81,7 +84,7 @@ const applyColorPalette = (palette: string) => {
 interface AppearanceSettingsProps {
   settings: AppSettings;
   onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
-  onColorPaletteChange: (colorPalette: string) => void;
+  onCouleurChange: (couleur: string) => void;
   onLayoutTypeChange: (layoutType: 'tabs' | 'sidebar') => void;
   onSaveSettings: () => void;
 }
@@ -89,7 +92,7 @@ interface AppearanceSettingsProps {
 const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
   settings,
   onThemeChange,
-  onColorPaletteChange,
+  onCouleurChange,
   onLayoutTypeChange,
   onSaveSettings
 }) => {
@@ -174,13 +177,13 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {colorPalettes.map((palette) => (
+            {couleurs.map((palette) => (
               <button
                 key={palette.id}
-                onClick={() => onColorPaletteChange(palette.id)}
+                onClick={() => onCouleurChange(palette.id as AppSettings['couleur'])}
                 className={`
                   relative flex flex-col items-center rounded-md border-2 border-muted p-4 hover:border-accent
-                  ${settings.colorPalette === palette.id ? 'border-primary' : ''}
+                  ${settings.couleur=== palette.id ? 'border-primary' : ''}
                 `}
               >
                 <div className="flex space-x-2 mb-2">
@@ -195,7 +198,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
                 </div>
                 <span className="text-sm font-medium">{palette.name}</span>
                 
-                {settings.colorPalette === palette.id && (
+                {settings.couleur=== palette.id && (
                   <div className="absolute top-2 right-2 text-primary">
                     <Check size={16} />
                   </div>
@@ -267,5 +270,5 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
   );
 };
 
-export { AppearanceSettings, applyColorPalette, colorPalettes };
+export { AppearanceSettings, applyCouleur, couleurs };
 export type { AppSettings };

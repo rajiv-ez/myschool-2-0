@@ -24,12 +24,13 @@ const mockChamps: ChampsModele[] = [
     modele_document: 1,
     label: 'Nom de famille',
     type: 'char',
+    tag_name: 'nom_eleve',
     required: true,
   },
   { 
     id: 2, 
     modele_document: 1, 
-    label: 'Mention', type: 'char', required: true, options: 'Passble;Bien;Très bien' },
+    label: 'Mention', type: 'char', tag_name: 'mention_eleve', required: true, options: 'Passble;Bien;Très bien' },
 ];
 
 const mockDocuments: DocumentGenere[] = [
@@ -54,9 +55,12 @@ export const dmsService = {
     fetchWithFallback('/api/dms/modeles-documents/', mockModeles),
 
   getChampsModeles: (): Promise<ApiResponse<ChampsModele[]>> =>
-    fetchWithFallback('/api/dms/champs/', mockChamps),
+    fetchWithFallback('/api/dms/champs-modeles/', mockChamps),
 
   getDocumentsGeneres: (): Promise<ApiResponse<DocumentGenere[]>> => 
     fetchWithFallback('/api/dms/documents-generes/', mockDocuments),
+
+  createDocumentGenere: (data: Partial<DocumentGenere>) =>
+    fetchWithFallback('/api/dms/documents-generes/', data, { method: 'POST', data }),
 
 };
