@@ -1,8 +1,9 @@
+
 import { fetchWithFallback, ApiResponse } from './api';
 import { PreferenceUser } from '../types/configuration';
 
 const mockPreferences: PreferenceUser[] = [
-  { id: 1, user: 1, theme: 'light', couleur: 'violet', disposition: 'tabs' },
+  { id: 1, user: 1, theme: 'light', couleur: 'purple', disposition: 'tabs' },
 ];
 
 export const configurationService = {
