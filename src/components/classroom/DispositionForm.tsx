@@ -110,15 +110,16 @@ const DispositionForm: React.FC<DispositionFormProps> = ({
       }
     }
 
-    const dispositionData = {
+    const dispositionData: Partial<DispositionClasse> & { places: Omit<Place, 'id' | 'disposition'>[] } = {
       nom: dispositionName,
       description,
       configuration: activeConfigId,
       places,
     };
 
+    // Only add id if we're updating an existing disposition
     if (dispositionId) {
-      dispositionData.id = dispositionId;
+      (dispositionData as any).id = dispositionId;
     }
 
     onCreateDisposition(dispositionData);

@@ -6,8 +6,18 @@ import ClassroomEditor from '@/components/classroom/ClassroomEditor';
 import ClassroomVisualization from '@/components/classroom/ClassroomVisualization';
 import SeatChangeRequests from '@/components/classroom/SeatChangeRequests';
 
+// Export the interface for use in other components
+export interface SeatChangeRequest {
+  id: number;
+  studentId: number;
+  studentName: string;
+  requestDate: Date;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 // Temporary mock data for change requests - this should be replaced with real API data
-const mockChangeRequests = [
+const mockChangeRequests: SeatChangeRequest[] = [
   {
     id: 1,
     studentId: 3,
