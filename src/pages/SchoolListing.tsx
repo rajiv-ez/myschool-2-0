@@ -1,13 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import SchoolCard from '@/components/schools/SchoolCard';
+import SchoolSearch from '@/components/schools/SchoolSearch';
 import { School } from '@/types/schools';
 
 const SchoolListing: React.FC = () => {
-  // Données mockées pour le moment
-  const schools: School[] = [
+  const allSchools: School[] = [
     {
       id: 1,
       nom: "Complexe Scolaire Le Guide de nos Enfants",
@@ -102,6 +102,8 @@ const SchoolListing: React.FC = () => {
     }
   ];
 
+  const [filteredSchools, setFilteredSchools] = useState<School[]>(allSchools);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -122,14 +124,27 @@ const SchoolListing: React.FC = () => {
           </div>
         </section>
 
-        {/* Schools Grid */}
-        <section className="py-16">
+        {/* Search and Filters */}
+        <section className="py-8">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {schools.map((school) => (
-                <SchoolCard key={school.id} school={school} />
-              ))}
-            </div>
+            <SchoolSearch schools={allSchools} onFilter={setFilteredSchools} />
+          </div>
+        </section>
+
+        {/* Schools Grid */}
+        <section className="pb-16">
+          <div className="container mx-auto px-4">
+            {filteredSchools.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredSchools.map((school) => (
+                  <SchoolCard key={school.id} school={school} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-lg text-gray-600">Aucune école ne correspond à vos critères de recherche.</p>
+              </div>
+            )}
           </div>
         </section>
 

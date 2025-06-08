@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SchoolListing from "./pages/SchoolListing";
+import Contact from "./pages/Contact";
+import Forum from "./pages/Forum";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import Login from "./pages/Login";
 import Users from "./pages/dashboard/Users";
@@ -51,6 +53,12 @@ const App = () => {
             
             {/* Schools listing route */}
             <Route path="/schools" element={<SchoolListing />} />
+            
+            {/* Contact route */}
+            <Route path="/contact" element={<Contact />} />
+            
+            {/* Forum route */}
+            <Route path="/forum" element={<Forum />} />
             
             {/* Dashboard routes */}
             <Route path="/dashboard" element={<DashboardLayout />}>

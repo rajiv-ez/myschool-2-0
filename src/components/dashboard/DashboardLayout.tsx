@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import DashboardChatbot from '@/components/dashboard/DashboardChatbot';
 import { 
   UserPlus, 
   Users, 
@@ -186,6 +187,9 @@ const DashboardLayout: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Add the chatbot component */}
+      <DashboardChatbot />
 
       <Footer />
     </div>
