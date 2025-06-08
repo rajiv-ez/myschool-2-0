@@ -8,7 +8,11 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
+import { useAuthStore } from '@/stores/useAuthStore';
+
 const Login: React.FC = () => {
+  const { login, error } = useAuthStore();
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -22,24 +26,20 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulation de connexion
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Connexion réussie",
-        description: "Vous êtes maintenant connecté",
-      });
-      
-      // Redirection vers le dashboard (à implémenter)
+      console.log("formData", formData);
+
+      await login(formData.email, formData.password);
+
+      toast({ title: "Connexion réussie" });
       window.location.href = '/dashboard';
-    } catch (error) {
-      toast({
-        title: "Erreur de connexion",
-        description: "Vérifiez vos identifiants",
-        variant: "destructive"
-      });
+    } catch {
+        toast({
+          title: "Erreur",
+          description: error || "Identifiants invalides",
+          variant: "destructive",
+        });    
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 

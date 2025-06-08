@@ -59,16 +59,13 @@ apiClient.interceptors.request.use(
   (config) => {
     // Ajouter le token d'authentification si disponible
     const token = localStorage.getItem('token');
-  if (token && config.headers) {
-    config.headers.Authorization = `Token ${token}`;
-  }
 
-  // Supprimer Content-Type si fichier envoyé
-  if (config.data instanceof FormData && config.headers) {
-    delete config.headers['Content-Type'];
-  }
+    if (token && config.headers) config.headers.Authorization = `Token ${token}`;
 
-  return config;
+    // Supprimer Content-Type si fichier envoyé
+    if (config.data instanceof FormData && config.headers) delete config.headers['Content-Type'];
+
+    return config;
   },
   (error) => {
     return Promise.reject(error);

@@ -47,7 +47,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             
             {/* Login route */}
-            <Route path="/login" element={<Login />} />
+            <Route path="/connexion" element={<Login />} />
             
             {/* Schools listing route */}
             <Route path="/schools" element={<SchoolListing />} />
@@ -56,13 +56,13 @@ const App = () => {
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<Blackboard />} />
               <Route path="blackboard" element={<Blackboard />} />
-              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="tableau-de-bord" element={<Dashboard />} />
               <Route path="inscriptions" element={<Inscriptions />} />
               <Route path="personnes" element={<Personnes />} />
               <Route path="users" element={<Users />} />
               <Route path="sessions" element={<Sessions />} />
               <Route path="evenements" element={<Evenements />} />
-              <Route path="evenements2" element={<Evenements2 />} />
+              <Route path="v2-evenements" element={<Evenements2 />} />
               <Route path="locaux" element={<Locaux />} />
               <Route path="classroom-config" element={<ClassroomConfig />} />
               <Route path="academics" element={<Academics />} />

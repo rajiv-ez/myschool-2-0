@@ -36,6 +36,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+import { usePreferencesStore } from '@/stores/usePreferencesStore';
+import { applyCouleur, applyTheme } from '@/components/settings/AppearanceSettings';
+
 // Interface pour les onglets
 interface DashboardTab {
   id: string;
@@ -52,26 +55,18 @@ const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
   // Récupérer le type de disposition depuis localStorage avec 'tabs' comme valeur par défaut
-  const [layoutType, setLayoutType] = useState<'tabs' | 'sidebar'>('tabs');
-  
-  useEffect(() => {
-    const storedSettings = localStorage.getItem('appSettings');
-    if (storedSettings) {
-      const parsedSettings = JSON.parse(storedSettings);
-      // Use tabs as default if not specified
-      setLayoutType(parsedSettings.layoutType || 'tabs');
-    }
-  }, []);
+  const { preferences } = usePreferencesStore();
+  const layoutType = preferences?.disposition ?? 'tabs';
   
   const tabs: DashboardTab[] = [
     { id: 'blackboard', label: 'Tableau d\'annonces', icon: <MessageSquare size={18} />, path: '/dashboard/blackboard' },
-    { id: 'dashboard', label: 'Tableau de bord', icon: <MessageSquare size={18} />, path: '/dashboard/dashboard' },
+    { id: 'tableau-de-bord', label: 'Tableau de bord', icon: <MessageSquare size={18} />, path: '/dashboard/tableau-de-bord' },
     { id: 'inscriptions', label: 'Inscriptions', icon: <UserPlus size={18} />, path: '/dashboard/inscriptions' },
     { id: 'personnes', label: 'Élèves & Tuteurs', icon: <Users size={18} />, path: '/dashboard/personnes' },
     { id: 'users', label: 'Gestion Utilisateurs', icon: <UserCog size={18} />, path: '/dashboard/users' },
     { id: 'sessions', label: 'Sessions & Paliers', icon: <Calendar size={18} />, path: '/dashboard/sessions' },
     { id: 'evenements', label: 'Événements', icon: <CalendarDays size={18} />, path: '/dashboard/evenements' },
-    { id: 'evenements2', label: 'Événements (v2)', icon: <CalendarDays size={18} />, path: '/dashboard/evenements2' },
+    { id: 'v2-evenements', label: 'Événements (v2)', icon: <CalendarDays size={18} />, path: '/dashboard/v2-evenements' },
     { id: 'locaux', label: 'Locaux', icon: <Building size={18} />, path: '/dashboard/locaux' },
     { id: 'classroom-config', label: 'Configuration Classe', icon: <Layout size={18} />, path: '/dashboard/classroom-config' },
     { id: 'academics', label: 'Structure Académique', icon: <School size={18} />, path: '/dashboard/academics' },
@@ -89,7 +84,8 @@ const DashboardLayout: React.FC = () => {
     { id: 'settings', label: 'Paramètres', icon: <Settings size={18} />, path: '/dashboard/settings' }
   ];
   
-  const activeTab = tabs.find(tab => location.pathname.includes(tab.id))?.id || 'blackboard';
+  const prefix = '/dashboard/';
+  const activeTab = tabs.find(tab => location.pathname.includes(`${prefix}${tab.id}`))?.id || '';
 
   useEffect(() => {
     const activeTabEl = document.querySelector(`[data-tab-id='${activeTab}']`);
@@ -106,7 +102,7 @@ const DashboardLayout: React.FC = () => {
   const renderSidebar = () => {
     return (
       <div className={cn(
-        "h-[calc(100vh-64px)] flex-shrink-0 border-r bg-background transition-all duration-300",
+        "h-[calc(100vh-64px)] flex-shrink-0 border-r bg-background transition-all duration-500 ease-in-out", // ✅ transition ajoutée ici
         isSidebarCollapsed ? "w-16" : "w-64"
       )}>
         <div className="flex justify-end p-2">
@@ -152,7 +148,7 @@ const DashboardLayout: React.FC = () => {
         {layoutType === 'sidebar' && renderSidebar()}
         
         <div className={cn(
-          "container mx-auto px-4 py-6 flex-grow",
+          "container mx-auto px-4 py-6 flex-grow transition-all duration-500 ease-in-out", // ✅ transition ajoutée ici
           layoutType === 'sidebar' && !isMobile && (isSidebarCollapsed ? "ml-16" : "ml-64")
         )}>
           <div className="mb-6">

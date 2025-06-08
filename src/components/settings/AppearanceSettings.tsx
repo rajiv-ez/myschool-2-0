@@ -68,6 +68,16 @@ const applyCouleur = (palette: string) => {
   }
 };
 
+const applyTheme = (theme: 'light' | 'dark' | 'system') => {
+  const html = document.documentElement;
+  if (theme === 'dark') html.classList.add('dark');
+  else if (theme === 'light') html.classList.remove('dark');
+  else if (theme === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    prefersDark ? html.classList.add('dark') : html.classList.remove('dark');
+  }
+};
+
 const AppearanceSettings: React.FC = () => {
   const { 
     preferences, 
@@ -85,22 +95,13 @@ const AppearanceSettings: React.FC = () => {
 
   useEffect(() => {
     if (preferences) {
+      console.log('Préférences chargées:', preferences);
       // Apply theme
-      if (preferences.theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else if (preferences.theme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else if (preferences.theme === 'system') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (prefersDark) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
+      applyTheme(preferences.theme);
 
       // Apply color palette
       applyCouleur(preferences.couleur);
+  
     }
   }, [preferences]);
 
@@ -153,9 +154,6 @@ const AppearanceSettings: React.FC = () => {
         description: `Disposition ${layoutType === 'tabs' ? 'en onglets' : 'avec barre latérale'} appliquée.`,
       });
       
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
     } catch (error) {
       toast({
         title: "Erreur",
@@ -361,4 +359,4 @@ const AppearanceSettings: React.FC = () => {
   );
 };
 
-export { AppearanceSettings, applyCouleur, couleurs };
+export { AppearanceSettings, applyTheme, applyCouleur, couleurs };
