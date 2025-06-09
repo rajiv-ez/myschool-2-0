@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { configurationService } from '@/services/configurationService';
@@ -14,13 +13,13 @@ export const useClassroomData = () => {
   // Fetch configurations
   const { data: configurationsResponse } = useQuery({
     queryKey: ['configurations'],
-    queryFn: configurationService.getConfigurations,
+    queryFn: () => configurationService.getConfigurations(),
   });
 
   // Fetch dispositions
   const { data: dispositionsResponse } = useQuery({
     queryKey: ['dispositions'],
-    queryFn: configurationService.getDispositions,
+    queryFn: () => configurationService.getDispositions(),
   });
 
   // Fetch classe sessions
