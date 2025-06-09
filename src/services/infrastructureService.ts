@@ -18,8 +18,54 @@ const mockSalles: Salle[] = [
 export const infrastructureService = {
   getSuccursales: (): Promise<ApiResponse<Succursale[]>> =>
     fetchWithFallback('/api/infrastructure/succursales/', mockSuccursales),
-  getBatiments: (): Promise<ApiResponse<Batiment[]>> =>
-    fetchWithFallback('/api/infrastructure/batiments/', mockBatiments),
-  getSalles: (): Promise<ApiResponse<Salle[]>> =>
-    fetchWithFallback('/api/infrastructure/salles/', mockSalles),
+
+  createSuccursale: (data: Partial<Succursale>): Promise<ApiResponse<Succursale>> =>
+    fetchWithFallback('/api/infrastructure/succursales/', {} as Succursale, {
+      method: 'POST',
+      data,
+    }),
+  updateSuccursale: (id: number, data: Partial<Succursale>): Promise<ApiResponse<Succursale>> =>
+    fetchWithFallback(`/api/infrastructure/succursales/${id}/`, {} as Succursale, {
+      method: 'PUT',
+      data,
+    }),
+
+  // === BATIMENTS ===
+  getBatiments: (succursaleId?: number): Promise<ApiResponse<Batiment[]>> =>
+    fetchWithFallback(
+      `/api/infrastructure/batiments/${succursaleId ? `?succursale=${succursaleId}` : ''}`,
+      mockBatiments
+    ),
+
+  createBatiment: (data: Partial<Batiment>): Promise<ApiResponse<Batiment>> =>
+    fetchWithFallback('/api/infrastructure/batiments/', {} as Batiment, {
+      method: 'POST',
+      data,
+    }),
+
+  updateBatiment: (id: number, data: Partial<Batiment>): Promise<ApiResponse<Batiment>> =>
+    fetchWithFallback(`/api/infrastructure/batiments/${id}/`, {} as Batiment, {
+      method: 'PUT',
+      data,
+    }),
+
+  // === SALLES ===
+  getSalles: (batimentId?: number): Promise<ApiResponse<Salle[]>> =>
+    fetchWithFallback(
+      `/api/infrastructure/salles/${batimentId ? `?batiment=${batimentId}` : ''}`,
+      mockSalles
+    ),
+
+  createSalle: (data: Partial<Salle>): Promise<ApiResponse<Salle>> =>
+    fetchWithFallback('/api/infrastructure/salles/', {} as Salle, {
+      method: 'POST',
+      data,
+    }),
+
+  updateSalle: (id: number, data: Partial<Salle>): Promise<ApiResponse<Salle>> =>
+    fetchWithFallback(`/api/infrastructure/salles/${id}/`, {} as Salle, {
+      method: 'PUT',
+      data,
+    }),
 };
+

@@ -35,6 +35,8 @@ import Paiements from "./pages/dashboard/Paiements";
 import MesPaiements from "./pages/dashboard/MesPaiements";
 import Settings from "./pages/dashboard/Settings";
 
+// import ApiTesterPage from "./pages/test/ApiTesterPage";
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -47,6 +49,8 @@ const App = () => {
           <Routes>
             {/* Main route */}
             <Route path="/" element={<Index />} />
+
+            {/* <Route path="/tester" element={<ApiTesterPage />} /> */}
             
             {/* Login route */}
             <Route path="/connexion" element={<Login />} />

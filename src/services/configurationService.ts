@@ -23,21 +23,61 @@ export const configurationService = {
   updatePreference: (id: number, data: Partial<PreferenceUser>): Promise<ApiResponse<PreferenceUser>> =>
     fetchWithFallback(`/api/config/preferences/${id}/`, mockPreferences[0], { method: 'PUT', data }),
   
-  getConfigurations: (): Promise<ApiResponse<ConfigurationClasse[]>> =>
-    fetchWithFallback('/api/configurations/configurations/', mockConfigs),
-  createConfiguration: (data: Partial<ConfigurationClasse>) => api.post('/api/configurations/classes/', data),
-  setConfigurationActive: (id: number) => api.post(`/api/configurations/classes/${id}/activer/`, {}),
+  // === CONFIGURATION CLASSE ===
+  getConfigurations: (classeSessionId?: number): Promise<ApiResponse<ConfigurationClasse[]>> => {
+    const url = classeSessionId
+      ? `/api/config/classes/?classe_session=${classeSessionId}`
+      : `/api/config/classes/`;
+    return fetchWithFallback(url, mockConfigs);
+  },
 
-  getDispositions: (): Promise<ApiResponse<DispositionClasse[]>> =>
-    fetchWithFallback('/api/configurations/dispositions/', mockDispositions),
-  createDisposition: (data: Partial<DispositionClasse>) => api.post('/api/configurations/dispositions/', data),
-  setDispositionActive: (id: number) => api.post(`/api/configurations/dispositions/${id}/activer/`, {}),
+  createConfiguration: (data: Partial<ConfigurationClasse>) =>
+    api.post('/api/config/classes/', data),
 
+  updateConfiguration: (id: number, data: Partial<ConfigurationClasse>) =>
+    api.patch(`/api/config/classes/${id}/`, data),
+
+  setConfigurationActive: (id: number) =>
+    api.post(`/api/config/classes/${id}/activer/`, {}),
+
+  getConfigurationComplete: (classeSessionId: number) =>
+    api.get(`/api/config/classes/full/${classeSessionId}/`),
+
+
+  // === DISPOSITION CLASSE ===
+  getDispositions: (configId?: number): Promise<ApiResponse<DispositionClasse[]>> => {
+    const url = configId
+      ? `/api/config/dispositions/?configuration=${configId}`
+      : `/api/config/dispositions/`;
+    return fetchWithFallback(url, mockDispositions);
+  },
+
+  createDisposition: (data: Partial<DispositionClasse>) =>
+    api.post('/api/config/dispositions-full/', data),
+
+  updateDisposition: (id: number, data: Partial<DispositionClasse>) =>
+    api.put(`/api/config/dispositions-full/${id}/`, data),
+
+  setDispositionActive: (id: number) =>
+    api.post(`/api/config/dispositions/${id}/activer/`, {}),
+
+
+  // === PLACES ===
   getPlaces: (): Promise<ApiResponse<Place[]>> =>
-    fetchWithFallback('/api/configurations/places/', mockPlaces),
-  getPlacesByDisposition: (id: number) => api.get<Place[]>(`/api/configurations/places/?disposition=${id}`),
+    fetchWithFallback('/api/config/places/', mockPlaces),
 
+  getPlacesByDisposition: (dispositionId: number) =>
+    api.get<Place[]>(`/api/config/places/?disposition=${dispositionId}`),
+
+
+  // === DEMANDES DE CHANGEMENT ===
   getDemandes: (): Promise<ApiResponse<DemandeChangementPlace[]>> =>
-    fetchWithFallback('/api/configurations/demandes-changement-place/', mockDemandes),
+    fetchWithFallback('/api/config/demandes-changement-place/', mockDemandes),
+
+  createDemande: (data: Partial<DemandeChangementPlace>) =>
+    api.post('/api/config/demandes-changement-place/', data),
+
+  updateDemande: (id: number, data: Partial<DemandeChangementPlace>) =>
+    api.patch(`/api/config/demandes-changement-place/${id}/`, data),
   
 };
