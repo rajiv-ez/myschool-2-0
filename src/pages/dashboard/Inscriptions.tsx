@@ -9,7 +9,6 @@ import {
   TableRow, 
   TableCell 
 } from '@/components/ui/table';
-import { Link } from 'react-router-dom';
 import { 
   UserPlus, 
   Filter, 
@@ -45,149 +44,81 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
-import InscriptionForm from '@/components/forms/InscriptionForm';
+import { Inscription, ClasseSession, Session, Classe, Specialite, Filiere, Niveau } from '@/types/academic';
 
-// Données fictives pour les classes académiques (utilisant le nouveau format)
-const classesAcademiquesData = [
-  { 
-    id: 1, 
-    classe: 'CP', 
-    session: '2024-2025', 
-    enseignant: 'Mme Ntoutoume',
-    eleves: 25,
-    capacite: 30,
-    statut: 'Actif'
-  },
-  { 
-    id: 2, 
-    classe: 'CE1', 
-    session: '2024-2025', 
-    enseignant: 'M. Ekomi',
-    eleves: 23,
-    capacite: 28,
-    statut: 'Actif'
-  },
-  { 
-    id: 3, 
-    classe: 'CE2', 
-    session: '2024-2025', 
-    enseignant: 'Mme Abessolo',
-    eleves: 22,
-    capacite: 25,
-    statut: 'Actif'
-  },
-  { 
-    id: 4, 
-    classe: 'CM1', 
-    session: '2024-2025', 
-    enseignant: 'M. Mboumba',
-    eleves: 20,
-    capacite: 24,
-    statut: 'Actif'
-  },
-  { 
-    id: 5, 
-    classe: 'CM2', 
-    session: '2024-2025', 
-    enseignant: 'Mme Ovono',
-    eleves: 24,
-    capacite: 26,
-    statut: 'Actif'
-  }
+// Données fictives basées sur les vrais types
+const sessionsData: Session[] = [
+  { id: 1, nom: '2024-2025', debut: '2024-09-01', fin: '2025-06-30', en_cours: true, auto_activer_palier: true },
+  { id: 2, nom: '2023-2024', debut: '2023-09-01', fin: '2024-06-30', en_cours: false, auto_activer_palier: false },
 ];
 
-// Données fictives pour les inscriptions
-const inscriptionsData = [
+const niveauxData: Niveau[] = [
+  { id: 1, nom: 'Primaire' },
+  { id: 2, nom: 'Collège' },
+  { id: 3, nom: 'Lycée' },
+];
+
+const filieresData: Filiere[] = [
+  { id: 1, niveau: 1, nom: 'Générale', description: 'Formation générale primaire' },
+  { id: 2, niveau: 2, nom: 'Générale', description: 'Formation générale collège' },
+  { id: 3, niveau: 3, nom: 'Scientifique', description: 'Formation scientifique' },
+  { id: 4, niveau: 3, nom: 'Littéraire', description: 'Formation littéraire' },
+];
+
+const specialitesData: Specialite[] = [
+  { id: 1, filiere: 1, nom: 'Standard', description: 'Formation standard primaire' },
+  { id: 2, filiere: 2, nom: 'Standard', description: 'Formation standard collège' },
+  { id: 3, filiere: 3, nom: 'Mathématiques', description: 'Spécialité mathématiques' },
+  { id: 4, filiere: 4, nom: 'Philosophie', description: 'Spécialité philosophie' },
+];
+
+const classesData: Classe[] = [
+  { id: 1, specialite: 1, nom: 'CP', description: 'Cours Préparatoire' },
+  { id: 2, specialite: 1, nom: 'CE1', description: 'Cours Élémentaire 1' },
+  { id: 3, specialite: 2, nom: '6ème', description: 'Sixième' },
+  { id: 4, specialite: 3, nom: 'Terminale S', description: 'Terminale Scientifique' },
+];
+
+const classeSessionsData: ClasseSession[] = [
+  { id: 1, classe: 1, session: 1, capacite: 30 },
+  { id: 2, classe: 2, session: 1, capacite: 28 },
+  { id: 3, classe: 3, session: 1, capacite: 25 },
+  { id: 4, classe: 4, session: 1, capacite: 32 },
+];
+
+const inscriptionsData: Inscription[] = [
   { 
     id: 1, 
-    nom: 'Ndong', 
-    prenom: 'Marie', 
-    classe: 'CM1', 
-    session: '2024-2025', 
-    statut: 'Nouvelle', 
-    date: '12/08/2024' 
+    eleve: 1, 
+    classe_session: 1, 
+    date_inscription: '2024-08-12', 
+    est_reinscription: false, 
+    statut: 'CONFIRMEE' 
   },
   { 
     id: 2, 
-    nom: 'Obiang', 
-    prenom: 'Paul', 
-    classe: 'CE2', 
-    session: '2024-2025', 
-    statut: 'Réinscription', 
-    date: '15/08/2024' 
+    eleve: 2, 
+    classe_session: 2, 
+    date_inscription: '2024-08-15', 
+    est_reinscription: true, 
+    statut: 'CONFIRMEE' 
   },
   { 
     id: 3, 
-    nom: 'Mba', 
-    prenom: 'Sophie', 
-    classe: 'CM2', 
-    session: '2024-2025', 
-    statut: 'Nouvelle', 
-    date: '10/08/2024' 
+    eleve: 3, 
+    classe_session: 3, 
+    date_inscription: '2024-08-10', 
+    est_reinscription: false, 
+    statut: 'EN_ATTENTE' 
   },
   { 
     id: 4, 
-    nom: 'Ondo', 
-    prenom: 'Jean', 
-    classe: '6ème', 
-    session: '2024-2025', 
-    statut: 'Réinscription', 
-    date: '18/08/2024' 
+    eleve: 4, 
+    classe_session: 4, 
+    date_inscription: '2024-08-18', 
+    est_reinscription: true, 
+    statut: 'CONFIRMEE' 
   },
-  { 
-    id: 5, 
-    nom: 'Mintsa', 
-    prenom: 'Lucie', 
-    classe: '5ème', 
-    session: '2024-2025', 
-    statut: 'Nouvelle', 
-    date: '05/08/2024' 
-  },
-  { 
-    id: 6, 
-    nom: 'Mengue', 
-    prenom: 'Pierre', 
-    classe: 'CE1', 
-    session: '2024-2025', 
-    statut: 'Nouvelle', 
-    date: '20/08/2024' 
-  },
-  { 
-    id: 7, 
-    nom: 'Assoumou', 
-    prenom: 'Jacques', 
-    classe: 'CM1', 
-    session: '2024-2025', 
-    statut: 'Réinscription', 
-    date: '22/08/2024' 
-  },
-  { 
-    id: 8, 
-    nom: 'Ekomi', 
-    prenom: 'Alice', 
-    classe: 'CE2', 
-    session: '2024-2025', 
-    statut: 'Nouvelle', 
-    date: '14/08/2024' 
-  },
-  { 
-    id: 9, 
-    nom: 'Nzoghe', 
-    prenom: 'Robert', 
-    classe: 'CP', 
-    session: '2024-2025', 
-    statut: 'Nouvelle', 
-    date: '09/08/2024' 
-  },
-  { 
-    id: 10, 
-    nom: 'Abessolo', 
-    prenom: 'Christine', 
-    classe: '4ème', 
-    session: '2024-2025', 
-    statut: 'Réinscription', 
-    date: '17/08/2024' 
-  }
 ];
 
 const Inscriptions: React.FC = () => {
@@ -203,28 +134,64 @@ const Inscriptions: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedInscription, setSelectedInscription] = useState<typeof inscriptionsData[0] | null>(null);
+  const [selectedInscription, setSelectedInscription] = useState<Inscription | null>(null);
+
+  // Fonctions utilitaires pour obtenir les noms
+  const getClasseSessionName = (classeSessionId: number) => {
+    const classeSession = classeSessionsData.find(cs => cs.id === classeSessionId);
+    if (!classeSession) return 'Inconnue';
+    
+    const classe = classesData.find(c => c.id === classeSession.classe);
+    const session = sessionsData.find(s => s.id === classeSession.session);
+    return `${classe?.nom || 'Inconnue'} (${session?.nom || 'Inconnue'})`;
+  };
+
+  const getStatutColor = (statut: string) => {
+    switch (statut) {
+      case 'CONFIRMEE': return 'bg-green-100 text-green-800';
+      case 'EN_ATTENTE': return 'bg-yellow-100 text-yellow-800';
+      case 'ANNULEE': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatutLabel = (statut: string) => {
+    switch (statut) {
+      case 'CONFIRMEE': return 'Confirmée';
+      case 'EN_ATTENTE': return 'En attente';
+      case 'ANNULEE': return 'Annulée';
+      default: return statut;
+    }
+  };
   
   // Appliquer les filtres
   const applyFilters = () => {
     let result = [...inscriptionsData];
     
-    // Filtrer par terme de recherche
+    // Filtrer par terme de recherche (sur l'ID de l'élève pour l'instant)
     if (searchTerm) {
       result = result.filter(item => 
-        item.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        item.prenom.toLowerCase().includes(searchTerm.toLowerCase())
+        item.id.toString().includes(searchTerm) || 
+        item.eleve.toString().includes(searchTerm)
       );
     }
     
     // Filtrer par session
     if (selectedSession !== 'all') {
-      result = result.filter(item => item.session === selectedSession);
+      const sessionId = parseInt(selectedSession);
+      result = result.filter(item => {
+        const classeSession = classeSessionsData.find(cs => cs.id === item.classe_session);
+        return classeSession?.session === sessionId;
+      });
     }
     
     // Filtrer par classe
     if (selectedClasse !== 'all') {
-      result = result.filter(item => item.classe === selectedClasse);
+      const classeId = parseInt(selectedClasse);
+      result = result.filter(item => {
+        const classeSession = classeSessionsData.find(cs => cs.id === item.classe_session);
+        return classeSession?.classe === classeId;
+      });
     }
     
     // Filtrer par statut
@@ -244,97 +211,36 @@ const Inscriptions: React.FC = () => {
     setFilteredData(inscriptionsData);
   };
   
-  // Ouvrir la modale de détails
-  const handleDetailsClick = (inscription: typeof inscriptionsData[0]) => {
+  // Gestionnaires d'événements
+  const handleDetailsClick = (inscription: Inscription) => {
     setSelectedInscription(inscription);
     setIsDetailsModalOpen(true);
   };
   
-  // Ouvrir la modale d'édition
-  const handleEditClick = (inscription: typeof inscriptionsData[0]) => {
+  const handleEditClick = (inscription: Inscription) => {
     setSelectedInscription(inscription);
     setIsEditModalOpen(true);
   };
   
-  // Ouvrir la modale de création
   const handleCreateClick = () => {
     setIsCreateModalOpen(true);
   };
   
-  // Ouvrir la modale de suppression
-  const handleDeleteClick = (inscription: typeof inscriptionsData[0]) => {
+  const handleDeleteClick = (inscription: Inscription) => {
     setSelectedInscription(inscription);
     setIsDeleteModalOpen(true);
   };
   
-  // Simuler la suppression
   const handleConfirmDelete = () => {
     if (selectedInscription) {
-      // Simuler la suppression en filtrant la liste
       const updatedData = filteredData.filter(item => item.id !== selectedInscription.id);
       setFilteredData(updatedData);
       setIsDeleteModalOpen(false);
       
       toast({
         title: "Inscription supprimée",
-        description: `L'inscription de ${selectedInscription.prenom} ${selectedInscription.nom} a été supprimée.`,
+        description: `L'inscription ID ${selectedInscription.id} a été supprimée.`,
       });
-    }
-  };
-  
-  // Gérer la soumission du formulaire de création
-  const handleCreateSubmit = (data: any) => {
-    // Créer une nouvelle inscription
-    const newInscription = {
-      id: Math.max(...filteredData.map(item => item.id)) + 1,
-      nom: data.nom,
-      prenom: data.prenom,
-      classe: data.classe,
-      session: data.session,
-      statut: data.statut,
-      date: data.date
-    };
-    
-    // Ajouter à la liste
-    setFilteredData([...filteredData, newInscription]);
-    
-    // Mettre à jour le nombre d'élèves dans la classe académique
-    // (Ceci serait normalement géré par le back-end)
-    
-    toast({
-      title: "Inscription créée",
-      description: `L'inscription de ${data.prenom} ${data.nom} a été créée avec succès.`,
-    });
-    
-    setIsCreateModalOpen(false);
-  };
-  
-  // Gérer la soumission du formulaire d'édition
-  const handleEditSubmit = (data: any) => {
-    if (selectedInscription) {
-      // Mettre à jour l'inscription
-      const updatedData = filteredData.map(item => 
-        item.id === selectedInscription.id ? 
-        { 
-          ...item, 
-          nom: data.nom,
-          prenom: data.prenom,
-          classe: data.classe,
-          session: data.session,
-          statut: data.statut,
-          date: data.date
-        } : 
-        item
-      );
-      
-      setFilteredData(updatedData);
-      
-      toast({
-        title: "Inscription mise à jour",
-        description: `L'inscription de ${data.prenom} ${data.nom} a été mise à jour avec succès.`,
-      });
-      
-      setIsEditModalOpen(false);
     }
   };
 
@@ -342,8 +248,8 @@ const Inscriptions: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-xl font-semibold">Inscriptions et réinscriptions</h2>
-          <p className="text-muted-foreground">Gérez les inscriptions des élèves pour l'année scolaire</p>
+          <h2 className="text-xl font-semibold">Inscriptions</h2>
+          <p className="text-muted-foreground">Gérez les inscriptions des élèves pour les sessions</p>
         </div>
         <div className="flex gap-2">
           <Button 
@@ -390,7 +296,7 @@ const Inscriptions: React.FC = () => {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Rechercher un élève..."
+                    placeholder="Rechercher par ID..."
                     className="pl-8"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -405,8 +311,11 @@ const Inscriptions: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Toutes les sessions</SelectItem>
-                    <SelectItem value="2024-2025">2024-2025</SelectItem>
-                    <SelectItem value="2023-2024">2023-2024</SelectItem>
+                    {sessionsData.map(session => (
+                      <SelectItem key={session.id} value={session.id.toString()}>
+                        {session.nom}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -418,14 +327,11 @@ const Inscriptions: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Toutes les classes</SelectItem>
-                    <SelectItem value="CP">CP</SelectItem>
-                    <SelectItem value="CE1">CE1</SelectItem>
-                    <SelectItem value="CE2">CE2</SelectItem>
-                    <SelectItem value="CM1">CM1</SelectItem>
-                    <SelectItem value="CM2">CM2</SelectItem>
-                    <SelectItem value="6ème">6ème</SelectItem>
-                    <SelectItem value="5ème">5ème</SelectItem>
-                    <SelectItem value="4ème">4ème</SelectItem>
+                    {classesData.map(classe => (
+                      <SelectItem key={classe.id} value={classe.id.toString()}>
+                        {classe.nom}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -437,8 +343,9 @@ const Inscriptions: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="Nouvelle">Nouvelle</SelectItem>
-                    <SelectItem value="Réinscription">Réinscription</SelectItem>
+                    <SelectItem value="CONFIRMEE">Confirmée</SelectItem>
+                    <SelectItem value="EN_ATTENTE">En attente</SelectItem>
+                    <SelectItem value="ANNULEE">Annulée</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -458,12 +365,11 @@ const Inscriptions: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Nom</TableHead>
-                <TableHead>Prénom</TableHead>
-                <TableHead>Classe</TableHead>
-                <TableHead>Session</TableHead>
+                <TableHead>Élève ID</TableHead>
+                <TableHead>Classe/Session</TableHead>
+                <TableHead>Date inscription</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead>Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -471,20 +377,23 @@ const Inscriptions: React.FC = () => {
               {filteredData.map((inscription) => (
                 <TableRow key={inscription.id}>
                   <TableCell>{inscription.id}</TableCell>
-                  <TableCell className="font-medium">{inscription.nom}</TableCell>
-                  <TableCell>{inscription.prenom}</TableCell>
-                  <TableCell>{inscription.classe}</TableCell>
-                  <TableCell>{inscription.session}</TableCell>
+                  <TableCell className="font-medium">{inscription.eleve}</TableCell>
+                  <TableCell>{getClasseSessionName(inscription.classe_session)}</TableCell>
+                  <TableCell>{new Date(inscription.date_inscription).toLocaleDateString('fr-FR')}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      inscription.statut === 'Nouvelle' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
+                      inscription.est_reinscription 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-green-100 text-green-800'
                     }`}>
-                      {inscription.statut}
+                      {inscription.est_reinscription ? 'Réinscription' : 'Nouvelle'}
                     </span>
                   </TableCell>
-                  <TableCell>{inscription.date}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatutColor(inscription.statut)}`}>
+                      {getStatutLabel(inscription.statut)}
+                    </span>
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button 
@@ -533,37 +442,37 @@ const Inscriptions: React.FC = () => {
                 <p>{selectedInscription.id}</p>
               </div>
               <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Élève ID</p>
+                <p>{selectedInscription.eleve}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Classe/Session</p>
+                <p>{getClasseSessionName(selectedInscription.classe_session)}</p>
+              </div>
+              <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Date</p>
-                <p>{selectedInscription.date}</p>
+                <p>{new Date(selectedInscription.date_inscription).toLocaleDateString('fr-FR')}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Nom</p>
-                <p>{selectedInscription.nom}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Prénom</p>
-                <p>{selectedInscription.prenom}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Classe</p>
-                <p>{selectedInscription.classe}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Session</p>
-                <p>{selectedInscription.session}</p>
+                <p className="text-sm font-medium text-muted-foreground">Type</p>
+                <p>{selectedInscription.est_reinscription ? 'Réinscription' : 'Nouvelle'}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Statut</p>
-                <p>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    selectedInscription.statut === 'Nouvelle' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {selectedInscription.statut}
-                  </span>
-                </p>
+                <p>{getStatutLabel(selectedInscription.statut)}</p>
               </div>
+              {selectedInscription.decision_conseil && (
+                <div className="col-span-2 space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Décision conseil</p>
+                  <p>{selectedInscription.decision_conseil}</p>
+                </div>
+              )}
+              {selectedInscription.motif_reinscription && (
+                <div className="col-span-2 space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Motif réinscription</p>
+                  <p>{selectedInscription.motif_reinscription}</p>
+                </div>
+              )}
             </div>
           )}
           <DialogFooter>
@@ -573,44 +482,6 @@ const Inscriptions: React.FC = () => {
               handleEditClick(selectedInscription!);
             }}>Modifier</Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Modale de création */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Nouvelle inscription</DialogTitle>
-            <DialogDescription>
-              Remplissez les informations pour créer une nouvelle inscription
-            </DialogDescription>
-          </DialogHeader>
-          <InscriptionForm 
-            isEditing={false}
-            selectedInscription={null}
-            classesAcademiques={classesAcademiquesData}
-            onSubmit={handleCreateSubmit}
-            onCancel={() => setIsCreateModalOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-      
-      {/* Modale d'édition */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Modifier l'inscription</DialogTitle>
-            <DialogDescription>
-              Modifiez les informations de cette inscription
-            </DialogDescription>
-          </DialogHeader>
-          <InscriptionForm 
-            isEditing={true}
-            selectedInscription={selectedInscription}
-            classesAcademiques={classesAcademiquesData}
-            onSubmit={handleEditSubmit}
-            onCancel={() => setIsEditModalOpen(false)}
-          />
         </DialogContent>
       </Dialog>
       
@@ -627,9 +498,9 @@ const Inscriptions: React.FC = () => {
           {selectedInscription && (
             <div className="py-4">
               <p>
-                Vous êtes sur le point de supprimer l'inscription de{' '}
-                <span className="font-semibold">{selectedInscription.prenom} {selectedInscription.nom}</span>{' '}
-                en classe de {selectedInscription.classe} pour la session {selectedInscription.session}.
+                Vous êtes sur le point de supprimer l'inscription ID{' '}
+                <span className="font-semibold">{selectedInscription.id}</span>{' '}
+                pour l'élève ID {selectedInscription.eleve}.
               </p>
             </div>
           )}
