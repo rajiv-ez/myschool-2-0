@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -45,6 +44,9 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { Inscription, ClasseSession, Session, Classe, Specialite, Filiere, Niveau } from '@/types/academic';
+import { useQuery } from '@tanstack/react-query';
+import { usersService } from '@/services/usersService';
+import InscriptionForm from '@/components/forms/InscriptionForm';
 
 // Données fictives basées sur les vrais types
 const sessionsData: Session[] = [
@@ -136,6 +138,28 @@ const Inscriptions: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedInscription, setSelectedInscription] = useState<Inscription | null>(null);
 
+  // Récupérer les données des utilisateurs et élèves
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => usersService.getUsers(),
+  });
+
+  const { data: elevesResponse } = useQuery({
+    queryKey: ['eleves'],
+    queryFn: () => usersService.getEleves(),
+  });
+
+  const users = usersResponse?.data || [];
+  const eleves = elevesResponse?.data || [];
+
+  // Données fictives pour les classes académiques (pour le formulaire)
+  const classesAcademiques = [
+    { id: 1, classe: 'CP', session: '2024-2025', enseignant: 'M. Dupont', eleves: 25, capacite: 30, statut: 'Actif' },
+    { id: 2, classe: 'CE1', session: '2024-2025', enseignant: 'Mme Martin', eleves: 22, capacite: 28, statut: 'Actif' },
+    { id: 3, classe: '6ème', session: '2024-2025', enseignant: 'M. Bernard', eleves: 28, capacite: 25, statut: 'Actif' },
+    { id: 4, classe: 'Terminale S', session: '2024-2025', enseignant: 'Mme Dubois', eleves: 30, capacite: 32, statut: 'Actif' },
+  ];
+
   // Fonctions utilitaires pour obtenir les noms
   const getClasseSessionName = (classeSessionId: number) => {
     const classeSession = classeSessionsData.find(cs => cs.id === classeSessionId);
@@ -211,7 +235,16 @@ const Inscriptions: React.FC = () => {
     setFilteredData(inscriptionsData);
   };
   
-  // Gestionnaires d'événements
+  // Fonction pour obtenir le nom complet de l'élève
+  const getEleveFullName = (eleveId: number) => {
+    const eleve = eleves.find(e => e.user === eleveId);
+    if (!eleve) return 'Élève inconnu';
+    
+    const user = users.find(u => u.id === eleve.user);
+    return user ? `${user.prenom} ${user.nom}` : 'Élève inconnu';
+  };
+
+  // Gestionnaires d'événements mis à jour
   const handleDetailsClick = (inscription: Inscription) => {
     setSelectedInscription(inscription);
     setIsDetailsModalOpen(true);
@@ -223,6 +256,7 @@ const Inscriptions: React.FC = () => {
   };
   
   const handleCreateClick = () => {
+    setSelectedInscription(null);
     setIsCreateModalOpen(true);
   };
   
@@ -242,6 +276,43 @@ const Inscriptions: React.FC = () => {
         description: `L'inscription ID ${selectedInscription.id} a été supprimée.`,
       });
     }
+  };
+
+  const handleFormSubmit = (data: any) => {
+    if (selectedInscription) {
+      // Mode édition
+      const updatedData = filteredData.map(item => 
+        item.id === selectedInscription.id 
+          ? { ...item, ...data, id: selectedInscription.id }
+          : item
+      );
+      setFilteredData(updatedData);
+      toast({
+        title: "Inscription mise à jour",
+        description: "L'inscription a été mise à jour avec succès.",
+      });
+    } else {
+      // Mode création
+      const newInscription = {
+        ...data,
+        id: Math.max(...filteredData.map(i => i.id)) + 1,
+      };
+      setFilteredData([...filteredData, newInscription]);
+      toast({
+        title: "Inscription créée",
+        description: "La nouvelle inscription a été créée avec succès.",
+      });
+    }
+    
+    setIsCreateModalOpen(false);
+    setIsEditModalOpen(false);
+    setSelectedInscription(null);
+  };
+
+  const handleFormCancel = () => {
+    setIsCreateModalOpen(false);
+    setIsEditModalOpen(false);
+    setSelectedInscription(null);
   };
 
   return (
@@ -365,7 +436,7 @@ const Inscriptions: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Élève ID</TableHead>
+                <TableHead>Élève</TableHead>
                 <TableHead>Classe/Session</TableHead>
                 <TableHead>Date inscription</TableHead>
                 <TableHead>Type</TableHead>
@@ -377,7 +448,7 @@ const Inscriptions: React.FC = () => {
               {filteredData.map((inscription) => (
                 <TableRow key={inscription.id}>
                   <TableCell>{inscription.id}</TableCell>
-                  <TableCell className="font-medium">{inscription.eleve}</TableCell>
+                  <TableCell className="font-medium">{getEleveFullName(inscription.eleve)}</TableCell>
                   <TableCell>{getClasseSessionName(inscription.classe_session)}</TableCell>
                   <TableCell>{new Date(inscription.date_inscription).toLocaleDateString('fr-FR')}</TableCell>
                   <TableCell>
@@ -442,8 +513,8 @@ const Inscriptions: React.FC = () => {
                 <p>{selectedInscription.id}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Élève ID</p>
-                <p>{selectedInscription.eleve}</p>
+                <p className="text-sm font-medium text-muted-foreground">Élève</p>
+                <p>{getEleveFullName(selectedInscription.eleve)}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Classe/Session</p>
@@ -482,6 +553,44 @@ const Inscriptions: React.FC = () => {
               handleEditClick(selectedInscription!);
             }}>Modifier</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modale de création */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Nouvelle inscription</DialogTitle>
+            <DialogDescription>
+              Créer une nouvelle inscription d'élève
+            </DialogDescription>
+          </DialogHeader>
+          <InscriptionForm
+            isEditing={false}
+            selectedInscription={null}
+            classesAcademiques={classesAcademiques}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+          />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Modale d'édition */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Modifier l'inscription</DialogTitle>
+            <DialogDescription>
+              Modifier les informations de cette inscription
+            </DialogDescription>
+          </DialogHeader>
+          <InscriptionForm
+            isEditing={true}
+            selectedInscription={selectedInscription}
+            classesAcademiques={classesAcademiques}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+          />
         </DialogContent>
       </Dialog>
       

@@ -11,9 +11,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
 import { Building, Home, DoorClosed, Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Succursale, Batiment, Salle } from '@/types/infrastructure';
+import SuccursaleForm from '@/components/forms/SuccursaleForm';
+import BatimentForm from '@/components/forms/BatimentForm';
+import SalleForm from '@/components/forms/SalleForm';
 
 // Données fictives basées sur les vrais types
 const succursalesData: Succursale[] = [
@@ -77,6 +89,17 @@ const Locaux: React.FC = () => {
   const [filteredSuccursales, setFilteredSuccursales] = useState(succursalesData);
   const [filteredBatiments, setFilteredBatiments] = useState(batimentsData);
   const [filteredSalles, setFilteredSalles] = useState(sallesData);
+
+  // États pour les modales
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+
+  // États pour les modales de création et édition
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
   // Fonctions utilitaires
   const getSuccursaleName = (id: number) => {
@@ -172,6 +195,181 @@ const Locaux: React.FC = () => {
     });
   };
 
+  const handleCreateClick = () => {
+    setSelectedItem(null);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleEditClick = (item: any) => {
+    setSelectedItem(item);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDetailsClick = (item: any) => {
+    setSelectedItem(item);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleDeleteClick = (item: any) => {
+    setSelectedItem(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedItem) return;
+
+    let updatedData;
+    let itemType = '';
+
+    switch (activeTab) {
+      case 'succursales':
+        updatedData = filteredSuccursales.filter(item => item.id !== selectedItem.id);
+        setFilteredSuccursales(updatedData);
+        itemType = 'succursale';
+        break;
+      case 'batiments':
+        updatedData = filteredBatiments.filter(item => item.id !== selectedItem.id);
+        setFilteredBatiments(updatedData);
+        itemType = 'bâtiment';
+        break;
+      case 'salles':
+        updatedData = filteredSalles.filter(item => item.id !== selectedItem.id);
+        setFilteredSalles(updatedData);
+        itemType = 'salle';
+        break;
+    }
+
+    setIsDeleteModalOpen(false);
+    setSelectedItem(null);
+    
+    toast({
+      title: `${itemType} supprimé${itemType === 'salle' ? 'e' : ''}`,
+      description: `Le/La ${itemType} a été supprimé${itemType === 'salle' ? 'e' : ''} avec succès.`,
+    });
+  };
+
+  const handleFormSubmit = (data: any) => {
+    let updatedData;
+    let itemType = '';
+
+    if (selectedItem) {
+      // Mode édition
+      switch (activeTab) {
+        case 'succursales':
+          updatedData = filteredSuccursales.map(item => 
+            item.id === selectedItem.id ? { ...item, ...data } : item
+          );
+          setFilteredSuccursales(updatedData);
+          itemType = 'succursale';
+          break;
+        case 'batiments':
+          updatedData = filteredBatiments.map(item => 
+            item.id === selectedItem.id ? { ...item, ...data } : item
+          );
+          setFilteredBatiments(updatedData);
+          itemType = 'bâtiment';
+          break;
+        case 'salles':
+          updatedData = filteredSalles.map(item => 
+            item.id === selectedItem.id ? { ...item, ...data } : item
+          );
+          setFilteredSalles(updatedData);
+          itemType = 'salle';
+          break;
+      }
+      
+      toast({
+        title: `${itemType} mis${itemType === 'salle' ? 'e' : ''} à jour`,
+        description: `Le/La ${itemType} a été mis${itemType === 'salle' ? 'e' : ''} à jour avec succès.`,
+      });
+    } else {
+      // Mode création
+      const newId = Math.max(
+        ...filteredSuccursales.map(s => s.id), 
+        ...filteredBatiments.map(b => b.id), 
+        ...filteredSalles.map(s => s.id)
+      ) + 1;
+
+      const newItem = { ...data, id: newId };
+
+      switch (activeTab) {
+        case 'succursales':
+          setFilteredSuccursales([...filteredSuccursales, newItem]);
+          itemType = 'succursale';
+          break;
+        case 'batiments':
+          setFilteredBatiments([...filteredBatiments, newItem]);
+          itemType = 'bâtiment';
+          break;
+        case 'salles':
+          setFilteredSalles([...filteredSalles, newItem]);
+          itemType = 'salle';
+          break;
+      }
+
+      toast({
+        title: `${itemType} créé${itemType === 'salle' ? 'e' : ''}`,
+        description: `Le/La ${itemType} a été créé${itemType === 'salle' ? 'e' : ''} avec succès.`,
+      });
+    }
+
+    setIsCreateModalOpen(false);
+    setIsEditModalOpen(false);
+    setSelectedItem(null);
+  };
+
+  const handleFormCancel = () => {
+    setIsCreateModalOpen(false);
+    setIsEditModalOpen(false);
+    setSelectedItem(null);
+  };
+
+  const getModalTitle = () => {
+    const action = selectedItem ? 'Modifier' : 'Créer';
+    switch (activeTab) {
+      case 'succursales': return `${action} une succursale`;
+      case 'batiments': return `${action} un bâtiment`;
+      case 'salles': return `${action} une salle`;
+      default: return action;
+    }
+  };
+
+  const renderForm = () => {
+    switch (activeTab) {
+      case 'succursales':
+        return (
+          <SuccursaleForm
+            isEditing={!!selectedItem}
+            selectedSuccursale={selectedItem}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+          />
+        );
+      case 'batiments':
+        return (
+          <BatimentForm
+            isEditing={!!selectedItem}
+            selectedBatiment={selectedItem}
+            succursales={succursalesData}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+          />
+        );
+      case 'salles':
+        return (
+          <SalleForm
+            isEditing={!!selectedItem}
+            selectedSalle={selectedItem}
+            batiments={batimentsData}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -264,13 +462,13 @@ const Locaux: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" size="icon" onClick={() => handleAction('Voir', 'succursale', item)}>
+                            <Button variant="outline" size="icon" onClick={() => handleDetailsClick(item)}>
                               <Eye size={16} />
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => handleAction('Modifier', 'succursale', item)}>
+                            <Button variant="outline" size="icon" onClick={() => handleEditClick(item)}>
                               <Edit size={16} />
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => handleAction('Supprimer', 'succursale', item)}>
+                            <Button variant="outline" size="icon" onClick={() => handleDeleteClick(item)}>
                               <Trash2 size={16} />
                             </Button>
                           </div>
@@ -345,13 +543,13 @@ const Locaux: React.FC = () => {
                         <TableCell>{getSuccursaleName(item.succursale)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" size="icon" onClick={() => handleAction('Voir', 'bâtiment', item)}>
+                            <Button variant="outline" size="icon" onClick={() => handleDetailsClick(item)}>
                               <Eye size={16} />
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => handleAction('Modifier', 'bâtiment', item)}>
+                            <Button variant="outline" size="icon" onClick={() => handleEditClick(item)}>
                               <Edit size={16} />
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => handleAction('Supprimer', 'bâtiment', item)}>
+                            <Button variant="outline" size="icon" onClick={() => handleDeleteClick(item)}>
                               <Trash2 size={16} />
                             </Button>
                           </div>
@@ -434,13 +632,13 @@ const Locaux: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" size="icon" onClick={() => handleAction('Voir', 'salle', item)}>
+                            <Button variant="outline" size="icon" onClick={() => handleDetailsClick(item)}>
                               <Eye size={16} />
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => handleAction('Modifier', 'salle', item)}>
+                            <Button variant="outline" size="icon" onClick={() => handleEditClick(item)}>
                               <Edit size={16} />
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => handleAction('Supprimer', 'salle', item)}>
+                            <Button variant="outline" size="icon" onClick={() => handleDeleteClick(item)}>
                               <Trash2 size={16} />
                             </Button>
                           </div>
@@ -454,6 +652,85 @@ const Locaux: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Modales */}
+      <Dialog open={isCreateModalOpen || isEditModalOpen} onOpenChange={() => {
+        setIsCreateModalOpen(false);
+        setIsEditModalOpen(false);
+        setSelectedItem(null);
+      }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{getModalTitle()}</DialogTitle>
+            <DialogDescription>
+              Remplissez les informations ci-dessous
+            </DialogDescription>
+          </DialogHeader>
+          {renderForm()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modale de détails */}
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Détails</DialogTitle>
+          </DialogHeader>
+          {selectedItem && (
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">ID</p>
+                <p>{selectedItem.id}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Nom</p>
+                <p>{selectedItem.nom}</p>
+              </div>
+              {/* Affichage conditionnel selon le type */}
+              {selectedItem.adresse && (
+                <div className="col-span-2 space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Adresse</p>
+                  <p>{selectedItem.adresse}</p>
+                </div>
+              )}
+              {selectedItem.capacite && (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Capacité</p>
+                  <p>{selectedItem.capacite} places</p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDetailsModalOpen(false)}>Fermer</Button>
+            <Button onClick={() => {
+              setIsDetailsModalOpen(false);
+              handleEditClick(selectedItem);
+            }}>Modifier</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modale de suppression */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Supprimer l'élément</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer cet élément ?
+              Cette action ne peut pas être annulée.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Annuler</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Supprimer définitivement
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
