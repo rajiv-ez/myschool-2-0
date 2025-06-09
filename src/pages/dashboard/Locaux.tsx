@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -13,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Building, Home, DoorClosed, Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Succursale, Batiment, Salle } from '@/types/infrastructure';
 
 // Données fictives basées sur les vrais types
@@ -394,7 +393,7 @@ const Locaux: React.FC = () => {
                       <SelectItem value="all">Toutes</SelectItem>
                       <SelectItem value="small">≤ 30</SelectItem>
                       <SelectItem value="medium">31-100</SelectItem>
-                      <SelectItem value="large">> 100</SelectItem>
+                      <SelectItem value="large">&gt; 100</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button variant="outline" onClick={applySallesFilter}>
