@@ -1,20 +1,16 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { 
+  User, 
   Palette, 
-  CircleUser,
-  Monitor,
-  Briefcase,
-  Bell,
-  Languages,
-  Smartphone,
-  LockKeyhole,
-  Share2,
-  FileText,
-  InfoIcon
+  Shield, 
+  Building2,
+  Bell, 
+  Globe, 
+  CreditCard 
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SettingsSidebarProps {
   currentTab: string;
@@ -22,101 +18,64 @@ interface SettingsSidebarProps {
 }
 
 const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ currentTab, setCurrentTab }) => {
+  const menuItems = [
+    {
+      id: 'appearance',
+      label: 'Apparence',
+      icon: Palette,
+    },
+    {
+      id: 'profile',
+      label: 'Profil',
+      icon: User,
+    },
+    {
+      id: 'security',
+      label: 'Sécurité',
+      icon: Shield,
+    },
+    {
+      id: 'organisation',
+      label: 'Organisation',
+      icon: Building2,
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: Bell,
+    },
+    {
+      id: 'langue',
+      label: 'Langue',
+      icon: Globe,
+    },
+    {
+      id: 'facturation',
+      label: 'Facturation',
+      icon: CreditCard,
+    },
+  ];
+
   return (
-    <Card>
-      <CardContent className="p-4">
-        <nav className="space-y-1 mt-2">
-          <Button 
-            variant={currentTab === 'appearance' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('appearance')}
+    <nav className="space-y-2">
+      {menuItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <Button
+            key={item.id}
+            variant={currentTab === item.id ? 'secondary' : 'ghost'}
+            className={cn(
+              'w-full justify-start',
+              currentTab === item.id && 'bg-secondary'
+            )}
+            onClick={() => setCurrentTab(item.id)}
           >
-            <Palette className="mr-2 h-4 w-4" />
-            Apparence
+            <Icon size={16} className="mr-2" />
+            {item.label}
           </Button>
-          <Button 
-            variant={currentTab === 'profile' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('profile')}
-          >
-            <CircleUser className="mr-2 h-4 w-4" />
-            Profil
-          </Button>
-          <Button 
-            variant={currentTab === 'account' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('account')}
-          >
-            <Monitor className="mr-2 h-4 w-4" />
-            Compte
-          </Button>
-          <Button 
-            variant={currentTab === 'organization' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('organization')}
-          >
-            <Briefcase className="mr-2 h-4 w-4" />
-            Organisation
-          </Button>
-          <Button 
-            variant={currentTab === 'notifications' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('notifications')}
-          >
-            <Bell className="mr-2 h-4 w-4" />
-            Notifications
-          </Button>
-          <Button 
-            variant={currentTab === 'language' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('language')}
-          >
-            <Languages className="mr-2 h-4 w-4" />
-            Langue
-          </Button>
-          <Button 
-            variant={currentTab === 'mobile' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('mobile')}
-          >
-            <Smartphone className="mr-2 h-4 w-4" />
-            Applications mobiles
-          </Button>
-          <Button 
-            variant={currentTab === 'security' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('security')}
-          >
-            <LockKeyhole className="mr-2 h-4 w-4" />
-            Sécurité
-          </Button>
-          <Button 
-            variant={currentTab === 'sharing' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('sharing')}
-          >
-            <Share2 className="mr-2 h-4 w-4" />
-            Partage
-          </Button>
-          <Button 
-            variant={currentTab === 'legal' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('legal')}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            Mentions légales
-          </Button>
-          <Button 
-            variant={currentTab === 'about' ? 'default' : 'ghost'} 
-            className="w-full justify-start"
-            onClick={() => setCurrentTab('about')}
-          >
-            <InfoIcon className="mr-2 h-4 w-4" />
-            À propos
-          </Button>
-        </nav>
-      </CardContent>
-    </Card>
+        );
+      })}
+    </nav>
   );
 };
 

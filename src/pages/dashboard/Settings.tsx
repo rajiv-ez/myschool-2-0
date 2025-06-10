@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import ProfileSettings from '@/components/settings/ProfileSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
+import OrganisationSettings from '@/components/settings/OrganisationSettings';
 import SettingsSidebar from '@/components/settings/SettingsSidebar';
 import PlaceholderSettings from '@/components/settings/PlaceholderSettings';
 
@@ -17,6 +18,8 @@ const Settings: React.FC = () => {
         return <ProfileSettings />;
       case 'security':
         return <SecuritySettings />;
+      case 'organisation':
+        return <OrganisationSettings />;
       default:
         return <PlaceholderSettings currentTab={currentTab} />;
     }
