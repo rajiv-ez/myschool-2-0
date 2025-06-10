@@ -34,6 +34,7 @@ import GestionRessources from "./pages/dashboard/GestionRessources";
 import Paiements from "./pages/dashboard/Paiements";
 import MesPaiements from "./pages/dashboard/MesPaiements";
 import Settings from "./pages/dashboard/Settings";
+import GeneDoc from "./pages/dashboard/GeneDoc";
 
 // import ApiTesterPage from "./pages/test/ApiTesterPage";
 
@@ -84,6 +85,7 @@ const App = () => {
               <Route path="releve-notes" element={<ReleveNotes />} />
               <Route path="bulletins" element={<Bulletins />} />
               <Route path="archives" element={<Archives />} />
+              <Route path="gene-doc" element={<GeneDoc />} />
               <Route path="bibliotheque" element={<Bibliotheque />} />
               <Route path="rh" element={<RH />} />
               <Route path="gestion-ressources" element={<GestionRessources />} />
