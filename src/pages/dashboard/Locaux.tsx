@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from '@/components/ui/table';
@@ -26,93 +26,96 @@ import { Succursale, Batiment, Salle } from '@/types/infrastructure';
 import SuccursaleForm from '@/components/forms/SuccursaleForm';
 import BatimentForm from '@/components/forms/BatimentForm';
 import SalleForm from '@/components/forms/SalleForm';
+import { useInfrastructureData } from '@/hooks/useInfrastructureData';
 
 // Données fictives basées sur les vrais types
-const succursalesData: Succursale[] = [
-  { 
-    id: 1, 
-    nom: 'Campus Principal', 
-    adresse: '123 Avenue de l\'Éducation', 
-    ville: 'Libreville', 
-    pays: 'Gabon',
-    est_siege: true 
-  },
-  { 
-    id: 2, 
-    nom: 'Campus Nord', 
-    adresse: '45 Rue des Sciences', 
-    ville: 'Libreville', 
-    pays: 'Gabon',
-    est_siege: false 
-  },
-  { 
-    id: 3, 
-    nom: 'Annexe Port-Gentil', 
-    adresse: '12 Boulevard de la Mer', 
-    ville: 'Port-Gentil', 
-    pays: 'Gabon',
-    est_siege: false 
-  },
-];
+// const succursalesData: Succursale[] = [
+//   { 
+//     id: 1, 
+//     nom: 'Campus Principal', 
+//     adresse: '123 Avenue de l\'Éducation', 
+//     ville: 'Libreville', 
+//     pays: 'Gabon',
+//     est_siege: true 
+//   },
+//   { 
+//     id: 2, 
+//     nom: 'Campus Nord', 
+//     adresse: '45 Rue des Sciences', 
+//     ville: 'Libreville', 
+//     pays: 'Gabon',
+//     est_siege: false 
+//   },
+//   { 
+//     id: 3, 
+//     nom: 'Annexe Port-Gentil', 
+//     adresse: '12 Boulevard de la Mer', 
+//     ville: 'Port-Gentil', 
+//     pays: 'Gabon',
+//     est_siege: false 
+//   },
+// ];
 
-const batimentsData: Batiment[] = [
-  { id: 1, succursale: 1, nom: 'Bâtiment A' },
-  { id: 2, succursale: 1, nom: 'Bâtiment B' },
-  { id: 3, succursale: 2, nom: 'Bâtiment Principal' },
-  { id: 4, succursale: 3, nom: 'Bloc Unique' },
-];
+// const batimentsData: Batiment[] = [
+//   { id: 1, succursale: 1, nom: 'Bâtiment A' },
+//   { id: 2, succursale: 1, nom: 'Bâtiment B' },
+//   { id: 3, succursale: 2, nom: 'Bâtiment Principal' },
+//   { id: 4, succursale: 3, nom: 'Bloc Unique' },
+// ];
 
-const sallesData: Salle[] = [
-  { id: 1, batiment: 1, nom: 'Salle 101', capacite: 35 },
-  { id: 2, batiment: 1, nom: 'Salle 102', capacite: 30 },
-  { id: 3, batiment: 2, nom: 'Laboratoire 201', capacite: 25 },
-  { id: 4, batiment: 3, nom: 'Amphithéâtre', capacite: 150 },
-  { id: 5, batiment: 4, nom: 'Salle 001', capacite: 40 },
-];
+// const sallesData: Salle[] = [
+//   { id: 1, batiment: 1, nom: 'Salle 101', capacite: 35 },
+//   { id: 2, batiment: 1, nom: 'Salle 102', capacite: 30 },
+//   { id: 3, batiment: 2, nom: 'Laboratoire 201', capacite: 25 },
+//   { id: 4, batiment: 3, nom: 'Amphithéâtre', capacite: 150 },
+//   { id: 5, batiment: 4, nom: 'Salle 001', capacite: 40 },
+// ];
 
 const Locaux: React.FC = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('succursales');
   
-  // États pour les filtres et recherche
-  const [searchTerms, setSearchTerms] = useState({
-    succursales: '',
-    batiments: '',
-    salles: ''
-  });
-  const [selectedFilters, setSelectedFilters] = useState({
-    batimentSuccursale: 'all',
-    salleCapacite: 'all'
-  });
+  const [searchTerms, setSearchTerms] = useState({ succursales: '', batiments: '', salles: '' });
+  const [selectedFilters, setSelectedFilters] = useState({ batimentSuccursale: 'all', salleCapacite: 'all' });
 
-  // États pour les données filtrées
-  const [filteredSuccursales, setFilteredSuccursales] = useState(succursalesData);
-  const [filteredBatiments, setFilteredBatiments] = useState(batimentsData);
-  const [filteredSalles, setFilteredSalles] = useState(sallesData);
+  const [filteredSuccursales, setFilteredSuccursales] = useState<Succursale[]>([]);
+  const [filteredBatiments, setFilteredBatiments] = useState<Batiment[]>([]);
+  const [filteredSalles, setFilteredSalles] = useState<Salle[]>([]);
 
-  // États pour les modales
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
-  // États pour les modales de création et édition
-  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
-  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  const {
+    succursales, batiments, salles,
+    createSuccursale, updateSuccursale, deleteSuccursale,
+    createBatiment, updateBatiment, deleteBatiment,
+    createSalle, updateSalle, deleteSalle
+  } = useInfrastructureData();
+
+
+  useEffect(() => {
+    setFilteredSuccursales(succursales);
+  }, [succursales]);
+
+  useEffect(() => {
+    setFilteredBatiments(batiments);
+  }, [batiments]);
+
+  useEffect(() => {
+    setFilteredSalles(salles);
+  }, [salles]);
 
   // Fonctions utilitaires
-  const getSuccursaleName = (id: number) => {
-    return succursalesData.find(s => s.id === id)?.nom || 'Inconnue';
-  };
+  const getSuccursaleName = (id: number) => succursales.find(s => s.id === id)?.nom || 'Inconnue';
+  const getBatimentName = (id: number) => batiments.find(b => b.id === id)?.nom || 'Inconnu';
 
-  const getBatimentName = (id: number) => {
-    return batimentsData.find(b => b.id === id)?.nom || 'Inconnu';
-  };
 
   // Fonctions de filtrage
   const applySuccursalesFilter = () => {
-    let result = [...succursalesData];
+    let result = [...succursales];
     if (searchTerms.succursales) {
       result = result.filter(item => 
         item.nom.toLowerCase().includes(searchTerms.succursales.toLowerCase()) ||
@@ -124,8 +127,7 @@ const Locaux: React.FC = () => {
   };
 
   const applyBatimentsFilter = () => {
-    let result = [...batimentsData];
-    
+    let result = [...batiments];
     if (searchTerms.batiments) {
       result = result.filter(item => 
         item.nom.toLowerCase().includes(searchTerms.batiments.toLowerCase())
@@ -141,7 +143,7 @@ const Locaux: React.FC = () => {
   };
 
   const applySallesFilter = () => {
-    let result = [...sallesData];
+    let result = [...salles];
     
     if (searchTerms.salles) {
       result = result.filter(item => 
@@ -173,17 +175,17 @@ const Locaux: React.FC = () => {
     switch (tab) {
       case 'succursales':
         setSearchTerms(prev => ({ ...prev, succursales: '' }));
-        setFilteredSuccursales(succursalesData);
+        setFilteredSuccursales(succursales);
         break;
       case 'batiments':
         setSearchTerms(prev => ({ ...prev, batiments: '' }));
         setSelectedFilters(prev => ({ ...prev, batimentSuccursale: 'all' }));
-        setFilteredBatiments(batimentsData);
+        setFilteredBatiments(batiments);
         break;
       case 'salles':
         setSearchTerms(prev => ({ ...prev, salles: '' }));
         setSelectedFilters(prev => ({ ...prev, salleCapacite: 'all' }));
-        setFilteredSalles(sallesData);
+        setFilteredSalles(salles);
         break;
     }
   };
@@ -215,107 +217,60 @@ const Locaux: React.FC = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!selectedItem) return;
-
-    let updatedData;
     let itemType = '';
-
-    switch (activeTab) {
-      case 'succursales':
-        updatedData = filteredSuccursales.filter(item => item.id !== selectedItem.id);
-        setFilteredSuccursales(updatedData);
-        itemType = 'succursale';
-        break;
-      case 'batiments':
-        updatedData = filteredBatiments.filter(item => item.id !== selectedItem.id);
-        setFilteredBatiments(updatedData);
-        itemType = 'bâtiment';
-        break;
-      case 'salles':
-        updatedData = filteredSalles.filter(item => item.id !== selectedItem.id);
-        setFilteredSalles(updatedData);
-        itemType = 'salle';
-        break;
+    try {
+      switch (activeTab) {
+        case 'succursales':
+          await deleteSuccursale(selectedItem.id);
+          itemType = 'Succursale';
+          break;
+        case 'batiments':
+          await deleteBatiment(selectedItem.id);
+          itemType = 'Bâtiment';
+          break;
+        case 'salles':
+          await deleteSalle(selectedItem.id);
+          itemType = 'Salle';
+          break;
+      }
+      toast({ title: 'Suppression réussie', description: `L'élément a été supprimé avec succès.` });
+    } catch (error) {
+      toast({ title: 'Erreur', description: 'Échec de la suppression.', variant: 'destructive' });
     }
 
     setIsDeleteModalOpen(false);
     setSelectedItem(null);
     
     toast({
-      title: `${itemType} supprimé${itemType === 'salle' ? 'e' : ''}`,
-      description: `Le/La ${itemType} a été supprimé${itemType === 'salle' ? 'e' : ''} avec succès.`,
+      title: `${itemType} supprimé${itemType === 'Salle' ? 'e' : ''}`,
+      description: `${itemType === 'Bâtiment' ? 'Le' : 'La'} ${itemType} a été supprimé${itemType === 'Bâtiment' ? '' : 'e'} avec succès.`,
     });
   };
 
-  const handleFormSubmit = (data: any) => {
-    let updatedData;
-    let itemType = '';
-
-    if (selectedItem) {
-      // Mode édition
+  const handleFormSubmit = async (data: any) => {
+    const isEdit = !!selectedItem;
+    let response;
+    try {
       switch (activeTab) {
         case 'succursales':
-          updatedData = filteredSuccursales.map(item => 
-            item.id === selectedItem.id ? { ...item, ...data } : item
-          );
-          setFilteredSuccursales(updatedData);
-          itemType = 'succursale';
+          isEdit ? await updateSuccursale(selectedItem.id, data) : await createSuccursale(data);
           break;
         case 'batiments':
-          updatedData = filteredBatiments.map(item => 
-            item.id === selectedItem.id ? { ...item, ...data } : item
-          );
-          setFilteredBatiments(updatedData);
-          itemType = 'bâtiment';
+          isEdit ? await updateBatiment(selectedItem.id, data) : await createBatiment(data);
           break;
         case 'salles':
-          updatedData = filteredSalles.map(item => 
-            item.id === selectedItem.id ? { ...item, ...data } : item
-          );
-          setFilteredSalles(updatedData);
-          itemType = 'salle';
+          isEdit ? await updateSalle(selectedItem.id, data) : await createSalle(data);
           break;
       }
-      
-      toast({
-        title: `${itemType} mis${itemType === 'salle' ? 'e' : ''} à jour`,
-        description: `Le/La ${itemType} a été mis${itemType === 'salle' ? 'e' : ''} à jour avec succès.`,
-      });
-    } else {
-      // Mode création
-      const newId = Math.max(
-        ...filteredSuccursales.map(s => s.id), 
-        ...filteredBatiments.map(b => b.id), 
-        ...filteredSalles.map(s => s.id)
-      ) + 1;
-
-      const newItem = { ...data, id: newId };
-
-      switch (activeTab) {
-        case 'succursales':
-          setFilteredSuccursales([...filteredSuccursales, newItem]);
-          itemType = 'succursale';
-          break;
-        case 'batiments':
-          setFilteredBatiments([...filteredBatiments, newItem]);
-          itemType = 'bâtiment';
-          break;
-        case 'salles':
-          setFilteredSalles([...filteredSalles, newItem]);
-          itemType = 'salle';
-          break;
-      }
-
-      toast({
-        title: `${itemType} créé${itemType === 'salle' ? 'e' : ''}`,
-        description: `Le/La ${itemType} a été créé${itemType === 'salle' ? 'e' : ''} avec succès.`,
-      });
+      toast({ title: `Élément ${isEdit ? 'mis à jour' : 'créé'}`, description: `L'élément a été ${isEdit ? 'modifié' : 'créé'} avec succès.` });
+      setIsCreateModalOpen(false);
+      setIsEditModalOpen(false);
+      setSelectedItem(null);
+    } catch (error) {
+      toast({ title: 'Erreur', description: 'Échec de la soumission.', variant: 'destructive' });
     }
-
-    setIsCreateModalOpen(false);
-    setIsEditModalOpen(false);
-    setSelectedItem(null);
   };
 
   const handleFormCancel = () => {
@@ -337,38 +292,16 @@ const Locaux: React.FC = () => {
   const renderForm = () => {
     switch (activeTab) {
       case 'succursales':
-        return (
-          <SuccursaleForm
-            isEditing={!!selectedItem}
-            selectedSuccursale={selectedItem}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
-        );
+        return <SuccursaleForm isEditing={!!selectedItem} selectedSuccursale={selectedItem} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />;
       case 'batiments':
-        return (
-          <BatimentForm
-            isEditing={!!selectedItem}
-            selectedBatiment={selectedItem}
-            succursales={succursalesData}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
-        );
+        return <BatimentForm isEditing={!!selectedItem} selectedBatiment={selectedItem} succursales={succursales} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />;
       case 'salles':
-        return (
-          <SalleForm
-            isEditing={!!selectedItem}
-            selectedSalle={selectedItem}
-            batiments={batimentsData}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
-        );
+        return <SalleForm isEditing={!!selectedItem} selectedSalle={selectedItem} batiments={batiments} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />;
       default:
         return null;
     }
   };
+
 
   return (
     <div>
@@ -377,7 +310,7 @@ const Locaux: React.FC = () => {
           <h2 className="text-xl font-semibold">Gestion des Locaux</h2>
           <p className="text-muted-foreground">Gérez les succursales, bâtiments et salles de votre établissement</p>
         </div>
-        <Button className="flex items-center gap-2" onClick={() => handleAction('Créer', activeTab)}>
+        <Button className="flex items-center gap-2" onClick={() => handleCreateClick()}>
           <Plus size={16} />
           {activeTab === 'succursales' && 'Nouvelle Succursale'}
           {activeTab === 'batiments' && 'Nouveau Bâtiment'}
@@ -508,7 +441,7 @@ const Locaux: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Toutes</SelectItem>
-                      {succursalesData.map(succursale => (
+                      {succursales.map(succursale => (
                         <SelectItem key={succursale.id} value={succursale.id.toString()}>
                           {succursale.nom}
                         </SelectItem>

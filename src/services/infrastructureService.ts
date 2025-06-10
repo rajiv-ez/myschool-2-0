@@ -29,6 +29,9 @@ export const infrastructureService = {
       method: 'PUT',
       data,
     }),
+  
+  deleteSuccursale: (id: number) =>
+    fetchWithFallback(`/api/infrastructure/succursales/${id}/`, {}, { method: 'DELETE' }),
 
   // === BATIMENTS ===
   getBatiments: (succursaleId?: number): Promise<ApiResponse<Batiment[]>> =>
@@ -49,6 +52,9 @@ export const infrastructureService = {
       data,
     }),
 
+  deleteBatiment: (id: number) =>
+    fetchWithFallback(`/api/infrastructure/batiments/${id}/`, {}, { method: 'DELETE' }),
+
   // === SALLES ===
   getSalles: (batimentId?: number): Promise<ApiResponse<Salle[]>> =>
     fetchWithFallback(
@@ -67,5 +73,8 @@ export const infrastructureService = {
       method: 'PUT',
       data,
     }),
+
+  deleteSalle: (id: number) =>
+    fetchWithFallback(`/api/infrastructure/salles/${id}/`, {}, { method: 'DELETE' }),
 };
 
