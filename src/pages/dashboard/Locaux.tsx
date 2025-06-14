@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,13 +21,24 @@ import {
   DialogFooter,
   DialogClose
 } from '@/components/ui/dialog';
-import { Building, Home, DoorClosed, Plus, Search, Filter, Edit, Trash2, Eye, Wifi, WifiOff } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import { Building, Home, DoorClosed, Plus, Search, Filter, Edit, Trash2, Eye, Wifi, WifiOff, Download, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Succursale, Batiment, Salle } from '@/types/infrastructure';
 import SuccursaleForm from '@/components/forms/SuccursaleForm';
 import BatimentForm from '@/components/forms/BatimentForm';
 import SalleForm from '@/components/forms/SalleForm';
+import ExcelImportDialog from '@/components/excel/ExcelImportDialog';
 import { useInfrastructureData } from '@/hooks/useInfrastructureData';
+import { usePagination } from '@/hooks/usePagination';
+import { exportSuccursalesToExcel, exportBatimentsToExcel, exportSallesToExcel } from '@/utils/excelUtils';
 
 const Locaux: React.FC = () => {
   const { toast } = useToast();
@@ -44,6 +55,7 @@ const Locaux: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
   const {
@@ -53,6 +65,11 @@ const Locaux: React.FC = () => {
     createSalle, updateSalle, deleteSalle,
     fromApi
   } = useInfrastructureData();
+
+  // Pagination hooks
+  const succursalesPagination = usePagination(filteredSuccursales, 10);
+  const batimentsPagination = usePagination(filteredBatiments, 10);
+  const sallesPagination = usePagination(filteredSalles, 10);
 
   useEffect(() => {
     setFilteredSuccursales(succursales);
@@ -211,6 +228,54 @@ const Locaux: React.FC = () => {
     });
   }
 
+  // New Excel export handlers
+  const handleExportExcel = () => {
+    switch (activeTab) {
+      case 'succursales':
+        exportSuccursalesToExcel(filteredSuccursales);
+        break;
+      case 'batiments':
+        exportBatimentsToExcel(filteredBatiments, succursales);
+        break;
+      case 'salles':
+        exportSallesToExcel(filteredSalles, batiments);
+        break;
+    }
+    
+    toast({
+      title: 'Export Excel',
+      description: 'Le fichier Excel a été téléchargé avec succès',
+    });
+  };
+
+  const handleImportExcel = () => {
+    setIsImportModalOpen(true);
+  };
+
+  const handleImportData = async (data: any[]) => {
+    try {
+      switch (activeTab) {
+        case 'succursales':
+          for (const item of data) {
+            await createSuccursale(item);
+          }
+          break;
+        case 'batiments':
+          for (const item of data) {
+            await createBatiment(item);
+          }
+          break;
+        case 'salles':
+          for (const item of data) {
+            await createSalle(item);
+          }
+          break;
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
   async function handleFormSubmit(data: any) {
     const isEdit = !!selectedItem;
     try {
@@ -263,6 +328,78 @@ const Locaux: React.FC = () => {
     }
   }
 
+  const renderPaginationControls = (pagination: any) => {
+    if (pagination.totalPages <= 1) return null;
+
+    const renderPageNumbers = () => {
+      const pages = [];
+      const showPages = 5;
+      let startPage = Math.max(1, pagination.currentPage - Math.floor(showPages / 2));
+      let endPage = Math.min(pagination.totalPages, startPage + showPages - 1);
+
+      if (endPage - startPage + 1 < showPages) {
+        startPage = Math.max(1, endPage - showPages + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              onClick={() => pagination.goToPage(i)}
+              isActive={pagination.currentPage === i}
+              className="cursor-pointer"
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+
+      return pages;
+    };
+
+    return (
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            Affichage de {((pagination.currentPage - 1) * pagination.itemsPerPage) + 1} à{' '}
+            {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} sur{' '}
+            {pagination.totalItems} éléments
+          </span>
+          <Select value={pagination.itemsPerPage.toString()} onValueChange={(value) => pagination.setItemsPerPage(parseInt(value))}>
+            <SelectTrigger className="w-20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => pagination.prevPage()}
+                className={pagination.currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+            {renderPageNumbers()}
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => pagination.nextPage()}
+                className={pagination.currentPage === pagination.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="flex flex-col items-end mb-3">
@@ -281,20 +418,30 @@ const Locaux: React.FC = () => {
             )}
           </Badge>
       </div>
+      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        
         <div className="flex items-center gap-3">
           <div>
             <h2 className="text-xl font-semibold">Gestion des Locaux</h2>
             <p className="text-muted-foreground">Gérez les succursales, bâtiments et salles de votre établissement</p>
           </div>
         </div>
-        <Button className="flex items-center gap-2" onClick={() => handleCreateClick()}>
-          <Plus size={16} />
-          {activeTab === 'succursales' && 'Nouvelle Succursale'}
-          {activeTab === 'batiments' && 'Nouveau Bâtiment'}
-          {activeTab === 'salles' && 'Nouvelle Salle'}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleImportExcel} className="flex items-center gap-2">
+            <Upload size={16} />
+            Importer Excel
+          </Button>
+          <Button variant="outline" onClick={handleExportExcel} className="flex items-center gap-2">
+            <Download size={16} />
+            Exporter Excel
+          </Button>
+          <Button className="flex items-center gap-2" onClick={() => handleCreateClick()}>
+            <Plus size={16} />
+            {activeTab === 'succursales' && 'Nouvelle Succursale'}
+            {activeTab === 'batiments' && 'Nouveau Bâtiment'}
+            {activeTab === 'salles' && 'Nouvelle Salle'}
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -367,7 +514,7 @@ const Locaux: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredSuccursales.map((item) => (
+                    {succursalesPagination.currentItems.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>{item.id}</TableCell>
                         <TableCell className="font-medium">{item.nom}</TableCell>
@@ -400,6 +547,9 @@ const Locaux: React.FC = () => {
                 </Table>
               </div>
             </CardContent>
+            <CardFooter>
+              {renderPaginationControls(succursalesPagination)}
+            </CardFooter>
           </Card>
         </TabsContent>
         
@@ -457,7 +607,7 @@ const Locaux: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredBatiments.map((item) => (
+                    {batimentsPagination.currentItems.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>{item.id}</TableCell>
                         <TableCell className="font-medium">{item.nom}</TableCell>
@@ -481,6 +631,9 @@ const Locaux: React.FC = () => {
                 </Table>
               </div>
             </CardContent>
+            <CardFooter>
+              {renderPaginationControls(batimentsPagination)}
+            </CardFooter>
           </Card>
         </TabsContent>
         
@@ -537,7 +690,7 @@ const Locaux: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredSalles.map((item) => (
+                    {sallesPagination.currentItems.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>{item.id}</TableCell>
                         <TableCell className="font-medium">{item.nom}</TableCell>
@@ -570,6 +723,9 @@ const Locaux: React.FC = () => {
                 </Table>
               </div>
             </CardContent>
+            <CardFooter>
+              {renderPaginationControls(sallesPagination)}
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
@@ -652,6 +808,16 @@ const Locaux: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modale d'import Excel */}
+      <ExcelImportDialog
+        open={isImportModalOpen}
+        onOpenChange={setIsImportModalOpen}
+        type={activeTab as 'succursales' | 'batiments' | 'salles'}
+        onImport={handleImportData}
+        succursales={succursales}
+        batiments={batiments}
+      />
     </div>
   );
 };
