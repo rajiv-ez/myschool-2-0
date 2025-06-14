@@ -67,11 +67,16 @@ const Locaux: React.FC = () => {
   }, [salles]);
 
   // Fonctions utilitaires
-  const getSuccursaleName = (id: number) => succursales.find(s => s.id === id)?.nom || 'Inconnue';
-  const getBatimentName = (id: number) => batiments.find(b => b.id === id)?.nom || 'Inconnu';
+  function getSuccursaleName(id: number) {
+    return succursales.find(s => s.id === id)?.nom || 'Inconnue';
+  }
+
+  function getBatimentName(id: number) {
+    return batiments.find(b => b.id === id)?.nom || 'Inconnu';
+  }
 
   // Fonctions de filtrage
-  const applySuccursalesFilter = () => {
+  function applySuccursalesFilter() {
     let result = [...succursales];
     if (searchTerms.succursales) {
       result = result.filter(item => 
@@ -81,9 +86,9 @@ const Locaux: React.FC = () => {
       );
     }
     setFilteredSuccursales(result);
-  };
+  }
 
-  const applyBatimentsFilter = () => {
+  function applyBatimentsFilter() {
     let result = [...batiments];
     if (searchTerms.batiments) {
       result = result.filter(item => 
@@ -97,9 +102,9 @@ const Locaux: React.FC = () => {
     }
     
     setFilteredBatiments(result);
-  };
+  }
 
-  const applySallesFilter = () => {
+  function applySallesFilter() {
     let result = [...salles];
     
     if (searchTerms.salles) {
@@ -121,14 +126,14 @@ const Locaux: React.FC = () => {
     }
     
     setFilteredSalles(result);
-  };
+  }
 
   // Gestionnaires d'événements
-  const handleSearchChange = (tab: string, value: string) => {
+  function handleSearchChange(tab: string, value: string) {
     setSearchTerms(prev => ({ ...prev, [tab]: value }));
-  };
+  }
 
-  const resetFilters = (tab: string) => {
+  function resetFilters(tab: string) {
     switch (tab) {
       case 'succursales':
         setSearchTerms(prev => ({ ...prev, succursales: '' }));
@@ -145,36 +150,36 @@ const Locaux: React.FC = () => {
         setFilteredSalles(salles);
         break;
     }
-  };
+  }
 
-  const handleAction = (action: string, type: string, item?: any) => {
+  function handleAction(action: string, type: string, item?: any) {
     toast({
       title: `${action} ${type}`,
       description: `Action "${action}" pour ${type} ${item ? `ID ${item.id}` : ''}`,
     });
-  };
+  }
 
-  const handleCreateClick = () => {
+  function handleCreateClick() {
     setSelectedItem(null);
     setIsCreateModalOpen(true);
-  };
+  }
 
-  const handleEditClick = (item: any) => {
+  function handleEditClick(item: any) {
     setSelectedItem(item);
     setIsEditModalOpen(true);
-  };
+  }
 
-  const handleDetailsClick = (item: any) => {
+  function handleDetailsClick(item: any) {
     setSelectedItem(item);
     setIsDetailsModalOpen(true);
-  };
+  }
 
-  const handleDeleteClick = (item: any) => {
+  function handleDeleteClick(item: any) {
     setSelectedItem(item);
     setIsDeleteModalOpen(true);
-  };
+  }
 
-  const handleConfirmDelete = async () => {
+  async function handleConfirmDelete() {
     if (!selectedItem) return;
     let itemType = '';
     try {
@@ -204,11 +209,10 @@ const Locaux: React.FC = () => {
       title: `${itemType} supprimé${itemType === 'Salle' ? 'e' : ''}`,
       description: `${itemType === 'Bâtiment' ? 'Le' : 'La'} ${itemType} a été supprimé${itemType === 'Bâtiment' ? '' : 'e'} avec succès.`,
     });
-  };
+  }
 
-  const handleFormSubmit = async (data: any) => {
+  async function handleFormSubmit(data: any) {
     const isEdit = !!selectedItem;
-    let response;
     try {
       switch (activeTab) {
         case 'succursales':
@@ -228,15 +232,15 @@ const Locaux: React.FC = () => {
     } catch (error) {
       toast({ title: 'Erreur', description: 'Échec de la soumission.', variant: 'destructive' });
     }
-  };
+  }
 
-  const handleFormCancel = () => {
+  function handleFormCancel() {
     setIsCreateModalOpen(false);
     setIsEditModalOpen(false);
     setSelectedItem(null);
-  };
+  }
 
-  const getModalTitle = () => {
+  function getModalTitle() {
     const action = selectedItem ? 'Modifier' : 'Créer';
     switch (activeTab) {
       case 'succursales': return `${action} une succursale`;
@@ -244,9 +248,9 @@ const Locaux: React.FC = () => {
       case 'salles': return `${action} une salle`;
       default: return action;
     }
-  };
+  }
 
-  const renderForm = () => {
+  function renderForm() {
     switch (activeTab) {
       case 'succursales':
         return <SuccursaleForm isEditing={!!selectedItem} selectedSuccursale={selectedItem} onSubmit={handleFormSubmit} onCancel={handleFormCancel} />;
@@ -257,7 +261,7 @@ const Locaux: React.FC = () => {
       default:
         return null;
     }
-  };
+  }
 
   return (
     <div>
@@ -295,16 +299,25 @@ const Locaux: React.FC = () => {
             <Building size={16} />
             <span className="hidden sm:inline">Succursales</span>
             <span className="sm:hidden">Succ.</span>
+            <Badge variant="outline" className="ml-1">
+              {succursales.length}
+            </Badge>
           </TabsTrigger>
           <TabsTrigger value="batiments" className="flex items-center gap-2">
             <Home size={16} />
             <span className="hidden sm:inline">Bâtiments</span>
             <span className="sm:hidden">Bât.</span>
+            <Badge variant="outline" className="ml-1">
+              {batiments.length}
+            </Badge>
           </TabsTrigger>
           <TabsTrigger value="salles" className="flex items-center gap-2">
             <DoorClosed size={16} />
             <span className="hidden sm:inline">Salles</span>
             <span className="sm:hidden">Salles</span>
+            <Badge variant="outline" className="ml-1">
+              {salles.length}
+            </Badge>
           </TabsTrigger>
         </TabsList>
         

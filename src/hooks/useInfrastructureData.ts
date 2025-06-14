@@ -20,9 +20,9 @@ export function useInfrastructureData() {
         infrastructureService.getSalles(),
       ]);
       
-      if (s.fromApi) setSuccursales(s.data);
-      if (b.fromApi) setBatiments(b.data);
-      if (sa.fromApi) setSalles(sa.data);
+      setSuccursales(s.data);
+      setBatiments(b.data);
+      setSalles(sa.data);
       
       // Set the overall API status based on any successful API call
       setFromApi(s.fromApi || b.fromApi || sa.fromApi);
@@ -33,19 +33,15 @@ export function useInfrastructureData() {
 
   const createSuccursale = async (data: Partial<Succursale>) => {
     const r = await infrastructureService.createSuccursale(data);
-    if (r.fromApi) {
-      setSuccursales(prev => [...prev, r.data]);
-      setFromApi(true);
-    }
+    setSuccursales(prev => [...prev, r.data]);
+    if (r.fromApi) setFromApi(true);
     return r;
   };
 
   const updateSuccursale = async (id: number, data: Partial<Succursale>) => {
     const r = await infrastructureService.updateSuccursale(id, data);
-    if (r.fromApi) {
-      setSuccursales(prev => prev.map(s => (s.id === id ? r.data : s)));
-      setFromApi(true);
-    }
+    setSuccursales(prev => prev.map(s => (s.id === id ? r.data : s)));
+    if (r.fromApi) setFromApi(true);
     return r;
   };
 
@@ -56,19 +52,15 @@ export function useInfrastructureData() {
 
   const createBatiment = async (data: Partial<Batiment>) => {
     const r = await infrastructureService.createBatiment(data);
-    if (r.fromApi) {
-      setBatiments(prev => [...prev, r.data]);
-      setFromApi(true);
-    }
+    setBatiments(prev => [...prev, r.data]);
+    if (r.fromApi) setFromApi(true);
     return r;
   };
 
   const updateBatiment = async (id: number, data: Partial<Batiment>) => {
     const r = await infrastructureService.updateBatiment(id, data);
-    if (r.fromApi) {
-      setBatiments(prev => prev.map(b => (b.id === id ? r.data : b)));
-      setFromApi(true);
-    }
+    setBatiments(prev => prev.map(b => (b.id === id ? r.data : b)));
+    if (r.fromApi) setFromApi(true);
     return r;
   };
 
@@ -79,19 +71,15 @@ export function useInfrastructureData() {
 
   const createSalle = async (data: Partial<Salle>) => {
     const r = await infrastructureService.createSalle(data);
-    if (r.fromApi) {
-      setSalles(prev => [...prev, r.data]);
-      setFromApi(true);
-    }
+    setSalles(prev => [...prev, r.data]);
+    if (r.fromApi) setFromApi(true);
     return r;
   };
 
   const updateSalle = async (id: number, data: Partial<Salle>) => {
     const r = await infrastructureService.updateSalle(id, data);
-    if (r.fromApi) {
-      setSalles(prev => prev.map(s => (s.id === id ? r.data : s)));
-      setFromApi(true);
-    }
+    setSalles(prev => prev.map(s => (s.id === id ? r.data : s)));
+    if (r.fromApi) setFromApi(true);
     return r;
   };
 

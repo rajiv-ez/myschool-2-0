@@ -27,60 +27,101 @@ export const infrastructureService = {
   getSuccursales: (): Promise<ApiResponse<Succursale[]>> =>
     fetchWithFallback('/api/infrastructure/succursales/', mockSuccursales),
 
-  createSuccursale: (data: Partial<Succursale>): Promise<ApiResponse<Succursale>> =>
-    fetchWithFallback('/api/infrastructure/succursales/', {} as Succursale, {
+  createSuccursale: (data: Partial<Succursale>): Promise<ApiResponse<Succursale>> => {
+    const newSuccursale = {
+      id: Math.max(...mockSuccursales.map(s => s.id)) + 1,
+      ...data
+    } as Succursale;
+    
+    return fetchWithFallback('/api/infrastructure/succursales/', newSuccursale, {
       method: 'POST',
       data,
-    }),
-  updateSuccursale: (id: number, data: Partial<Succursale>): Promise<ApiResponse<Succursale>> =>
-    fetchWithFallback(`/api/infrastructure/succursales/${id}/`, {} as Succursale, {
+    });
+  },
+
+  updateSuccursale: (id: number, data: Partial<Succursale>): Promise<ApiResponse<Succursale>> => {
+    const existingSuccursale = mockSuccursales.find(s => s.id === id);
+    const updatedSuccursale = { ...existingSuccursale, ...data } as Succursale;
+    
+    return fetchWithFallback(`/api/infrastructure/succursales/${id}/`, updatedSuccursale, {
       method: 'PUT',
       data,
-    }),
+    });
+  },
   
   deleteSuccursale: (id: number) =>
     fetchWithFallback(`/api/infrastructure/succursales/${id}/`, {}, { method: 'DELETE' }),
 
   // === BATIMENTS ===
-  getBatiments: (succursaleId?: number): Promise<ApiResponse<Batiment[]>> =>
-    fetchWithFallback(
+  getBatiments: (succursaleId?: number): Promise<ApiResponse<Batiment[]>> => {
+    const filteredBatiments = succursaleId 
+      ? mockBatiments.filter(b => b.succursale === succursaleId)
+      : mockBatiments;
+    
+    return fetchWithFallback(
       `/api/infrastructure/batiments/${succursaleId ? `?succursale=${succursaleId}` : ''}`,
-      mockBatiments
-    ),
+      filteredBatiments
+    );
+  },
 
-  createBatiment: (data: Partial<Batiment>): Promise<ApiResponse<Batiment>> =>
-    fetchWithFallback('/api/infrastructure/batiments/', {} as Batiment, {
+  createBatiment: (data: Partial<Batiment>): Promise<ApiResponse<Batiment>> => {
+    const newBatiment = {
+      id: Math.max(...mockBatiments.map(b => b.id)) + 1,
+      ...data
+    } as Batiment;
+    
+    return fetchWithFallback('/api/infrastructure/batiments/', newBatiment, {
       method: 'POST',
       data,
-    }),
+    });
+  },
 
-  updateBatiment: (id: number, data: Partial<Batiment>): Promise<ApiResponse<Batiment>> =>
-    fetchWithFallback(`/api/infrastructure/batiments/${id}/`, {} as Batiment, {
+  updateBatiment: (id: number, data: Partial<Batiment>): Promise<ApiResponse<Batiment>> => {
+    const existingBatiment = mockBatiments.find(b => b.id === id);
+    const updatedBatiment = { ...existingBatiment, ...data } as Batiment;
+    
+    return fetchWithFallback(`/api/infrastructure/batiments/${id}/`, updatedBatiment, {
       method: 'PUT',
       data,
-    }),
+    });
+  },
 
   deleteBatiment: (id: number) =>
     fetchWithFallback(`/api/infrastructure/batiments/${id}/`, {}, { method: 'DELETE' }),
 
   // === SALLES ===
-  getSalles: (batimentId?: number): Promise<ApiResponse<Salle[]>> =>
-    fetchWithFallback(
+  getSalles: (batimentId?: number): Promise<ApiResponse<Salle[]>> => {
+    const filteredSalles = batimentId 
+      ? mockSalles.filter(s => s.batiment === batimentId)
+      : mockSalles;
+    
+    return fetchWithFallback(
       `/api/infrastructure/salles/${batimentId ? `?batiment=${batimentId}` : ''}`,
-      mockSalles
-    ),
+      filteredSalles
+    );
+  },
 
-  createSalle: (data: Partial<Salle>): Promise<ApiResponse<Salle>> =>
-    fetchWithFallback('/api/infrastructure/salles/', {} as Salle, {
+  createSalle: (data: Partial<Salle>): Promise<ApiResponse<Salle>> => {
+    const newSalle = {
+      id: Math.max(...mockSalles.map(s => s.id)) + 1,
+      ...data
+    } as Salle;
+    
+    return fetchWithFallback('/api/infrastructure/salles/', newSalle, {
       method: 'POST',
       data,
-    }),
+    });
+  },
 
-  updateSalle: (id: number, data: Partial<Salle>): Promise<ApiResponse<Salle>> =>
-    fetchWithFallback(`/api/infrastructure/salles/${id}/`, {} as Salle, {
+  updateSalle: (id: number, data: Partial<Salle>): Promise<ApiResponse<Salle>> => {
+    const existingSalle = mockSalles.find(s => s.id === id);
+    const updatedSalle = { ...existingSalle, ...data } as Salle;
+    
+    return fetchWithFallback(`/api/infrastructure/salles/${id}/`, updatedSalle, {
       method: 'PUT',
       data,
-    }),
+    });
+  },
 
   deleteSalle: (id: number) =>
     fetchWithFallback(`/api/infrastructure/salles/${id}/`, {}, { method: 'DELETE' }),
