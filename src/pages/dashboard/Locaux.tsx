@@ -265,12 +265,8 @@ const Locaux: React.FC = () => {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div>
-            <h2 className="text-xl font-semibold">Gestion des Locaux</h2>
-            <p className="text-muted-foreground">Gérez les succursales, bâtiments et salles de votre établissement</p>
-          </div>
+      <div className="flex flex-col items-end mb-3">
+        
           <Badge variant={fromApi ? "default" : "secondary"} className="flex items-center gap-1">
             {fromApi ? (
               <>
@@ -284,6 +280,14 @@ const Locaux: React.FC = () => {
               </>
             )}
           </Badge>
+      </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Gestion des Locaux</h2>
+            <p className="text-muted-foreground">Gérez les succursales, bâtiments et salles de votre établissement</p>
+          </div>
         </div>
         <Button className="flex items-center gap-2" onClick={() => handleCreateClick()}>
           <Plus size={16} />
@@ -329,7 +333,7 @@ const Locaux: React.FC = () => {
                   <Building size={18} />
                   Succursales
                 </CardTitle>
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <div className="relative flex-1 sm:w-64">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -407,7 +411,7 @@ const Locaux: React.FC = () => {
                   <Home size={18} />
                   Bâtiments
                 </CardTitle>
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <div className="relative flex-1 sm:w-48">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -420,7 +424,7 @@ const Locaux: React.FC = () => {
                   <Select value={selectedFilters.batimentSuccursale} onValueChange={(value) => 
                     setSelectedFilters(prev => ({ ...prev, batimentSuccursale: value }))
                   }>
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-full sm:w-40">
                       <SelectValue placeholder="Succursale" />
                     </SelectTrigger>
                     <SelectContent>
@@ -488,7 +492,7 @@ const Locaux: React.FC = () => {
                   <DoorClosed size={18} />
                   Salles
                 </CardTitle>
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <div className="relative flex-1 sm:w-48">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -501,7 +505,7 @@ const Locaux: React.FC = () => {
                   <Select value={selectedFilters.salleCapacite} onValueChange={(value) => 
                     setSelectedFilters(prev => ({ ...prev, salleCapacite: value }))
                   }>
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className="w-full sm:w-32">
                       <SelectValue placeholder="Capacité" />
                     </SelectTrigger>
                     <SelectContent>
