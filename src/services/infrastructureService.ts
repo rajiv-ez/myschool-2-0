@@ -1,18 +1,26 @@
+
 import { fetchWithFallback, ApiResponse } from './api';
 import { Succursale, Batiment, Salle } from '../types/infrastructure';
 
 const mockSuccursales: Succursale[] = [
-  { id: 1, nom: 'Campus A', ville: 'Cotonou', pays: 'Bénin', est_siege: true, adresse: 'Rue 1' },
+  { id: 1, nom: 'Campus Principal', ville: 'Libreville', pays: 'Gabon', est_siege: true, adresse: '123 Avenue de l\'Éducation' },
+  { id: 2, nom: 'Campus Nord', ville: 'Libreville', pays: 'Gabon', est_siege: false, adresse: '45 Rue des Sciences' },
+  { id: 3, nom: 'Annexe Port-Gentil', ville: 'Port-Gentil', pays: 'Gabon', est_siege: false, adresse: '12 Boulevard de la Mer' },
 ];
 
 const mockBatiments: Batiment[] = [
-  { id: 1, nom: 'Bloc A', succursale: 1 },
-  { id: 2, nom: 'Bloc B', succursale: 1 },
+  { id: 1, nom: 'Bâtiment A', succursale: 1 },
+  { id: 2, nom: 'Bâtiment B', succursale: 1 },
+  { id: 3, nom: 'Bâtiment Principal', succursale: 2 },
+  { id: 4, nom: 'Bloc Unique', succursale: 3 },
 ];
 
 const mockSalles: Salle[] = [
-  { id: 1, nom: 'Salle 101', capacite: 40, batiment: 1 },
-  { id: 2, nom: 'Salle 102', capacite: 35, batiment: 1 },
+  { id: 1, nom: 'Salle 101', capacite: 35, batiment: 1 },
+  { id: 2, nom: 'Salle 102', capacite: 30, batiment: 1 },
+  { id: 3, nom: 'Laboratoire 201', capacite: 25, batiment: 2 },
+  { id: 4, nom: 'Amphithéâtre', capacite: 150, batiment: 3 },
+  { id: 5, nom: 'Salle 001', capacite: 40, batiment: 4 },
 ];
 
 export const infrastructureService = {
@@ -77,4 +85,3 @@ export const infrastructureService = {
   deleteSalle: (id: number) =>
     fetchWithFallback(`/api/infrastructure/salles/${id}/`, {}, { method: 'DELETE' }),
 };
-

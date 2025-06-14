@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { 
   Select,
   SelectContent,
@@ -20,56 +21,13 @@ import {
   DialogFooter,
   DialogClose
 } from '@/components/ui/dialog';
-import { Building, Home, DoorClosed, Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
+import { Building, Home, DoorClosed, Plus, Search, Filter, Edit, Trash2, Eye, Wifi, WifiOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Succursale, Batiment, Salle } from '@/types/infrastructure';
 import SuccursaleForm from '@/components/forms/SuccursaleForm';
 import BatimentForm from '@/components/forms/BatimentForm';
 import SalleForm from '@/components/forms/SalleForm';
 import { useInfrastructureData } from '@/hooks/useInfrastructureData';
-
-// Données fictives basées sur les vrais types
-// const succursalesData: Succursale[] = [
-//   { 
-//     id: 1, 
-//     nom: 'Campus Principal', 
-//     adresse: '123 Avenue de l\'Éducation', 
-//     ville: 'Libreville', 
-//     pays: 'Gabon',
-//     est_siege: true 
-//   },
-//   { 
-//     id: 2, 
-//     nom: 'Campus Nord', 
-//     adresse: '45 Rue des Sciences', 
-//     ville: 'Libreville', 
-//     pays: 'Gabon',
-//     est_siege: false 
-//   },
-//   { 
-//     id: 3, 
-//     nom: 'Annexe Port-Gentil', 
-//     adresse: '12 Boulevard de la Mer', 
-//     ville: 'Port-Gentil', 
-//     pays: 'Gabon',
-//     est_siege: false 
-//   },
-// ];
-
-// const batimentsData: Batiment[] = [
-//   { id: 1, succursale: 1, nom: 'Bâtiment A' },
-//   { id: 2, succursale: 1, nom: 'Bâtiment B' },
-//   { id: 3, succursale: 2, nom: 'Bâtiment Principal' },
-//   { id: 4, succursale: 3, nom: 'Bloc Unique' },
-// ];
-
-// const sallesData: Salle[] = [
-//   { id: 1, batiment: 1, nom: 'Salle 101', capacite: 35 },
-//   { id: 2, batiment: 1, nom: 'Salle 102', capacite: 30 },
-//   { id: 3, batiment: 2, nom: 'Laboratoire 201', capacite: 25 },
-//   { id: 4, batiment: 3, nom: 'Amphithéâtre', capacite: 150 },
-//   { id: 5, batiment: 4, nom: 'Salle 001', capacite: 40 },
-// ];
 
 const Locaux: React.FC = () => {
   const { toast } = useToast();
@@ -92,9 +50,9 @@ const Locaux: React.FC = () => {
     succursales, batiments, salles,
     createSuccursale, updateSuccursale, deleteSuccursale,
     createBatiment, updateBatiment, deleteBatiment,
-    createSalle, updateSalle, deleteSalle
+    createSalle, updateSalle, deleteSalle,
+    fromApi
   } = useInfrastructureData();
-
 
   useEffect(() => {
     setFilteredSuccursales(succursales);
@@ -111,7 +69,6 @@ const Locaux: React.FC = () => {
   // Fonctions utilitaires
   const getSuccursaleName = (id: number) => succursales.find(s => s.id === id)?.nom || 'Inconnue';
   const getBatimentName = (id: number) => batiments.find(b => b.id === id)?.nom || 'Inconnu';
-
 
   // Fonctions de filtrage
   const applySuccursalesFilter = () => {
@@ -302,13 +259,27 @@ const Locaux: React.FC = () => {
     }
   };
 
-
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h2 className="text-xl font-semibold">Gestion des Locaux</h2>
-          <p className="text-muted-foreground">Gérez les succursales, bâtiments et salles de votre établissement</p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Gestion des Locaux</h2>
+            <p className="text-muted-foreground">Gérez les succursales, bâtiments et salles de votre établissement</p>
+          </div>
+          <Badge variant={fromApi ? "default" : "secondary"} className="flex items-center gap-1">
+            {fromApi ? (
+              <>
+                <Wifi size={12} />
+                En ligne
+              </>
+            ) : (
+              <>
+                <WifiOff size={12} />
+                Hors ligne
+              </>
+            )}
+          </Badge>
         </div>
         <Button className="flex items-center gap-2" onClick={() => handleCreateClick()}>
           <Plus size={16} />
