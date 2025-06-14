@@ -13,11 +13,12 @@ export interface User {
   photo?: string | null;
   is_staff: boolean;
   is_active: boolean;
+  is_superuser: boolean;
 }
 
 export interface Staff {
   id: number;
-  user: number;
+  user: number | User;
   poste: number;
   date_embauche: string;
   statut: 'ACTIF' | 'CONGE' | 'SUSPENDU' | 'INACTIF';
@@ -27,13 +28,13 @@ export interface Staff {
 
 export interface Tuteur {
   id: number;
-  user: number;
+  user: number | User;
   profession: string;
 }
 
 export interface Eleve {
   id: number;
-  user: number;
+  user: number | User;
   matricule: string;
   tuteurs: number[];
 }
@@ -44,3 +45,29 @@ export interface RelationEleveTuteur {
   tuteur: number;
   relation: string;
 }
+
+// Modèles enrichis
+export interface UserLite {
+  id: number;
+  email: string;
+  nom: string;
+  prenom: string;
+  genre: 'M' | 'F' | 'A';
+  date_naissance: string;
+  lieu_naissance: string;
+  adresse: string;
+  tel1: string;
+  tel2?: string;
+  whatsapp?: string;
+  photo?: string;
+  is_staff: boolean;
+  is_active: boolean;
+}
+
+export interface EleveDetail {
+  id: number;
+  user: UserLite;
+  matricule: string;
+  tuteurs: number[]; // ou un tableau enrichi si souhaité
+}
+
