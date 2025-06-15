@@ -4,11 +4,22 @@ import { BookOpen, Book, FileText } from 'lucide-react';
 import DataManagementPage, { TabConfig } from '@/components/templates/DataManagementPage';
 import { useTeachingData } from '@/hooks/useTeachingData';
 import { Domaine, UniteEnseignement, Matiere } from '@/types/teaching';
+import { teachingService } from '@/services/teachingService';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import DomaineForm from '@/components/forms/DomaineForm';
 import UniteForm from '@/components/forms/UniteForm';
 import MatiereForm from '@/components/forms/MatiereForm';
+import { 
+  exportDomainesToExcel, 
+  exportUnitesToExcel, 
+  exportMatieresToExcel,
+  validateDomainesImport 
+} from '@/utils/excelUtils';
 
 const Education: React.FC = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const {
     domaines,
     unites,
@@ -44,15 +55,114 @@ const Education: React.FC = () => {
     return 'bg-green-100 text-green-800';
   };
 
-  // Fonctions d'export Excel (mock)
-  const exportDomaines = () => console.log('Export domaines');
-  const exportUnites = () => console.log('Export unités');
-  const exportMatieres = () => console.log('Export matières');
+  // Import functions with API integration
+  const handleImportDomaines = async (data: any[]) => {
+    console.log('Starting import of domaines:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating domaine:', item);
+          const result = await teachingService.createDomaine(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating domaine:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['domaines'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} domaine(s) importé(s) avec succès`,
+      });
+      
+      console.log('Domaines import completed successfully:', results);
+    } catch (error) {
+      console.error('Domaines import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des domaines',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
 
-  // Fonctions d'import Excel (mock)
-  const importDomaines = async (data: any[]) => console.log('Import domaines', data);
-  const importUnites = async (data: any[]) => console.log('Import unités', data);
-  const importMatieres = async (data: any[]) => console.log('Import matières', data);
+  const handleImportUnites = async (data: any[]) => {
+    console.log('Starting import of unites:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating unite:', item);
+          const result = await teachingService.createUnite(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating unite:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['unites'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} unité(s) importée(s) avec succès`,
+      });
+      
+      console.log('Unites import completed successfully:', results);
+    } catch (error) {
+      console.error('Unites import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des unités',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
+  const handleImportMatieres = async (data: any[]) => {
+    console.log('Starting import of matieres:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating matiere:', item);
+          const result = await teachingService.createMatiere(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating matiere:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['matieres'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} matière(s) importée(s) avec succès`,
+      });
+      
+      console.log('Matieres import completed successfully:', results);
+    } catch (error) {
+      console.error('Matieres import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des matières',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
 
   const tabs: TabConfig<any>[] = [
     {
@@ -67,9 +177,9 @@ const Education: React.FC = () => {
       searchFields: ['nom', 'description'],
       form: DomaineForm,
       createLabel: 'Nouveau Domaine',
-      exportFunction: exportDomaines,
+      exportFunction: (items) => exportDomainesToExcel(items),
       importType: 'succursales' as const,
-      onImport: importDomaines,
+      onImport: handleImportDomaines,
     },
     {
       id: 'unites',
@@ -92,9 +202,9 @@ const Education: React.FC = () => {
       },
       form: UniteForm,
       createLabel: 'Nouvelle Unité',
-      exportFunction: exportUnites,
+      exportFunction: (items) => exportUnitesToExcel(items, domaines),
       importType: 'succursales' as const,
-      onImport: importUnites,
+      onImport: handleImportUnites,
     },
     {
       id: 'matieres',
@@ -126,9 +236,9 @@ const Education: React.FC = () => {
       },
       form: MatiereForm,
       createLabel: 'Nouvelle Matière',
-      exportFunction: exportMatieres,
+      exportFunction: (items) => exportMatieresToExcel(items, unites),
       importType: 'succursales' as const,
-      onImport: importMatieres,
+      onImport: handleImportMatieres,
     },
   ];
 

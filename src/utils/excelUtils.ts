@@ -1,6 +1,8 @@
+
 import * as XLSX from 'xlsx';
 import { Succursale, Batiment, Salle } from '@/types/infrastructure';
-import { Inscription } from '@/types/academic';
+import { Inscription, Session, Palier, ClasseSession, Niveau, Filiere, Specialite, Classe } from '@/types/academic';
+import { Domaine, UniteEnseignement, Matiere } from '@/types/teaching';
 
 export interface ExcelExportOptions {
   filename: string;
@@ -84,8 +86,8 @@ export const exportInscriptionsToExcel = (inscriptions: any[], options?: Partial
   XLSX.writeFile(wb, filename);
 };
 
-// Export functions for academic entities
-export const exportSessionsToExcel = (sessions: any[], options?: Partial<ExcelExportOptions>) => {
+// Export functions for sessions
+export const exportSessionsToExcel = (sessions: Session[], options?: Partial<ExcelExportOptions>) => {
   const data = sessions.map(s => ({
     ID: s.id,
     Nom: s.nom,
@@ -103,19 +105,172 @@ export const exportSessionsToExcel = (sessions: any[], options?: Partial<ExcelEx
   XLSX.writeFile(wb, filename);
 };
 
-export const exportClassesToExcel = (classes: any[], options?: Partial<ExcelExportOptions>) => {
-  const data = classes.map(c => ({
-    ID: c.id,
-    Nom: c.nom,
-    Description: c.description,
-    'ID Spécialité': c.specialite
+export const exportPaliersToExcel = (paliers: Palier[], sessions: Session[], options?: Partial<ExcelExportOptions>) => {
+  const data = paliers.map(p => {
+    const session = sessions.find(s => s.id === p.session);
+    return {
+      ID: p.id,
+      Nom: p.nom,
+      'ID Session': p.session,
+      'Nom Session': session?.nom || 'Inconnue',
+      Début: p.debut,
+      Fin: p.fin,
+      'En Cours': p.en_cours ? 'Oui' : 'Non'
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Paliers');
+  
+  const filename = options?.filename || `paliers_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+export const exportClasseSessionsToExcel = (classeSessions: any[], options?: Partial<ExcelExportOptions>) => {
+  const data = classeSessions.map(cs => ({
+    ID: cs.id,
+    Classe: cs.classeData?.nom || 'Inconnue',
+    Session: cs.sessionData?.nom || 'Inconnue',
+    Capacité: cs.capacite,
+    Description: cs.classeData?.description || ''
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Classes');
   
+  const filename = options?.filename || `classe_sessions_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+// Export functions for academic entities
+export const exportNiveauxToExcel = (niveaux: Niveau[], options?: Partial<ExcelExportOptions>) => {
+  const data = niveaux.map(n => ({
+    ID: n.id,
+    Nom: n.nom,
+    Description: n.description || ''
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Niveaux');
+  
+  const filename = options?.filename || `niveaux_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+export const exportFilieresToExcel = (filieres: Filiere[], niveaux: Niveau[], options?: Partial<ExcelExportOptions>) => {
+  const data = filieres.map(f => {
+    const niveau = niveaux.find(n => n.id === f.niveau);
+    return {
+      ID: f.id,
+      Nom: f.nom,
+      'ID Niveau': f.niveau,
+      'Nom Niveau': niveau?.nom || 'Inconnu',
+      Description: f.description || ''
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Filières');
+  
+  const filename = options?.filename || `filieres_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+export const exportSpecialitesToExcel = (specialites: Specialite[], filieres: Filiere[], options?: Partial<ExcelExportOptions>) => {
+  const data = specialites.map(s => {
+    const filiere = filieres.find(f => f.id === s.filiere);
+    return {
+      ID: s.id,
+      Nom: s.nom,
+      'ID Filière': s.filiere,
+      'Nom Filière': filiere?.nom || 'Inconnue',
+      Description: s.description || ''
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Spécialités');
+  
+  const filename = options?.filename || `specialites_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+export const exportClassesToExcel = (classes: Classe[], specialites: Specialite[], options?: Partial<ExcelExportOptions>) => {
+  const data = classes.map(c => {
+    const specialite = specialites.find(s => s.id === c.specialite);
+    return {
+      ID: c.id,
+      Nom: c.nom,
+      'ID Spécialité': c.specialite,
+      'Nom Spécialité': specialite?.nom || 'Inconnue',
+      Description: c.description || ''
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Classes');
+  
   const filename = options?.filename || `classes_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+// Export functions for teaching entities
+export const exportDomainesToExcel = (domaines: Domaine[], options?: Partial<ExcelExportOptions>) => {
+  const data = domaines.map(d => ({
+    ID: d.id,
+    Nom: d.nom,
+    Description: d.description || ''
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Domaines');
+  
+  const filename = options?.filename || `domaines_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+export const exportUnitesToExcel = (unites: UniteEnseignement[], domaines: Domaine[], options?: Partial<ExcelExportOptions>) => {
+  const data = unites.map(u => ({
+    ID: u.id,
+    Nom: u.nom,
+    Description: u.description || '',
+    'Domaines IDs': u.domaines.join(', '),
+    'Domaines Noms': u.domaines.map(id => domaines.find(d => d.id === id)?.nom || 'Inconnu').join(', ')
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Unités');
+  
+  const filename = options?.filename || `unites_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+export const exportMatieresToExcel = (matieres: Matiere[], unites: UniteEnseignement[], options?: Partial<ExcelExportOptions>) => {
+  const data = matieres.map(m => {
+    const unite = unites.find(u => u.id === m.unite);
+    return {
+      ID: m.id,
+      Nom: m.nom,
+      'ID Unité': m.unite,
+      'Nom Unité': unite?.nom || 'Inconnue',
+      Coefficient: m.coefficient,
+      Description: m.description || ''
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Matières');
+  
+  const filename = options?.filename || `matieres_${new Date().toISOString().split('T')[0]}.xlsx`;
   XLSX.writeFile(wb, filename);
 };
 
@@ -195,6 +350,55 @@ export const generateInscriptionsTemplate = () => {
   XLSX.utils.book_append_sheet(wb, ws, 'Template Inscriptions');
   
   XLSX.writeFile(wb, 'template_inscriptions.xlsx');
+};
+
+// New template functions for academic entities
+export const generateSessionsTemplate = () => {
+  const templateData = [
+    {
+      Nom: 'Année scolaire 2024-2025',
+      Début: '2024-09-01',
+      Fin: '2025-06-30',
+      'En Cours': 'Oui',
+      'Auto Activer Palier': 'Oui'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(templateData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template Sessions');
+  
+  XLSX.writeFile(wb, 'template_sessions.xlsx');
+};
+
+export const generateNiveauxTemplate = () => {
+  const templateData = [
+    {
+      Nom: 'Primaire',
+      Description: 'Enseignement primaire'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(templateData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template Niveaux');
+  
+  XLSX.writeFile(wb, 'template_niveaux.xlsx');
+};
+
+export const generateDomainessTemplate = () => {
+  const templateData = [
+    {
+      Nom: 'Sciences',
+      Description: 'Domaine scientifique'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(templateData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template Domaines');
+  
+  XLSX.writeFile(wb, 'template_domaines.xlsx');
 };
 
 // Import validation functions
@@ -358,6 +562,104 @@ export const validateInscriptionsImport = (data: any[]): ImportValidationResult 
         date_inscription: row['Date Inscription'],
         est_reinscription: row['Est Réinscription'] === 'Oui',
         statut: row.Statut || 'CONFIRMEE'
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+// New validation functions for academic entities
+export const validateSessionsImport = (data: any[]): ImportValidationResult => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.Nom || typeof row.Nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
+    }
+    
+    if (!row.Début) {
+      errors.push(`Ligne ${rowNumber}: La date de début est requise`);
+    }
+    
+    if (!row.Fin) {
+      errors.push(`Ligne ${rowNumber}: La date de fin est requise`);
+    }
+    
+    if (row['En Cours'] && !['Oui', 'Non'].includes(row['En Cours'])) {
+      errors.push(`Ligne ${rowNumber}: "En Cours" doit être "Oui" ou "Non"`);
+    }
+    
+    if (row['Auto Activer Palier'] && !['Oui', 'Non'].includes(row['Auto Activer Palier'])) {
+      errors.push(`Ligne ${rowNumber}: "Auto Activer Palier" doit être "Oui" ou "Non"`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.Nom,
+        debut: row.Début,
+        fin: row.Fin,
+        en_cours: row['En Cours'] === 'Oui',
+        auto_activer_palier: row['Auto Activer Palier'] === 'Oui'
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateNiveauxImport = (data: any[]): ImportValidationResult => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.Nom || typeof row.Nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.Nom,
+        description: row.Description || ''
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateDomainesImport = (data: any[]): ImportValidationResult => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.Nom || typeof row.Nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.Nom,
+        description: row.Description || ''
       });
     }
   });

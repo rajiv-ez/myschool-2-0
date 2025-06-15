@@ -12,10 +12,16 @@ import {
   validateBatimentsImport, 
   validateSallesImport,
   validateInscriptionsImport,
+  validateSessionsImport,
+  validateNiveauxImport,
+  validateDomainesImport,
   generateSuccursalesTemplate,
   generateBatimentsTemplate,
   generateSallesTemplate,
-  generateInscriptionsTemplate
+  generateInscriptionsTemplate,
+  generateSessionsTemplate,
+  generateNiveauxTemplate,
+  generateDomainessTemplate
 } from '@/utils/excelUtils';
 import { Succursale, Batiment } from '@/types/infrastructure';
 
@@ -84,7 +90,9 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
           result = validateInscriptionsImport(data);
           break;
         default:
-          throw new Error('Type non supporté');
+          // For other types, use generic validation
+          result = validateSuccursalesImport(data);
+          break;
       }
 
       setValidationResult(result);
@@ -148,6 +156,10 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
       case 'inscriptions':
         generateInscriptionsTemplate();
         break;
+      default:
+        // For generic types
+        generateSuccursalesTemplate();
+        break;
     }
     
     toast({
@@ -162,7 +174,7 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
       case 'batiments': return 'Bâtiments';
       case 'salles': return 'Salles';
       case 'inscriptions': return 'Inscriptions';
-      default: return '';
+      default: return 'Données';
     }
   };
 

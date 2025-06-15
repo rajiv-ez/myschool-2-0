@@ -4,12 +4,24 @@ import { Layers, GraduationCap, Grid, School } from 'lucide-react';
 import DataManagementPage, { TabConfig } from '@/components/templates/DataManagementPage';
 import { useAcademicsData } from '@/hooks/useAcademicsData';
 import { Niveau, Filiere, Specialite, Classe } from '@/types/academic';
+import { academicService } from '@/services/academicService';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import NiveauForm from '@/components/forms/NiveauForm';
 import FiliereForm from '@/components/forms/FiliereForm';
 import SpecialiteForm from '@/components/forms/SpecialiteForm';
 import ClasseForm from '@/components/forms/ClasseForm';
+import { 
+  exportNiveauxToExcel, 
+  exportFilieresToExcel, 
+  exportSpecialitesToExcel, 
+  exportClassesToExcel,
+  validateNiveauxImport 
+} from '@/utils/excelUtils';
 
 const Academics: React.FC = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const {
     niveaux,
     filieres,
@@ -44,17 +56,150 @@ const Academics: React.FC = () => {
     return specialites.find(s => s.id === id)?.nom || 'Inconnue';
   };
 
-  // Fonctions d'export Excel (mock)
-  const exportNiveaux = () => console.log('Export niveaux');
-  const exportFilieres = () => console.log('Export filières');
-  const exportSpecialites = () => console.log('Export spécialités');
-  const exportClasses = () => console.log('Export classes');
+  // Import functions with API integration
+  const handleImportNiveaux = async (data: any[]) => {
+    console.log('Starting import of niveaux:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating niveau:', item);
+          const result = await academicService.createNiveau(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating niveau:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['niveaux'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} niveau(x) importé(s) avec succès`,
+      });
+      
+      console.log('Niveaux import completed successfully:', results);
+    } catch (error) {
+      console.error('Niveaux import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des niveaux',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
 
-  // Fonctions d'import Excel (mock)
-  const importNiveaux = async (data: any[]) => console.log('Import niveaux', data);
-  const importFilieres = async (data: any[]) => console.log('Import filières', data);
-  const importSpecialites = async (data: any[]) => console.log('Import spécialités', data);
-  const importClasses = async (data: any[]) => console.log('Import classes', data);
+  const handleImportFilieres = async (data: any[]) => {
+    console.log('Starting import of filieres:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating filiere:', item);
+          const result = await academicService.createFiliere(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating filiere:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['filieres'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} filière(s) importée(s) avec succès`,
+      });
+      
+      console.log('Filieres import completed successfully:', results);
+    } catch (error) {
+      console.error('Filieres import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des filières',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
+  const handleImportSpecialites = async (data: any[]) => {
+    console.log('Starting import of specialites:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating specialite:', item);
+          const result = await academicService.createSpecialite(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating specialite:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['specialites'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} spécialité(s) importée(s) avec succès`,
+      });
+      
+      console.log('Specialites import completed successfully:', results);
+    } catch (error) {
+      console.error('Specialites import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des spécialités',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
+  const handleImportClasses = async (data: any[]) => {
+    console.log('Starting import of classes:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating classe:', item);
+          const result = await academicService.createClasse(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating classe:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['classes'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} classe(s) importée(s) avec succès`,
+      });
+      
+      console.log('Classes import completed successfully:', results);
+    } catch (error) {
+      console.error('Classes import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des classes',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
 
   const tabs: TabConfig<any>[] = [
     {
@@ -69,9 +214,9 @@ const Academics: React.FC = () => {
       searchFields: ['nom', 'description'],
       form: NiveauForm,
       createLabel: 'Nouveau Niveau',
-      exportFunction: exportNiveaux,
+      exportFunction: (items) => exportNiveauxToExcel(items),
       importType: 'succursales' as const,
-      onImport: importNiveaux,
+      onImport: handleImportNiveaux,
     },
     {
       id: 'filieres',
@@ -94,9 +239,9 @@ const Academics: React.FC = () => {
       },
       form: FiliereForm,
       createLabel: 'Nouvelle Filière',
-      exportFunction: exportFilieres,
+      exportFunction: (items) => exportFilieresToExcel(items, niveaux),
       importType: 'succursales' as const,
-      onImport: importFilieres,
+      onImport: handleImportFilieres,
     },
     {
       id: 'specialites',
@@ -119,9 +264,9 @@ const Academics: React.FC = () => {
       },
       form: SpecialiteForm,
       createLabel: 'Nouvelle Spécialité',
-      exportFunction: exportSpecialites,
+      exportFunction: (items) => exportSpecialitesToExcel(items, filieres),
       importType: 'succursales' as const,
-      onImport: importSpecialites,
+      onImport: handleImportSpecialites,
     },
     {
       id: 'classes',
@@ -144,9 +289,9 @@ const Academics: React.FC = () => {
       },
       form: ClasseForm,
       createLabel: 'Nouvelle Classe',
-      exportFunction: exportClasses,
+      exportFunction: (items) => exportClassesToExcel(items, specialites),
       importType: 'succursales' as const,
-      onImport: importClasses,
+      onImport: handleImportClasses,
     },
   ];
 

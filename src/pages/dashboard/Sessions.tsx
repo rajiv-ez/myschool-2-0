@@ -4,11 +4,22 @@ import { CalendarDays, Calendar, GraduationCap } from 'lucide-react';
 import DataManagementPage, { TabConfig } from '@/components/templates/DataManagementPage';
 import { useAcademicData } from '@/hooks/useAcademicData';
 import { Session, Palier, ClasseSession } from '@/types/academic';
+import { academicService } from '@/services/academicService';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import SessionForm from '@/components/forms/SessionForm';
 import PalierForm from '@/components/forms/PalierForm';
 import ClasseSessionForm from '@/components/forms/ClasseSessionForm';
+import { 
+  exportSessionsToExcel, 
+  exportPaliersToExcel, 
+  exportClasseSessionsToExcel,
+  validateSessionsImport 
+} from '@/utils/excelUtils';
 
 const Sessions: React.FC = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const {
     sessions,
     paliers,
@@ -45,15 +56,114 @@ const Sessions: React.FC = () => {
     return enCours ? 'En cours' : 'Terminé';
   };
 
-  // Mock export functions
-  const exportSessions = () => console.log('Export sessions');
-  const exportPaliers = () => console.log('Export paliers');
-  const exportClasseSessions = () => console.log('Export classe sessions');
+  // Import functions with API integration
+  const handleImportSessions = async (data: any[]) => {
+    console.log('Starting import of sessions:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating session:', item);
+          const result = await academicService.createSession(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating session:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} session(s) importée(s) avec succès`,
+      });
+      
+      console.log('Sessions import completed successfully:', results);
+    } catch (error) {
+      console.error('Sessions import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des sessions',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
 
-  // Mock import functions
-  const importSessions = async (data: any[]) => console.log('Import sessions', data);
-  const importPaliers = async (data: any[]) => console.log('Import paliers', data);
-  const importClasseSessions = async (data: any[]) => console.log('Import classe sessions', data);
+  const handleImportPaliers = async (data: any[]) => {
+    console.log('Starting import of paliers:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating palier:', item);
+          const result = await academicService.createPalier(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating palier:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['paliers'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} palier(s) importé(s) avec succès`,
+      });
+      
+      console.log('Paliers import completed successfully:', results);
+    } catch (error) {
+      console.error('Paliers import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des paliers',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
+  const handleImportClasseSessions = async (data: any[]) => {
+    console.log('Starting import of classe sessions:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating classe session:', item);
+          const result = await academicService.createClasseSession(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating classe session:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['classe-sessions'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} classe session(s) importée(s) avec succès`,
+      });
+      
+      console.log('Classe sessions import completed successfully:', results);
+    } catch (error) {
+      console.error('Classe sessions import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des classe sessions',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
 
   const tabs: TabConfig<any>[] = [
     {
@@ -114,9 +224,9 @@ const Sessions: React.FC = () => {
       },
       form: SessionForm,
       createLabel: 'Nouvelle Session',
-      exportFunction: exportSessions,
+      exportFunction: (items) => exportSessionsToExcel(items),
       importType: 'succursales' as const,
-      onImport: importSessions,
+      onImport: handleImportSessions,
     },
     {
       id: 'paliers',
@@ -174,9 +284,9 @@ const Sessions: React.FC = () => {
       },
       form: PalierForm,
       createLabel: 'Nouveau Palier',
-      exportFunction: exportPaliers,
+      exportFunction: (items) => exportPaliersToExcel(items, sessions),
       importType: 'succursales' as const,
-      onImport: importPaliers,
+      onImport: handleImportPaliers,
     },
     {
       id: 'classes',
@@ -220,9 +330,9 @@ const Sessions: React.FC = () => {
       },
       form: ClasseSessionForm,
       createLabel: 'Nouvelle Classe',
-      exportFunction: exportClasseSessions,
+      exportFunction: (items) => exportClasseSessionsToExcel(items),
       importType: 'succursales' as const,
-      onImport: importClasseSessions,
+      onImport: handleImportClasseSessions,
     },
   ];
 
