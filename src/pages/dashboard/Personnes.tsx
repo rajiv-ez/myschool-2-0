@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Users, GraduationCap, UserCheck } from 'lucide-react';
-import DataManagementPage from '@/components/templates/DataManagementPage';
+import DataManagementPage, { TabConfig } from '@/components/templates/DataManagementPage';
 import PersonneForm from '@/components/forms/PersonneForm';
 import { useUsersData } from '@/hooks/useUsersData';
 import { EleveDetail, TuteurDetail } from '@/types/users';
