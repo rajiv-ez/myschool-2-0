@@ -233,14 +233,14 @@ function DataManagementPage<T extends { id: number }>({
         </Badge>
       </div>
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div className="flex items-center gap-3">
           <div>
             <h2 className="text-xl font-semibold">{title}</h2>
             <p className="text-muted-foreground">{description}</p>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
+        <div className="flex flex-col md:flex-row w-full md:w-auto gap-2">
           <Button variant="outline" onClick={handleImportExcel} className="flex items-center gap-2">
             <Upload size={16} />
             Importer Excel
@@ -261,7 +261,7 @@ function DataManagementPage<T extends { id: number }>({
           {tabs.map(tab => (
             <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
               <tab.icon size={16} />
-              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="hidden md:inline">{tab.label}</span>
               <Badge variant="outline" className="ml-1">
                 {tab.items.length}
               </Badge>
@@ -273,13 +273,13 @@ function DataManagementPage<T extends { id: number }>({
           <TabsContent key={tab.id} value={tab.id}>
             <Card>
               <CardHeader>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <CardTitle className="flex items-center gap-2">
                     <tab.icon size={18} />
                     {tab.label}
                   </CardTitle>
-                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <div className="relative flex-1 sm:w-64">
+                  <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder={`Rechercher ${tab.label.toLowerCase()}...`}
@@ -294,7 +294,7 @@ function DataManagementPage<T extends { id: number }>({
                         value={filters.selectedFilters[key] || 'all'} 
                         onValueChange={(value) => filters.updateFilter(key, value)}
                       >
-                        <SelectTrigger className="w-full sm:w-40">
+                        <SelectTrigger className="w-full md:w-40">
                           <SelectValue placeholder={filterConfig.placeholder} />
                         </SelectTrigger>
                         <SelectContent>
@@ -365,7 +365,7 @@ function DataManagementPage<T extends { id: number }>({
         setIsEditModalOpen(false);
         setSelectedItem(null);
       }}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="md:max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {selectedItem ? 'Modifier' : 'Créer'} {currentTab?.label.slice(0, -1)}
@@ -388,7 +388,7 @@ function DataManagementPage<T extends { id: number }>({
 
       {/* Details Modal */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="md:max-w-md">
           <DialogHeader>
             <DialogTitle>Détails</DialogTitle>
           </DialogHeader>
@@ -418,7 +418,7 @@ function DataManagementPage<T extends { id: number }>({
 
       {/* Delete Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="md:max-w-md">
           <DialogHeader>
             <DialogTitle>Supprimer l'élément</DialogTitle>
             <DialogDescription>
