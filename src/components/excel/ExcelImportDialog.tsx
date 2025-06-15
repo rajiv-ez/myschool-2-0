@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +41,15 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
     errors: string[];
     data?: any[];
   } | null>(null);
+
+  // Reset state when dialog opens/closes
+  useEffect(() => {
+    if (!open) {
+      setFile(null);
+      setValidationResult(null);
+      setIsProcessing(false);
+    }
+  }, [open]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -109,8 +117,6 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
         description: `${validationResult.data.length} enregistrement(s) importé(s)`,
       });
       onOpenChange(false);
-      setFile(null);
-      setValidationResult(null);
     } catch (error) {
       toast({
         title: 'Erreur d\'import',
