@@ -4,11 +4,11 @@ import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { TabConfig } from './DataManagementPage';
 
-interface DataManagementTabsProps<T extends { id: number }> {
-  tabs: TabConfig<T>[];
+interface DataManagementTabsProps {
+  tabs: TabConfig<any>[]; // Changed to accept any type for flexibility
 }
 
-function DataManagementTabs<T extends { id: number }>({ tabs }: DataManagementTabsProps<T>) {
+function DataManagementTabs({ tabs }: DataManagementTabsProps) {
   const getGridCols = (count: number) => {
     switch (count) {
       case 1: return 'grid-cols-1';

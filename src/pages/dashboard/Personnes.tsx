@@ -74,8 +74,8 @@ const Personnes: React.FC = () => {
     console.log('Importing tuteurs:', data);
   };
 
-  // Tab configurations - using union type to support both EleveDetail and TuteurDetail
-  const tabs: (TabConfig<EleveDetail> | TabConfig<TuteurDetail>)[] = [
+  // Tab configurations - now properly typed as TabConfig<any>[]
+  const tabs: TabConfig<any>[] = [
     {
       id: 'eleves',
       label: 'Élèves',

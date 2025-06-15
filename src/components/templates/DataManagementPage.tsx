@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -38,7 +37,7 @@ export interface TabConfig<T> {
 export interface DataManagementPageProps<T extends { id: number }> {
   title: string;
   description: string;
-  tabs: TabConfig<T>[];
+  tabs: TabConfig<any>[]; // Changed to accept any type for flexibility
   fromApi: boolean;
   additionalProps?: Record<string, any>;
 }
@@ -59,7 +58,7 @@ function DataManagementPage<T extends { id: number }>({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<T | null>(null);
+  const [selectedItem, setSelectedItem] = useState<any>(null); // Changed to any for flexibility
 
   const currentTab = tabs.find(tab => tab.id === activeTab);
 
@@ -68,17 +67,17 @@ function DataManagementPage<T extends { id: number }>({
     setIsCreateModalOpen(true);
   };
 
-  const handleEditClick = (item: T) => {
+  const handleEditClick = (item: any) => {
     setSelectedItem(item);
     setIsEditModalOpen(true);
   };
 
-  const handleDetailsClick = (item: T) => {
+  const handleDetailsClick = (item: any) => {
     setSelectedItem(item);
     setIsDetailsModalOpen(true);
   };
 
-  const handleDeleteClick = (item: T) => {
+  const handleDeleteClick = (item: any) => {
     setSelectedItem(item);
     setIsDeleteModalOpen(true);
   };
