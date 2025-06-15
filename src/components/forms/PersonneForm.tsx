@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -57,24 +56,25 @@ export default function PersonneForm({
   const isEleve = entityType === 'eleve';
   const isEditing = !!item;
 
-  // Prepare default values correctly
-  const getDefaultValues = () => {
-    if (item) {
+  // Improved default values with proper fallbacks
+  const getDefaultValues = (): PersonneFormData => {
+    if (item && item.user) {
+      const user = item.user;
       return {
-        nom: item.user.nom || '',
-        prenom: item.user.prenom || '',
-        email: item.user.email || '',
-        genre: item.user.genre || 'M',
-        date_naissance: item.user.date_naissance || '',
-        lieu_naissance: item.user.lieu_naissance || '',
-        photo: item.user.photo || '',
-        adresse: item.user.adresse || '',
-        tel1: item.user.tel1 || '',
-        tel2: item.user.tel2 || '',
-        whatsapp: item.user.whatsapp || '',
-        matricule: 'matricule' in item ? item.matricule : '',
-        profession: 'profession' in item ? item.profession : '',
-        is_active: item.user.is_active ?? true,
+        nom: user.nom || '',
+        prenom: user.prenom || '',
+        email: user.email || '',
+        genre: (user.genre as 'M' | 'F' | 'A') || 'M',
+        date_naissance: user.date_naissance || '',
+        lieu_naissance: user.lieu_naissance || '',
+        photo: user.photo || '',
+        adresse: user.adresse || '',
+        tel1: user.tel1 || '',
+        tel2: user.tel2 || '',
+        whatsapp: user.whatsapp || '',
+        matricule: 'matricule' in item ? (item.matricule || '') : '',
+        profession: 'profession' in item ? (item.profession || '') : '',
+        is_active: user.is_active !== undefined ? user.is_active : true,
       };
     }
     
@@ -82,7 +82,7 @@ export default function PersonneForm({
       nom: '',
       prenom: '',
       email: '',
-      genre: 'M' as const,
+      genre: 'M',
       date_naissance: '',
       lieu_naissance: '',
       photo: '',
@@ -96,15 +96,21 @@ export default function PersonneForm({
     };
   };
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<PersonneFormData>({
+  const form = useForm<PersonneFormData>({
     resolver: zodResolver(personneSchema),
-    defaultValues: getDefaultValues()
+    defaultValues: getDefaultValues(),
+    mode: 'onChange'
   });
 
-  // Reset form when item changes
+  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = form;
+
+  // Reset form when item changes with improved handling
   React.useEffect(() => {
-    reset(getDefaultValues());
-  }, [item, reset]);
+    const newDefaults = getDefaultValues();
+    console.log('PersonneForm: Resetting form with item:', item);
+    console.log('PersonneForm: New defaults:', newDefaults);
+    reset(newDefaults);
+  }, [item, entityType, reset]);
 
   const watchedPhoto = watch('photo');
   const watchedGenre = watch('genre');
@@ -114,6 +120,8 @@ export default function PersonneForm({
   };
 
   const handleFormSubmit = (data: PersonneFormData) => {
+    console.log('PersonneForm: Submitting data:', data);
+    
     // Transform data to match the expected API format
     const transformedData = {
       user: {
@@ -133,6 +141,7 @@ export default function PersonneForm({
       ...(isEleve ? { matricule: data.matricule } : { profession: data.profession })
     };
 
+    console.log('PersonneForm: Transformed data:', transformedData);
     onSubmit(transformedData);
   };
 

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { usersService } from '@/services/usersService';
 import { 
@@ -36,18 +35,15 @@ export function useUsersData() {
         usersService.getRelations(),
       ]);
       
-      if (u.fromApi) setUsers(u.data);
-
-      if (e.fromApi) setEleves(e.data);
-      if (ed.fromApi) setElevesDetails(ed.data);
-      
-      if (t.fromApi) setTuteurs(t.data);
-      if (td.fromApi) setTuteursDetails(td.data);
-      
-      if (s.fromApi) setStaffs(s.data);
-      if (sd.fromApi) setStaffsDetails(sd.data);
-
-      if (r.fromApi) setRelations(r.data);
+      // Always set data, regardless of fromApi flag
+      setUsers(u.data || []);
+      setEleves(e.data || []);
+      setElevesDetails(ed.data || []);
+      setTuteurs(t.data || []);
+      setTuteursDetails(td.data || []);
+      setStaffs(s.data || []);
+      setStaffsDetails(sd.data || []);
+      setRelations(r.data || []);
       
       setLoading(false);
     })();
@@ -56,13 +52,13 @@ export function useUsersData() {
   // User operations (basic)
   const createUser = async (data: Partial<User>) => { 
     const r = await usersService.createUser(data); 
-    if (r.fromApi) setUsers(prev => [...prev, r.data]); 
+    if (r.data) setUsers(prev => [...prev, r.data]); 
     return r; 
   };
   
   const updateUser = async (id: number, data: Partial<User>) => { 
     const r = await usersService.updateUser(id, data); 
-    if (r.fromApi) setUsers(prev => prev.map(u => (u.id === id ? r.data : u))); 
+    if (r.data) setUsers(prev => prev.map(u => (u.id === id ? r.data : u))); 
     return r; 
   };
   
@@ -74,7 +70,7 @@ export function useUsersData() {
   // EleveDetail operations (preferred for combined User + Eleve operations)
   const createEleveDetail = async (data: Partial<EleveDetail>) => { 
     const r = await usersService.createEleveDetail(data); 
-    if (r.fromApi) {
+    if (r.data) {
       setElevesDetails(prev => [...prev, r.data]);
       // Also update users if the user data is included
       if (r.data.user && typeof r.data.user === 'object') {
@@ -86,7 +82,7 @@ export function useUsersData() {
   
   const updateEleveDetail = async (id: number, data: Partial<EleveDetail>) => { 
     const r = await usersService.updateEleveDetail(id, data); 
-    if (r.fromApi) {
+    if (r.data) {
       setElevesDetails(prev => prev.map(e => (e.id === id ? r.data : e)));
       // Also update users if the user data is included
       if (r.data.user && typeof r.data.user === 'object') {
@@ -109,7 +105,7 @@ export function useUsersData() {
   // TuteurDetail operations (preferred for combined User + Tuteur operations)
   const createTuteurDetail = async (data: Partial<TuteurDetail>) => { 
     const r = await usersService.createTuteurDetail(data); 
-    if (r.fromApi) {
+    if (r.data) {
       setTuteursDetails(prev => [...prev, r.data]);
       // Also update users if the user data is included
       if (r.data.user && typeof r.data.user === 'object') {
@@ -121,7 +117,7 @@ export function useUsersData() {
   
   const updateTuteurDetail = async (id: number, data: Partial<TuteurDetail>) => { 
     const r = await usersService.updateTuteurDetail(id, data); 
-    if (r.fromApi) {
+    if (r.data) {
       setTuteursDetails(prev => prev.map(t => (t.id === id ? r.data : t)));
       // Also update users if the user data is included
       if (r.data.user && typeof r.data.user === 'object') {
@@ -144,7 +140,7 @@ export function useUsersData() {
   // StaffDetail operations (preferred for combined User + Staff operations)
   const createStaffDetail = async (data: Partial<StaffDetail>) => { 
     const r = await usersService.createStaffDetail(data); 
-    if (r.fromApi) {
+    if (r.data) {
       setStaffsDetails(prev => [...prev, r.data]);
       // Also update users if the user data is included
       if (r.data.user && typeof r.data.user === 'object') {
@@ -156,7 +152,7 @@ export function useUsersData() {
   
   const updateStaffDetail = async (id: number, data: Partial<StaffDetail>) => { 
     const r = await usersService.updateStaffDetail(id, data); 
-    if (r.fromApi) {
+    if (r.data) {
       setStaffsDetails(prev => prev.map(s => (s.id === id ? r.data : s)));
       // Also update users if the user data is included
       if (r.data.user && typeof r.data.user === 'object') {
@@ -179,13 +175,13 @@ export function useUsersData() {
   // Legacy operations for backward compatibility
   const createTuteur = async (data: Partial<Tuteur>) => { 
     const r = await usersService.createTuteur(data); 
-    if (r.fromApi) setTuteurs(prev => [...prev, r.data]); 
+    if (r.data) setTuteurs(prev => [...prev, r.data]); 
     return r; 
   };
   
   const updateTuteur = async (id: number, data: Partial<Tuteur>) => { 
     const r = await usersService.updateTuteur(id, data); 
-    if (r.fromApi) setTuteurs(prev => prev.map(t => (t.id === id ? r.data : t))); 
+    if (r.data) setTuteurs(prev => prev.map(t => (t.id === id ? r.data : t))); 
     return r; 
   };
   
@@ -196,13 +192,13 @@ export function useUsersData() {
   
   const createEleve = async (data: Partial<Eleve>) => { 
     const r = await usersService.createEleve(data); 
-    if (r.fromApi) setEleves(prev => [...prev, r.data]); 
+    if (r.data) setEleves(prev => [...prev, r.data]); 
     return r; 
   };
   
   const updateEleve = async (id: number, data: Partial<Eleve>) => { 
     const r = await usersService.updateEleve(id, data); 
-    if (r.fromApi) setEleves(prev => prev.map(e => (e.id === id ? r.data : e))); 
+    if (r.data) setEleves(prev => prev.map(e => (e.id === id ? r.data : e))); 
     return r; 
   };
   
@@ -213,13 +209,13 @@ export function useUsersData() {
 
   const createStaff = async (data: Partial<Staff>) => { 
     const r = await usersService.createStaff(data); 
-    if (r.fromApi) setStaffs(prev => [...prev, r.data]); 
+    if (r.data) setStaffs(prev => [...prev, r.data]); 
     return r; 
   };
   
   const updateStaff = async (id: number, data: Partial<Staff>) => { 
     const r = await usersService.updateStaff(id, data); 
-    if (r.fromApi) setStaffs(prev => prev.map(s => (s.id === id ? r.data : s))); 
+    if (r.data) setStaffs(prev => prev.map(s => (s.id === id ? r.data : s))); 
     return r; 
   };
   
@@ -231,13 +227,13 @@ export function useUsersData() {
   // Relations operations
   const createRelation = async (data: Partial<RelationEleveTuteur>) => { 
     const r = await usersService.createRelation(data); 
-    if (r.fromApi) setRelations(prev => [...prev, r.data]); 
+    if (r.data) setRelations(prev => [...prev, r.data]); 
     return r; 
   };
   
   const updateRelation = async (id: number, data: Partial<RelationEleveTuteur>) => { 
     const r = await usersService.updateRelation(id, data); 
-    if (r.fromApi) setRelations(prev => prev.map(rel => (rel.id === id ? r.data : rel))); 
+    if (r.data) setRelations(prev => prev.map(rel => (rel.id === id ? r.data : rel))); 
     return r; 
   };
   

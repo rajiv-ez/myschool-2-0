@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Users, GraduationCap, UserCheck } from 'lucide-react';
 import DataManagementPage, { TabConfig } from '@/components/templates/DataManagementPage';
@@ -19,6 +18,10 @@ const Personnes: React.FC = () => {
     updateTuteurDetail,
     deleteTuteurDetail,
   } = useUsersData();
+
+  console.log('Personnes page - Loading:', loading);
+  console.log('Personnes page - ElevesDetails:', elevesDetails);
+  console.log('Personnes page - TuteursDetails:', tuteursDetails);
 
   // Export functions
   const exportElevesToExcel = (items: EleveDetail[]) => {
@@ -248,7 +251,7 @@ const Personnes: React.FC = () => {
       title="Gestion des Personnes"
       description="Gérez les informations des élèves et tuteurs"
       tabs={tabs}
-      fromApi={false}
+      fromApi={true}
       additionalProps={{
         createEleveDetail,
         updateEleveDetail,
