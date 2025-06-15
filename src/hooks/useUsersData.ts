@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { usersService } from '@/services/usersService';
 import { 
@@ -8,7 +7,6 @@ import {
 
 export function useUsersData() {
   const [users, setUsers] = useState<User[]>([]);
-
   const [eleves, setEleves] = useState<Eleve[]>([]);
   const [elevesDetails, setElevesDetails] = useState<EleveDetail[]>([]);
 
@@ -71,82 +69,132 @@ export function useUsersData() {
   // EleveDetail operations (preferred for combined User + Eleve operations)
   const createEleveDetail = async (data: Partial<EleveDetail>) => { 
     console.log('useUsersData: Creating eleve with data:', data);
-    const r = await usersService.createEleveDetail(data); 
-    console.log('useUsersData: Create response:', r);
+    console.log('useUsersData: Data validation:');
+    console.log('- Has user object:', !!data.user);
+    console.log('- User is object:', typeof data.user === 'object');
     
-    if (r.data && r.data.user && typeof r.data.user === 'object') {
-      setElevesDetails(prev => [...prev, r.data]);
-      setUsers(prev => [...prev, r.data.user as User]);
-      console.log('useUsersData: Added new eleve to state');
-    } else {
-      console.error('useUsersData: Invalid response data structure:', r);
+    try {
+      const r = await usersService.createEleveDetail(data); 
+      console.log('useUsersData: Create response:', r);
+      
+      if (r.data && r.data.user && typeof r.data.user === 'object') {
+        setElevesDetails(prev => [...prev, r.data]);
+        setUsers(prev => [...prev, r.data.user as User]);
+        console.log('useUsersData: Added new eleve to state');
+      } else {
+        console.error('useUsersData: Invalid response data structure:', r);
+        throw new Error('Structure de réponse invalide du serveur');
+      }
+      return r; 
+    } catch (error) {
+      console.error('useUsersData: Error creating eleve:', error);
+      throw error; // Re-throw to be handled by the calling component
     }
-    return r; 
   };
   
   const updateEleveDetail = async (id: number, data: Partial<EleveDetail>) => { 
     console.log('useUsersData: Updating eleve with id:', id, 'data:', data);
-    const r = await usersService.updateEleveDetail(id, data); 
-    console.log('useUsersData: Update response:', r);
+    console.log('useUsersData: Data validation:');
+    console.log('- Has user object:', !!data.user);
+    console.log('- User is object:', typeof data.user === 'object');
     
-    if (r.data && r.data.user && typeof r.data.user === 'object') {
-      setElevesDetails(prev => prev.map(e => (e.id === id ? r.data : e)));
-      setUsers(prev => prev.map(u => u.id === (r.data.user as User).id ? (r.data.user as User) : u));
-      console.log('useUsersData: Updated eleve in state');
-    } else {
-      console.error('useUsersData: Invalid response data structure for update:', r);
+    try {
+      const r = await usersService.updateEleveDetail(id, data); 
+      console.log('useUsersData: Update response:', r);
+      
+      if (r.data && r.data.user && typeof r.data.user === 'object') {
+        setElevesDetails(prev => prev.map(e => (e.id === id ? r.data : e)));
+        setUsers(prev => prev.map(u => u.id === (r.data.user as User).id ? (r.data.user as User) : u));
+        console.log('useUsersData: Updated eleve in state');
+      } else {
+        console.error('useUsersData: Invalid response data structure for update:', r);
+        throw new Error('Structure de réponse invalide du serveur');
+      }
+      return r; 
+    } catch (error) {
+      console.error('useUsersData: Error updating eleve:', error);
+      throw error; // Re-throw to be handled by the calling component
     }
-    return r; 
   };
   
   const deleteEleveDetail = async (id: number) => { 
-    const eleveToDelete = elevesDetails.find(e => e.id === id);
-    await usersService.deleteEleveDetail(id); 
-    setElevesDetails(prev => prev.filter(e => e.id !== id));
-    // Also remove from users if user data is available
-    if (eleveToDelete && typeof eleveToDelete.user === 'object') {
-      setUsers(prev => prev.filter(u => u.id !== (eleveToDelete.user as User).id));
+    try {
+      const eleveToDelete = elevesDetails.find(e => e.id === id);
+      await usersService.deleteEleveDetail(id); 
+      setElevesDetails(prev => prev.filter(e => e.id !== id));
+      // Also remove from users if user data is available
+      if (eleveToDelete && typeof eleveToDelete.user === 'object') {
+        setUsers(prev => prev.filter(u => u.id !== (eleveToDelete.user as User).id));
+      }
+    } catch (error) {
+      console.error('useUsersData: Error deleting eleve:', error);
+      throw error;
     }
   };
 
   // TuteurDetail operations (preferred for combined User + Tuteur operations)
   const createTuteurDetail = async (data: Partial<TuteurDetail>) => { 
     console.log('useUsersData: Creating tuteur with data:', data);
-    const r = await usersService.createTuteurDetail(data); 
-    console.log('useUsersData: Create response:', r);
+    console.log('useUsersData: Data validation:');
+    console.log('- Has user object:', !!data.user);
+    console.log('- User is object:', typeof data.user === 'object');
     
-    if (r.data && r.data.user && typeof r.data.user === 'object') {
-      setTuteursDetails(prev => [...prev, r.data]);
-      setUsers(prev => [...prev, r.data.user as User]);
-      console.log('useUsersData: Added new tuteur to state');
-    } else {
-      console.error('useUsersData: Invalid response data structure:', r);
+    try {
+      const r = await usersService.createTuteurDetail(data); 
+      console.log('useUsersData: Create response:', r);
+      
+      if (r.data && r.data.user && typeof r.data.user === 'object') {
+        setTuteursDetails(prev => [...prev, r.data]);
+        setUsers(prev => [...prev, r.data.user as User]);
+        console.log('useUsersData: Added new tuteur to state');
+      } else {
+        console.error('useUsersData: Invalid response data structure:', r);
+        throw new Error('Structure de réponse invalide du serveur');
+      }
+      return r; 
+    } catch (error) {
+      console.error('useUsersData: Error creating tuteur:', error);
+      throw error;
     }
-    return r; 
   };
   
   const updateTuteurDetail = async (id: number, data: Partial<TuteurDetail>) => { 
     console.log('useUsersData: Updating tuteur with id:', id, 'data:', data);
-    const r = await usersService.updateTuteurDetail(id, data); 
-    console.log('useUsersData: Update response:', r);
+    console.log('useUsersData: Data validation:');
+    console.log('- Has user object:', !!data.user);
+    console.log('- User is object:', typeof data.user === 'object');
     
-    if (r.data && r.data.user && typeof r.data.user === 'object') {
-      setTuteursDetails(prev => prev.map(t => (t.id === id ? r.data : t)));
-      setUsers(prev => prev.map(u => u.id === (r.data.user as User).id ? (r.data.user as User) : u));
-      console.log('useUsersData: Updated tuteur in state');
-    } else {
-      console.error('useUsersData: Invalid response data structure for update:', r);
+    try {
+      const r = await usersService.updateTuteurDetail(id, data); 
+      console.log('useUsersData: Update response:', r);
+      
+      if (r.data && r.data.user && typeof r.data.user === 'object') {
+        setTuteursDetails(prev => prev.map(t => (t.id === id ? r.data : t)));
+        setUsers(prev => prev.map(u => u.id === (r.data.user as User).id ? (r.data.user as User) : u));
+        console.log('useUsersData: Updated tuteur in state');
+      } else {
+        console.error('useUsersData: Invalid response data structure for update:', r);
+        throw new Error('Structure de réponse invalide du serveur');
+      }
+      return r; 
+    } catch (error) {
+      console.error('useUsersData: Error updating tuteur:', error);
+      throw error;
     }
-    return r; 
   };
   
   const deleteTuteurDetail = async (id: number) => { 
-    const tuteurToDelete = tuteursDetails.find(t => t.id === id);
-    await usersService.deleteTuteurDetail(id); 
-    setTuteursDetails(prev => prev.filter(t => t.id !== id));
-    // Also remove from users if user data is available
-    if (tuteurToDelete && typeof tuteurToDelete.user === 'object') {
-      setUsers(prev => prev.filter(u => u.id !== (tuteurToDelete.user as User).id));
+    try {
+      const tuteurToDelete = tuteursDetails.find(t => t.id === id);
+      await usersService.deleteTuteurDetail(id); 
+      setTuteursDetails(prev => prev.filter(t => t.id !== id));
+      // Also remove from users if user data is available
+      if (tuteurToDelete && typeof tuteurToDelete.user === 'object') {
+        setUsers(prev => prev.filter(u => u.id !== (tuteurToDelete.user as User).id));
+      }
+    } catch (error) {
+      console.error('useUsersData: Error deleting tuteur:', error);
+      throw error;
     }
   };
 

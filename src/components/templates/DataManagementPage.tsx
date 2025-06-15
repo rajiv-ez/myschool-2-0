@@ -128,26 +128,84 @@ function DataManagementPage<T extends { id: number }>({
     setIsImportModalOpen(true);
   };
 
+  // Enhanced error logging and handling
+  const logOperationDetails = (operation: string, data: any, context: any) => {
+    console.log(`========== ${operation.toUpperCase()} OPERATION ==========`);
+    console.log('Active tab:', activeTab);
+    console.log('Is edit:', !!selectedItem);
+    console.log('Selected item:', selectedItem);
+    console.log('Form data received:', data);
+    console.log('Additional props available:', Object.keys(additionalProps));
+    console.log('Context:', context);
+    console.log('====================================');
+  };
+
+  const handleApiError = (error: any, operation: string) => {
+    console.error(`========== ${operation.toUpperCase()} ERROR ==========`);
+    console.error('Error object:', error);
+    console.error('Error message:', error?.message);
+    console.error('Error response:', error?.response);
+    console.error('Error response data:', error?.response?.data);
+    console.error('Error response status:', error?.response?.status);
+    console.error('Error response headers:', error?.response?.headers);
+    console.error('================================');
+    
+    // Extract meaningful error message
+    let errorMessage = 'Une erreur inattendue s\'est produite.';
+    
+    if (error?.response?.data) {
+      const responseData = error.response.data;
+      if (typeof responseData === 'string') {
+        errorMessage = responseData;
+      } else if (responseData.detail) {
+        errorMessage = responseData.detail;
+      } else if (responseData.message) {
+        errorMessage = responseData.message;
+      } else if (responseData.error) {
+        errorMessage = responseData.error;
+      } else {
+        // Try to extract field validation errors
+        const fieldErrors = [];
+        for (const [field, errors] of Object.entries(responseData)) {
+          if (Array.isArray(errors)) {
+            fieldErrors.push(`${field}: ${errors.join(', ')}`);
+          } else if (typeof errors === 'string') {
+            fieldErrors.push(`${field}: ${errors}`);
+          }
+        }
+        if (fieldErrors.length > 0) {
+          errorMessage = `Erreurs de validation: ${fieldErrors.join('; ')}`;
+        }
+      }
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
+    
+    return errorMessage;
+  };
+
   const handleFormSubmit = async (data: any) => {
     const isEdit = !!selectedItem;
     
+    logOperationDetails(isEdit ? 'update' : 'create', data, {
+      activeTab,
+      selectedItem,
+      additionalProps: Object.keys(additionalProps)
+    });
+    
     try {
-      console.log('Form data received:', data);
-      console.log('Selected item:', selectedItem);
-      console.log('Active tab:', activeTab);
-      
       let result;
       
       if (activeTab === 'inscriptions') {
         if (isEdit) {
-          console.log('Updating inscription with data:', data);
+          console.log('DataManagementPage: Updating inscription with ID:', selectedItem.id);
           result = await academicService.updateInscription(selectedItem.id, data);
           toast({ 
             title: 'Inscription mise à jour', 
             description: 'L\'inscription a été modifiée avec succès.' 
           });
         } else {
-          console.log('Creating new inscription with data:', data);
+          console.log('DataManagementPage: Creating new inscription');
           result = await academicService.createInscription(data);
           toast({ 
             title: 'Inscription créée', 
@@ -161,52 +219,98 @@ function DataManagementPage<T extends { id: number }>({
         
       } else if (activeTab === 'eleves') {
         if (isEdit && additionalProps.updateEleveDetail) {
-          console.log('Updating eleve with data:', data);
+          console.log('DataManagementPage: Updating eleve with ID:', selectedItem.id);
+          console.log('DataManagementPage: Update function available:', !!additionalProps.updateEleveDetail);
+          
+          // Validate data structure before sending
+          if (!data.user) {
+            throw new Error('Les données utilisateur sont manquantes');
+          }
+          
+          // Log detailed data structure
+          console.log('DataManagementPage: Eleve update data structure check:');
+          console.log('- Has user object:', !!data.user);
+          console.log('- User object keys:', data.user ? Object.keys(data.user) : 'N/A');
+          console.log('- Has matricule:', !!data.matricule);
+          console.log('- Full data:', JSON.stringify(data, null, 2));
+          
           result = await additionalProps.updateEleveDetail(selectedItem.id, data);
+          console.log('DataManagementPage: Eleve update result:', result);
+          
           toast({ 
             title: 'Élève mis à jour', 
             description: 'L\'élève a été modifié avec succès.' 
           });
         } else if (!isEdit && additionalProps.createEleveDetail) {
-          console.log('Creating new eleve with data:', data);
+          console.log('DataManagementPage: Creating new eleve');
+          
+          // Validate data structure before sending
+          if (!data.user) {
+            throw new Error('Les données utilisateur sont manquantes');
+          }
+          
           result = await additionalProps.createEleveDetail(data);
+          console.log('DataManagementPage: Eleve create result:', result);
+          
           toast({ 
             title: 'Élève créé', 
             description: 'L\'élève a été créé avec succès.' 
           });
+        } else {
+          throw new Error(`Fonction ${isEdit ? 'updateEleveDetail' : 'createEleveDetail'} non disponible`);
         }
       } else if (activeTab === 'tuteurs') {
         if (isEdit && additionalProps.updateTuteurDetail) {
-          console.log('Updating tuteur with data:', data);
+          console.log('DataManagementPage: Updating tuteur with ID:', selectedItem.id);
+          
+          // Validate data structure before sending
+          if (!data.user) {
+            throw new Error('Les données utilisateur sont manquantes');
+          }
+          
           result = await additionalProps.updateTuteurDetail(selectedItem.id, data);
+          console.log('DataManagementPage: Tuteur update result:', result);
+          
           toast({ 
             title: 'Tuteur mis à jour', 
             description: 'Le tuteur a été modifié avec succès.' 
           });
         } else if (!isEdit && additionalProps.createTuteurDetail) {
-          console.log('Creating new tuteur with data:', data);
+          console.log('DataManagementPage: Creating new tuteur');
+          
+          // Validate data structure before sending
+          if (!data.user) {
+            throw new Error('Les données utilisateur sont manquantes');
+          }
+          
           result = await additionalProps.createTuteurDetail(data);
+          console.log('DataManagementPage: Tuteur create result:', result);
+          
           toast({ 
             title: 'Tuteur créé', 
             description: 'Le tuteur a été créé avec succès.' 
           });
+        } else {
+          throw new Error(`Fonction ${isEdit ? 'updateTuteurDetail' : 'createTuteurDetail'} non disponible`);
         }
       } else {
         // For other tabs, use the existing logic
+        console.log('DataManagementPage: Handling other tab type:', activeTab);
         toast({ 
           title: `Élément ${isEdit ? 'mis à jour' : 'créé'}`, 
           description: `L'élément a été ${isEdit ? 'modifié' : 'créé'} avec succès.` 
         });
       }
       
-      // Log the result for debugging
-      console.log('Operation result:', result);
+      // Log the final result
+      console.log('DataManagementPage: Final operation result:', result);
       
     } catch (error) {
-      console.error('Error saving item:', error);
+      const errorMessage = handleApiError(error, isEdit ? 'update' : 'create');
+      
       toast({
         title: 'Erreur',
-        description: `Erreur lors de ${isEdit ? 'la modification' : 'la création'}.`,
+        description: errorMessage,
         variant: 'destructive'
       });
       return; // Don't close modal on error
@@ -266,7 +370,7 @@ function DataManagementPage<T extends { id: number }>({
         onCreateModalClose={() => setIsCreateModalOpen(false)}
         onEditModalClose={() => setIsEditModalOpen(false)}
         onDeleteModalClose={() => setIsDeleteModalOpen(false)}
-        onDetailsModalClose={() => setIsDetailsModalOpen(false)}
+        onDetailsModalClose={() => setIsDetailsModalClose(false)}
         onImportModalClose={() => setIsImportModalOpen(false)}
         onFormSubmit={handleFormSubmit}
         onFormCancel={handleFormCancel}

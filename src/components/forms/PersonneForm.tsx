@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,23 +15,23 @@ import { EleveDetail, TuteurDetail } from '@/types/users';
 
 const personneSchema = z.object({
   // Informations personnelles
-  nom: z.string().min(1, 'Le nom est requis'),
-  prenom: z.string().min(1, 'Le prénom est requis'),
-  email: z.string().email('Email invalide'),
+  nom: z.string().min(1, 'Le nom est requis').max(150, 'Le nom ne peut pas dépasser 150 caractères'),
+  prenom: z.string().min(1, 'Le prénom est requis').max(150, 'Le prénom ne peut pas dépasser 150 caractères'),
+  email: z.string().email('Email invalide').max(254, 'L\'email ne peut pas dépasser 254 caractères'),
   genre: z.enum(['M', 'F', 'A'], { required_error: 'Le genre est requis' }),
-  date_naissance: z.string().min(1, 'La date de naissance est requise'),
-  lieu_naissance: z.string().min(1, 'Le lieu de naissance est requis'),
-  photo: z.string().optional(),
+  date_naissance: z.string().min(1, 'La date de naissance est requise').regex(/^\d{4}-\d{2}-\d{2}$/, 'Format de date invalide (YYYY-MM-DD)'),
+  lieu_naissance: z.string().min(1, 'Le lieu de naissance est requis').max(255, 'Le lieu de naissance ne peut pas dépasser 255 caractères'),
+  photo: z.string().nullable().optional(),
   
   // Informations de contact
   adresse: z.string().min(1, 'L\'adresse est requise'),
-  tel1: z.string().min(1, 'Le téléphone principal est requis'),
-  tel2: z.string().optional(),
-  whatsapp: z.string().optional(),
+  tel1: z.string().min(1, 'Le téléphone principal est requis').regex(/^[\+]?[0-9\s\-\(\)]+$/, 'Format de téléphone invalide'),
+  tel2: z.string().nullable().optional().refine(val => !val || /^[\+]?[0-9\s\-\(\)]+$/.test(val), 'Format de téléphone invalide'),
+  whatsapp: z.string().nullable().optional().refine(val => !val || /^[\+]?[0-9\s\-\(\)]+$/.test(val), 'Format WhatsApp invalide'),
   
   // Informations spécifiques
-  matricule: z.string().optional(), // Pour les élèves
-  profession: z.string().optional(), // Pour les tuteurs
+  matricule: z.string().optional().refine(val => !val || /^[A-Z0-9]+$/.test(val), 'Le matricule ne peut contenir que des lettres majuscules et des chiffres'),
+  profession: z.string().nullable().optional(),
   
   // Statut
   is_active: z.boolean().default(true),
@@ -56,10 +57,13 @@ export default function PersonneForm({
   const isEleve = entityType === 'eleve';
   const isEditing = !!item;
 
-  // Improved default values with proper fallbacks
+  // Improved default values with proper fallbacks and null handling
   const getDefaultValues = (): PersonneFormData => {
     if (item && item.user) {
       const user = item.user;
+      console.log('PersonneForm: Setting default values from item:', item);
+      console.log('PersonneForm: User data:', user);
+      
       return {
         nom: user.nom || '',
         prenom: user.prenom || '',
@@ -67,13 +71,13 @@ export default function PersonneForm({
         genre: (user.genre as 'M' | 'F' | 'A') || 'M',
         date_naissance: user.date_naissance || '',
         lieu_naissance: user.lieu_naissance || '',
-        photo: user.photo || '',
+        photo: user.photo || null,
         adresse: user.adresse || '',
         tel1: user.tel1 || '',
-        tel2: user.tel2 || '',
-        whatsapp: user.whatsapp || '',
+        tel2: user.tel2 || null,
+        whatsapp: user.whatsapp || null,
         matricule: 'matricule' in item ? (item.matricule || '') : '',
-        profession: 'profession' in item ? (item.profession || '') : '',
+        profession: 'profession' in item ? (item.profession || null) : null,
         is_active: user.is_active !== undefined ? user.is_active : true,
       };
     }
@@ -85,13 +89,13 @@ export default function PersonneForm({
       genre: 'M',
       date_naissance: '',
       lieu_naissance: '',
-      photo: '',
+      photo: null,
       adresse: '',
       tel1: '',
-      tel2: '',
-      whatsapp: '',
+      tel2: null,
+      whatsapp: null,
       matricule: isEleve ? `E${new Date().getFullYear()}${String(Date.now()).slice(-3)}` : '',
-      profession: '',
+      profession: null,
       is_active: true,
     };
   };
@@ -119,30 +123,88 @@ export default function PersonneForm({
     return `${prenom?.charAt(0) || ''}${nom?.charAt(0) || ''}`.toUpperCase();
   };
 
-  const handleFormSubmit = (data: PersonneFormData) => {
-    console.log('PersonneForm: Submitting data:', data);
+  // Enhanced data validation and formatting
+  const validateAndFormatData = (data: PersonneFormData) => {
+    console.log('PersonneForm: Validating and formatting data:', data);
     
-    // Transform data to match the expected API format
-    const transformedData = {
-      user: {
-        nom: data.nom,
-        prenom: data.prenom,
-        email: data.email,
-        genre: data.genre,
-        date_naissance: data.date_naissance,
-        lieu_naissance: data.lieu_naissance,
-        photo: data.photo || null,
-        adresse: data.adresse,
-        tel1: data.tel1,
-        tel2: data.tel2 || null,
-        whatsapp: data.whatsapp || null,
-        is_active: data.is_active,
-      },
-      ...(isEleve ? { matricule: data.matricule } : { profession: data.profession })
+    // Clean and format user data
+    const userData = {
+      nom: data.nom.trim(),
+      prenom: data.prenom.trim(),
+      email: data.email.trim().toLowerCase(),
+      genre: data.genre,
+      date_naissance: data.date_naissance,
+      lieu_naissance: data.lieu_naissance.trim(),
+      photo: data.photo?.trim() || null,
+      adresse: data.adresse.trim(),
+      tel1: data.tel1.trim(),
+      tel2: data.tel2?.trim() || null,
+      whatsapp: data.whatsapp?.trim() || null,
+      is_active: data.is_active
     };
 
-    console.log('PersonneForm: Transformed data:', transformedData);
-    onSubmit(transformedData);
+    // Validate required fields
+    const requiredFields = ['nom', 'prenom', 'email', 'date_naissance', 'lieu_naissance', 'adresse', 'tel1'];
+    for (const field of requiredFields) {
+      if (!userData[field as keyof typeof userData]) {
+        throw new Error(`Le champ ${field} est requis`);
+      }
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userData.email)) {
+      throw new Error('Format d\'email invalide');
+    }
+
+    // Validate date format
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(userData.date_naissance)) {
+      throw new Error('Format de date invalide (YYYY-MM-DD requis)');
+    }
+
+    // Validate phone numbers
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]+$/;
+    if (!phoneRegex.test(userData.tel1)) {
+      throw new Error('Format de téléphone principal invalide');
+    }
+    if (userData.tel2 && !phoneRegex.test(userData.tel2)) {
+      throw new Error('Format de téléphone secondaire invalide');
+    }
+    if (userData.whatsapp && !phoneRegex.test(userData.whatsapp)) {
+      throw new Error('Format WhatsApp invalide');
+    }
+
+    console.log('PersonneForm: Validated user data:', userData);
+    return userData;
+  };
+
+  const handleFormSubmit = (data: PersonneFormData) => {
+    console.log('PersonneForm: Starting form submission with data:', data);
+    
+    try {
+      // Validate and format the data
+      const userData = validateAndFormatData(data);
+      
+      // Transform data to match the expected API format
+      const transformedData = {
+        user: userData,
+        ...(isEleve 
+          ? { matricule: data.matricule?.trim() || `E${new Date().getFullYear()}${String(Date.now()).slice(-3)}` }
+          : { profession: data.profession?.trim() || null }
+        )
+      };
+
+      console.log('PersonneForm: Final transformed data for submission:', transformedData);
+      console.log('PersonneForm: Entity type:', entityType);
+      console.log('PersonneForm: Is editing:', isEditing);
+      
+      onSubmit(transformedData);
+    } catch (error) {
+      console.error('PersonneForm: Validation error:', error);
+      // You could show this error in a toast or form error
+      alert(`Erreur de validation: ${error.message}`);
+    }
   };
 
   return (
@@ -174,7 +236,7 @@ export default function PersonneForm({
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4 mb-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={watchedPhoto} />
+                  <AvatarImage src={watchedPhoto || ''} />
                   <AvatarFallback>
                     {item ? getInitials(item.user.nom, item.user.prenom) : <Camera size={32} />}
                   </AvatarFallback>
@@ -206,6 +268,7 @@ export default function PersonneForm({
                     id="nom"
                     {...register('nom')}
                     className={errors.nom ? 'border-red-500' : ''}
+                    maxLength={150}
                   />
                   {errors.nom && <p className="text-sm text-red-500 mt-1">{errors.nom.message}</p>}
                 </div>
@@ -216,6 +279,7 @@ export default function PersonneForm({
                     id="prenom"
                     {...register('prenom')}
                     className={errors.prenom ? 'border-red-500' : ''}
+                    maxLength={150}
                   />
                   {errors.prenom && <p className="text-sm text-red-500 mt-1">{errors.prenom.message}</p>}
                 </div>
@@ -228,6 +292,7 @@ export default function PersonneForm({
                   type="email"
                   {...register('email')}
                   className={errors.email ? 'border-red-500' : ''}
+                  maxLength={254}
                 />
                 {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
               </div>
@@ -269,6 +334,7 @@ export default function PersonneForm({
                   id="lieu_naissance"
                   {...register('lieu_naissance')}
                   className={errors.lieu_naissance ? 'border-red-500' : ''}
+                  maxLength={255}
                 />
                 {errors.lieu_naissance && <p className="text-sm text-red-500 mt-1">{errors.lieu_naissance.message}</p>}
               </div>
@@ -302,6 +368,7 @@ export default function PersonneForm({
                     id="tel1"
                     {...register('tel1')}
                     className={errors.tel1 ? 'border-red-500' : ''}
+                    placeholder="+241 XX XX XX XX"
                   />
                   {errors.tel1 && <p className="text-sm text-red-500 mt-1">{errors.tel1.message}</p>}
                 </div>
@@ -311,7 +378,10 @@ export default function PersonneForm({
                   <Input
                     id="tel2"
                     {...register('tel2')}
+                    className={errors.tel2 ? 'border-red-500' : ''}
+                    placeholder="+241 XX XX XX XX"
                   />
+                  {errors.tel2 && <p className="text-sm text-red-500 mt-1">{errors.tel2.message}</p>}
                 </div>
               </div>
 
@@ -320,8 +390,10 @@ export default function PersonneForm({
                 <Input
                   id="whatsapp"
                   {...register('whatsapp')}
-                  placeholder="Numéro WhatsApp"
+                  placeholder="+241 XX XX XX XX"
+                  className={errors.whatsapp ? 'border-red-500' : ''}
                 />
+                {errors.whatsapp && <p className="text-sm text-red-500 mt-1">{errors.whatsapp.message}</p>}
               </div>
             </CardContent>
           </Card>
@@ -343,7 +415,9 @@ export default function PersonneForm({
                     id="matricule"
                     {...register('matricule')}
                     placeholder="Généré automatiquement si vide"
+                    className={errors.matricule ? 'border-red-500' : ''}
                   />
+                  {errors.matricule && <p className="text-sm text-red-500 mt-1">{errors.matricule.message}</p>}
                   <p className="text-sm text-muted-foreground mt-1">
                     Le matricule sera généré automatiquement si laissé vide
                   </p>
@@ -355,7 +429,9 @@ export default function PersonneForm({
                     id="profession"
                     {...register('profession')}
                     placeholder="Ex: Enseignant, Médecin, Ingénieur..."
+                    className={errors.profession ? 'border-red-500' : ''}
                   />
+                  {errors.profession && <p className="text-sm text-red-500 mt-1">{errors.profession.message}</p>}
                   <p className="text-sm text-muted-foreground mt-1">
                     Profession ou activité principale du tuteur
                   </p>

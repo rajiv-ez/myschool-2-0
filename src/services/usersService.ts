@@ -1,4 +1,3 @@
-
 import { fetchWithFallback, ApiResponse } from './api';
 import { 
   User, Eleve, Tuteur, Staff, RelationEleveTuteur,
@@ -106,6 +105,18 @@ export const usersService = {
     fetchWithFallback('/api/accounts/tuteurs-details/', mockTuteursDetails),
   createTuteurDetail: (data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> => {
     console.log('usersService: Creating tuteur detail with data:', data);
+    console.log('usersService: Data structure validation:');
+    console.log('- Has user object:', !!data.user);
+    console.log('- User object type:', typeof data.user);
+    console.log('- User object keys:', data.user ? Object.keys(data.user) : 'N/A');
+    console.log('- Has profession:', !!data.profession);
+    
+    // Validate required data structure
+    if (!data.user || typeof data.user !== 'object') {
+      console.error('usersService: Invalid user data structure');
+      throw new Error('Les données utilisateur sont invalides ou manquantes');
+    }
+    
     // Simulate creating a new tuteur with proper structure
     const newId = Math.max(...mockTuteursDetails.map(t => t.id)) + 1;
     const newUserId = Math.max(...mockUsers.map(u => u.id)) + 1;
@@ -114,19 +125,19 @@ export const usersService = {
       id: newId,
       user: {
         id: newUserId,
-        email: data.user?.email || '',
-        nom: data.user?.nom || '',
-        prenom: data.user?.prenom || '',
-        genre: data.user?.genre || 'M',
-        date_naissance: data.user?.date_naissance || '',
-        lieu_naissance: data.user?.lieu_naissance || '',
-        adresse: data.user?.adresse || '',
-        tel1: data.user?.tel1 || '',
-        tel2: data.user?.tel2 || '',
-        whatsapp: data.user?.whatsapp || '',
-        photo: data.user?.photo || '',
+        email: data.user.email || '',
+        nom: data.user.nom || '',
+        prenom: data.user.prenom || '',
+        genre: data.user.genre || 'M',
+        date_naissance: data.user.date_naissance || '',
+        lieu_naissance: data.user.lieu_naissance || '',
+        adresse: data.user.adresse || '',
+        tel1: data.user.tel1 || '',
+        tel2: data.user.tel2 || null,
+        whatsapp: data.user.whatsapp || null,
+        photo: data.user.photo || null,
         is_staff: false,
-        is_active: data.user?.is_active !== undefined ? data.user.is_active : true,
+        is_active: data.user.is_active !== undefined ? data.user.is_active : true,
         is_superuser: false
       },
       profession: data.profession || ''
@@ -141,11 +152,22 @@ export const usersService = {
   },
   updateTuteurDetail: (id: number, data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> => {
     console.log('usersService: Updating tuteur detail with id:', id, 'data:', data);
+    console.log('usersService: Data structure validation:');
+    console.log('- Has user object:', !!data.user);
+    console.log('- User object type:', typeof data.user);
+    console.log('- User object keys:', data.user ? Object.keys(data.user) : 'N/A');
+    console.log('- Has profession:', !!data.profession);
     
     const existingTuteur = mockTuteursDetails.find(t => t.id === id);
     if (!existingTuteur) {
       console.error('usersService: Tuteur not found for update');
-      return fetchWithFallback(`/api/accounts/tuteurs-details/${id}/`, {} as TuteurDetail, { method: 'PUT', data });
+      throw new Error(`Tuteur avec l'ID ${id} introuvable`);
+    }
+
+    // Validate required data structure
+    if (!data.user || typeof data.user !== 'object') {
+      console.error('usersService: Invalid user data structure for update');
+      throw new Error('Les données utilisateur sont invalides ou manquantes');
     }
 
     // Update the existing tuteur with proper structure
@@ -153,20 +175,20 @@ export const usersService = {
       ...existingTuteur,
       user: {
         ...existingTuteur.user,
-        email: data.user?.email || existingTuteur.user.email,
-        nom: data.user?.nom || existingTuteur.user.nom,
-        prenom: data.user?.prenom || existingTuteur.user.prenom,
-        genre: data.user?.genre || existingTuteur.user.genre,
-        date_naissance: data.user?.date_naissance || existingTuteur.user.date_naissance,
-        lieu_naissance: data.user?.lieu_naissance || existingTuteur.user.lieu_naissance,
-        adresse: data.user?.adresse || existingTuteur.user.adresse,
-        tel1: data.user?.tel1 || existingTuteur.user.tel1,
-        tel2: data.user?.tel2 || existingTuteur.user.tel2,
-        whatsapp: data.user?.whatsapp || existingTuteur.user.whatsapp,
-        photo: data.user?.photo || existingTuteur.user.photo,
-        is_active: data.user?.is_active !== undefined ? data.user.is_active : existingTuteur.user.is_active,
+        email: data.user.email || existingTuteur.user.email,
+        nom: data.user.nom || existingTuteur.user.nom,
+        prenom: data.user.prenom || existingTuteur.user.prenom,
+        genre: data.user.genre || existingTuteur.user.genre,
+        date_naissance: data.user.date_naissance || existingTuteur.user.date_naissance,
+        lieu_naissance: data.user.lieu_naissance || existingTuteur.user.lieu_naissance,
+        adresse: data.user.adresse || existingTuteur.user.adresse,
+        tel1: data.user.tel1 || existingTuteur.user.tel1,
+        tel2: data.user.tel2 !== undefined ? data.user.tel2 : existingTuteur.user.tel2,
+        whatsapp: data.user.whatsapp !== undefined ? data.user.whatsapp : existingTuteur.user.whatsapp,
+        photo: data.user.photo !== undefined ? data.user.photo : existingTuteur.user.photo,
+        is_active: data.user.is_active !== undefined ? data.user.is_active : existingTuteur.user.is_active,
       },
-      profession: data.profession || existingTuteur.profession
+      profession: data.profession !== undefined ? data.profession : existingTuteur.profession
     };
     
     // Update mock data
@@ -201,6 +223,18 @@ export const usersService = {
     fetchWithFallback('/api/accounts/eleves-details/', mockElevesDetails),
   createEleveDetail: (data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> => {
     console.log('usersService: Creating eleve detail with data:', data);
+    console.log('usersService: Data structure validation:');
+    console.log('- Has user object:', !!data.user);
+    console.log('- User object type:', typeof data.user);
+    console.log('- User object keys:', data.user ? Object.keys(data.user) : 'N/A');
+    console.log('- Has matricule:', !!data.matricule);
+    
+    // Validate required data structure
+    if (!data.user || typeof data.user !== 'object') {
+      console.error('usersService: Invalid user data structure');
+      throw new Error('Les données utilisateur sont invalides ou manquantes');
+    }
+    
     // Simulate creating a new eleve with proper structure
     const newId = Math.max(...mockElevesDetails.map(e => e.id)) + 1;
     const newUserId = Math.max(...mockUsers.map(u => u.id)) + 1;
@@ -209,19 +243,19 @@ export const usersService = {
       id: newId,
       user: {
         id: newUserId,
-        email: data.user?.email || '',
-        nom: data.user?.nom || '',
-        prenom: data.user?.prenom || '',
-        genre: data.user?.genre || 'M',
-        date_naissance: data.user?.date_naissance || '',
-        lieu_naissance: data.user?.lieu_naissance || '',
-        adresse: data.user?.adresse || '',
-        tel1: data.user?.tel1 || '',
-        tel2: data.user?.tel2 || '',
-        whatsapp: data.user?.whatsapp || '',
-        photo: data.user?.photo || '',
+        email: data.user.email || '',
+        nom: data.user.nom || '',
+        prenom: data.user.prenom || '',
+        genre: data.user.genre || 'M',
+        date_naissance: data.user.date_naissance || '',
+        lieu_naissance: data.user.lieu_naissance || '',
+        adresse: data.user.adresse || '',
+        tel1: data.user.tel1 || '',
+        tel2: data.user.tel2 || null,
+        whatsapp: data.user.whatsapp || null,
+        photo: data.user.photo || null,
         is_staff: false,
-        is_active: data.user?.is_active !== undefined ? data.user.is_active : true,
+        is_active: data.user.is_active !== undefined ? data.user.is_active : true,
         is_superuser: false
       },
       matricule: data.matricule || `E${new Date().getFullYear()}${String(newId).padStart(3, '0')}`,
@@ -237,11 +271,22 @@ export const usersService = {
   },
   updateEleveDetail: (id: number, data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> => {
     console.log('usersService: Updating eleve detail with id:', id, 'data:', data);
+    console.log('usersService: Data structure validation:');
+    console.log('- Has user object:', !!data.user);
+    console.log('- User object type:', typeof data.user);
+    console.log('- User object keys:', data.user ? Object.keys(data.user) : 'N/A');
+    console.log('- Has matricule:', !!data.matricule);
     
     const existingEleve = mockElevesDetails.find(e => e.id === id);
     if (!existingEleve) {
       console.error('usersService: Eleve not found for update');
-      return fetchWithFallback(`/api/accounts/eleves-details/${id}/`, {} as EleveDetail, { method: 'PUT', data });
+      throw new Error(`Élève avec l'ID ${id} introuvable`);
+    }
+
+    // Validate required data structure
+    if (!data.user || typeof data.user !== 'object') {
+      console.error('usersService: Invalid user data structure for update');
+      throw new Error('Les données utilisateur sont invalides ou manquantes');
     }
 
     // Update the existing eleve with proper structure
@@ -249,18 +294,18 @@ export const usersService = {
       ...existingEleve,
       user: {
         ...existingEleve.user,
-        email: data.user?.email || existingEleve.user.email,
-        nom: data.user?.nom || existingEleve.user.nom,
-        prenom: data.user?.prenom || existingEleve.user.prenom,
-        genre: data.user?.genre || existingEleve.user.genre,
-        date_naissance: data.user?.date_naissance || existingEleve.user.date_naissance,
-        lieu_naissance: data.user?.lieu_naissance || existingEleve.user.lieu_naissance,
-        adresse: data.user?.adresse || existingEleve.user.adresse,
-        tel1: data.user?.tel1 || existingEleve.user.tel1,
-        tel2: data.user?.tel2 || existingEleve.user.tel2,
-        whatsapp: data.user?.whatsapp || existingEleve.user.whatsapp,
-        photo: data.user?.photo || existingEleve.user.photo,
-        is_active: data.user?.is_active !== undefined ? data.user.is_active : existingEleve.user.is_active,
+        email: data.user.email || existingEleve.user.email,
+        nom: data.user.nom || existingEleve.user.nom,
+        prenom: data.user.prenom || existingEleve.user.prenom,
+        genre: data.user.genre || existingEleve.user.genre,
+        date_naissance: data.user.date_naissance || existingEleve.user.date_naissance,
+        lieu_naissance: data.user.lieu_naissance || existingEleve.user.lieu_naissance,
+        adresse: data.user.adresse || existingEleve.user.adresse,
+        tel1: data.user.tel1 || existingEleve.user.tel1,
+        tel2: data.user.tel2 !== undefined ? data.user.tel2 : existingEleve.user.tel2,
+        whatsapp: data.user.whatsapp !== undefined ? data.user.whatsapp : existingEleve.user.whatsapp,
+        photo: data.user.photo !== undefined ? data.user.photo : existingEleve.user.photo,
+        is_active: data.user.is_active !== undefined ? data.user.is_active : existingEleve.user.is_active,
       },
       matricule: data.matricule || existingEleve.matricule,
       tuteurs: data.tuteurs || existingEleve.tuteurs
