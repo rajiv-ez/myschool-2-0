@@ -54,9 +54,13 @@ export function useInscriptionForm({
 
   // Créer une liste d'élèves avec leurs informations utilisateur
   const elevesWithUserInfo = eleves.map(eleve => {
-    const user = users.find(u => u.id === eleve.user);
+    // Ensure user is always a number (user ID)
+    const userId = typeof eleve.user === 'number' ? eleve.user : eleve.user.id;
+    const user = users.find(u => u.id === userId);
+    
     return {
       ...eleve,
+      user: userId, // Always store as number (user ID)
       nom: user?.nom || 'Inconnu',
       prenom: user?.prenom || 'Inconnu',
       fullName: user ? `${user.prenom} ${user.nom}` : 'Inconnu'
