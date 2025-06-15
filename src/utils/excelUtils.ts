@@ -1,4 +1,3 @@
-
 import * as XLSX from 'xlsx';
 import { Succursale, Batiment, Salle } from '@/types/infrastructure';
 import { Inscription, Session, Palier, ClasseSession, Niveau, Filiere, Specialite, Classe } from '@/types/academic';
@@ -401,6 +400,59 @@ export const generateDomainessTemplate = () => {
   XLSX.writeFile(wb, 'template_domaines.xlsx');
 };
 
+// New template functions for Eleves and Tuteurs
+export const generateElevesTemplate = () => {
+  const templateData = [
+    {
+      Nom: 'Exemple Nom',
+      Prénom: 'Exemple Prénom',
+      Email: 'exemple@email.com',
+      Genre: 'M',
+      'Date de naissance': '2000-01-01',
+      'Lieu de naissance': 'Ville Exemple',
+      Adresse: '123 Rue Exemple',
+      'Téléphone 1': '0123456789',
+      'Téléphone 2': '',
+      WhatsApp: '',
+      Matricule: 'E202401',
+      Photo: '',
+      Statut: 'Actif'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(templateData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template Élèves');
+  
+  XLSX.writeFile(wb, 'template_eleves.xlsx');
+};
+
+export const generateTuteursTemplate = () => {
+  const templateData = [
+    {
+      Nom: 'Exemple Nom',
+      Prénom: 'Exemple Prénom',
+      Email: 'exemple@email.com',
+      Genre: 'M',
+      'Date de naissance': '1970-01-01',
+      'Lieu de naissance': 'Ville Exemple',
+      Adresse: '123 Rue Exemple',
+      'Téléphone 1': '0123456789',
+      'Téléphone 2': '',
+      WhatsApp: '',
+      Profession: 'Enseignant',
+      Photo: '',
+      Statut: 'Actif'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(templateData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template Tuteurs');
+  
+  XLSX.writeFile(wb, 'template_tuteurs.xlsx');
+};
+
 // Import validation functions
 export interface ImportValidationResult {
   isValid: boolean;
@@ -660,6 +712,144 @@ export const validateDomainesImport = (data: any[]): ImportValidationResult => {
       validData.push({
         nom: row.Nom,
         description: row.Description || ''
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateElevesImport = (data: any[]): ImportValidationResult => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.Nom || typeof row.Nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
+    }
+    
+    if (!row.Prénom || typeof row.Prénom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le prénom est requis et doit être du texte`);
+    }
+    
+    if (!row.Email || typeof row.Email !== 'string') {
+      errors.push(`Ligne ${rowNumber}: L'email est requis et doit être du texte`);
+    }
+    
+    if (!row.Genre || !['M', 'F', 'A'].includes(row.Genre)) {
+      errors.push(`Ligne ${rowNumber}: Le genre doit être "M", "F" ou "A"`);
+    }
+    
+    if (!row['Date de naissance']) {
+      errors.push(`Ligne ${rowNumber}: La date de naissance est requise`);
+    }
+    
+    if (!row['Lieu de naissance'] || typeof row['Lieu de naissance'] !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le lieu de naissance est requis`);
+    }
+    
+    if (!row.Adresse || typeof row.Adresse !== 'string') {
+      errors.push(`Ligne ${rowNumber}: L'adresse est requise`);
+    }
+    
+    if (!row['Téléphone 1'] || typeof row['Téléphone 1'] !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le téléphone principal est requis`);
+    }
+    
+    if (row.Statut && !['Actif', 'Inactif'].includes(row.Statut)) {
+      errors.push(`Ligne ${rowNumber}: Le statut doit être "Actif" ou "Inactif"`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.Nom,
+        prenom: row.Prénom,
+        email: row.Email,
+        genre: row.Genre,
+        date_naissance: row['Date de naissance'],
+        lieu_naissance: row['Lieu de naissance'],
+        adresse: row.Adresse,
+        tel1: row['Téléphone 1'],
+        tel2: row['Téléphone 2'] || '',
+        whatsapp: row.WhatsApp || '',
+        matricule: row.Matricule || '',
+        photo: row.Photo || '',
+        is_active: row.Statut !== 'Inactif'
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateTuteursImport = (data: any[]): ImportValidationResult => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.Nom || typeof row.Nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
+    }
+    
+    if (!row.Prénom || typeof row.Prénom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le prénom est requis et doit être du texte`);
+    }
+    
+    if (!row.Email || typeof row.Email !== 'string') {
+      errors.push(`Ligne ${rowNumber}: L'email est requis et doit être du texte`);
+    }
+    
+    if (!row.Genre || !['M', 'F', 'A'].includes(row.Genre)) {
+      errors.push(`Ligne ${rowNumber}: Le genre doit être "M", "F" ou "A"`);
+    }
+    
+    if (!row['Date de naissance']) {
+      errors.push(`Ligne ${rowNumber}: La date de naissance est requise`);
+    }
+    
+    if (!row['Lieu de naissance'] || typeof row['Lieu de naissance'] !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le lieu de naissance est requis`);
+    }
+    
+    if (!row.Adresse || typeof row.Adresse !== 'string') {
+      errors.push(`Ligne ${rowNumber}: L'adresse est requise`);
+    }
+    
+    if (!row['Téléphone 1'] || typeof row['Téléphone 1'] !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le téléphone principal est requis`);
+    }
+    
+    if (row.Statut && !['Actif', 'Inactif'].includes(row.Statut)) {
+      errors.push(`Ligne ${rowNumber}: Le statut doit être "Actif" ou "Inactif"`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.Nom,
+        prenom: row.Prénom,
+        email: row.Email,
+        genre: row.Genre,
+        date_naissance: row['Date de naissance'],
+        lieu_naissance: row['Lieu de naissance'],
+        adresse: row.Adresse,
+        tel1: row['Téléphone 1'],
+        tel2: row['Téléphone 2'] || '',
+        whatsapp: row.WhatsApp || '',
+        profession: row.Profession || '',
+        photo: row.Photo || '',
+        is_active: row.Statut !== 'Inactif'
       });
     }
   });

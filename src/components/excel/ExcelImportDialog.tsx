@@ -15,20 +15,24 @@ import {
   validateSessionsImport,
   validateNiveauxImport,
   validateDomainesImport,
+  validateElevesImport,
+  validateTuteursImport,
   generateSuccursalesTemplate,
   generateBatimentsTemplate,
   generateSallesTemplate,
   generateInscriptionsTemplate,
   generateSessionsTemplate,
   generateNiveauxTemplate,
-  generateDomainessTemplate
+  generateDomainessTemplate,
+  generateElevesTemplate,
+  generateTuteursTemplate
 } from '@/utils/excelUtils';
 import { Succursale, Batiment } from '@/types/infrastructure';
 
 interface ExcelImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type: 'succursales' | 'batiments' | 'salles' | 'inscriptions';
+  type: 'succursales' | 'batiments' | 'salles' | 'inscriptions' | 'eleves' | 'tuteurs';
   onImport: (data: any[]) => Promise<void>;
   succursales?: Succursale[];
   batiments?: Batiment[];
@@ -89,8 +93,13 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
         case 'inscriptions':
           result = validateInscriptionsImport(data);
           break;
+        case 'eleves':
+          result = validateElevesImport(data);
+          break;
+        case 'tuteurs':
+          result = validateTuteursImport(data);
+          break;
         default:
-          // For other types, use generic validation
           result = validateSuccursalesImport(data);
           break;
       }
@@ -156,8 +165,13 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
       case 'inscriptions':
         generateInscriptionsTemplate();
         break;
+      case 'eleves':
+        generateElevesTemplate();
+        break;
+      case 'tuteurs':
+        generateTuteursTemplate();
+        break;
       default:
-        // For generic types
         generateSuccursalesTemplate();
         break;
     }
@@ -174,6 +188,8 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
       case 'batiments': return 'Bâtiments';
       case 'salles': return 'Salles';
       case 'inscriptions': return 'Inscriptions';
+      case 'eleves': return 'Élèves';
+      case 'tuteurs': return 'Tuteurs';
       default: return 'Données';
     }
   };

@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, GraduationCap, UserCheck } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { User, Phone, GraduationCap, UserCheck, Camera } from 'lucide-react';
 import { EleveDetail, TuteurDetail } from '@/types/users';
 
 const personneSchema = z.object({
@@ -20,6 +21,7 @@ const personneSchema = z.object({
   genre: z.enum(['M', 'F', 'A'], { required_error: 'Le genre est requis' }),
   date_naissance: z.string().min(1, 'La date de naissance est requise'),
   lieu_naissance: z.string().min(1, 'Le lieu de naissance est requis'),
+  photo: z.string().optional(),
   
   // Informations de contact
   adresse: z.string().min(1, 'L\'adresse est requise'),
@@ -64,6 +66,7 @@ export default function PersonneForm({
       genre: item.user.genre,
       date_naissance: item.user.date_naissance,
       lieu_naissance: item.user.lieu_naissance,
+      photo: item.user.photo || '',
       adresse: item.user.adresse,
       tel1: item.user.tel1,
       tel2: item.user.tel2 || '',
@@ -76,8 +79,15 @@ export default function PersonneForm({
       is_active: true,
       matricule: isEleve ? `E${new Date().getFullYear()}${String(Date.now()).slice(-3)}` : '',
       profession: '',
+      photo: '',
     }
   });
+
+  const watchedPhoto = watch('photo');
+
+  const getInitials = (nom: string, prenom: string) => {
+    return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -106,6 +116,27 @@ export default function PersonneForm({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex items-center gap-4 mb-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={watchedPhoto} />
+                  <AvatarFallback>
+                    {item ? getInitials(item.user.nom, item.user.prenom) : <Camera size={32} />}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <Label htmlFor="photo">Photo de profil</Label>
+                  <Input
+                    id="photo"
+                    {...register('photo')}
+                    placeholder="URL de la photo"
+                    className="mt-1"
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Entrez l'URL d'une photo ou laissez vide
+                  </p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="nom">Nom *</Label>

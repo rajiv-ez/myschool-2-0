@@ -34,6 +34,7 @@ const Personnes: React.FC = () => {
       'Téléphone 1': eleve.user.tel1,
       'Téléphone 2': eleve.user.tel2 || '',
       'WhatsApp': eleve.user.whatsapp || '',
+      'Photo': eleve.user.photo || '',
       'Statut': eleve.user.is_active ? 'Actif' : 'Inactif'
     }));
 
@@ -56,6 +57,7 @@ const Personnes: React.FC = () => {
       'Téléphone 2': tuteur.user.tel2 || '',
       'WhatsApp': tuteur.user.whatsapp || '',
       'Profession': tuteur.profession,
+      'Photo': tuteur.user.photo || '',
       'Statut': tuteur.user.is_active ? 'Actif' : 'Inactif'
     }));
 
@@ -74,7 +76,7 @@ const Personnes: React.FC = () => {
     console.log('Importing tuteurs:', data);
   };
 
-  // Tab configurations - now properly typed as TabConfig<any>[]
+  // Tab configurations
   const tabs: TabConfig<any>[] = [
     {
       id: 'eleves',
@@ -125,18 +127,6 @@ const Personnes: React.FC = () => {
       ],
       searchFields: ['user.nom', 'user.prenom', 'user.email', 'matricule'],
       filters: {
-        genre: {
-          type: 'select' as const,
-          placeholder: 'Genre',
-          options: [
-            { value: 'all', label: 'Tous les genres' },
-            { value: 'M', label: 'Masculin' },
-            { value: 'F', label: 'Féminin' },
-            { value: 'A', label: 'Autre' }
-          ],
-          filterFunction: (item: EleveDetail, value: string) => 
-            value === 'all' || item.user.genre === value
-        },
         statut: {
           type: 'select' as const,
           placeholder: 'Statut',
@@ -213,18 +203,6 @@ const Personnes: React.FC = () => {
       ],
       searchFields: ['user.nom', 'user.prenom', 'user.email', 'profession'],
       filters: {
-        genre: {
-          type: 'select' as const,
-          placeholder: 'Genre',
-          options: [
-            { value: 'all', label: 'Tous les genres' },
-            { value: 'M', label: 'Masculin' },
-            { value: 'F', label: 'Féminin' },
-            { value: 'A', label: 'Autre' }
-          ],
-          filterFunction: (item: TuteurDetail, value: string) => 
-            value === 'all' || item.user.genre === value
-        },
         statut: {
           type: 'select' as const,
           placeholder: 'Statut',
