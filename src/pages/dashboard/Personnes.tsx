@@ -162,6 +162,7 @@ const Personnes: React.FC = () => {
       },
       form: ({ item, onSubmit, onCancel, isSubmitting }: any) => (
         <PersonneForm
+          key={item?.id || 'new-eleve'}
           item={item}
           onSubmit={onSubmit}
           onCancel={onCancel}
@@ -247,6 +248,7 @@ const Personnes: React.FC = () => {
       },
       form: ({ item, onSubmit, onCancel, isSubmitting }: any) => (
         <PersonneForm
+          key={item?.id || 'new-tuteur'}
           item={item}
           onSubmit={onSubmit}
           onCancel={onCancel}

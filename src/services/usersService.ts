@@ -1,3 +1,4 @@
+
 import { fetchWithFallback, ApiResponse } from './api';
 import { 
   User, Eleve, Tuteur, Staff, RelationEleveTuteur,
@@ -103,10 +104,85 @@ export const usersService = {
   // TuteurDetail - Combined User + Tuteur operations
   getTuteursDetails: (): Promise<ApiResponse<TuteurDetail[]>> =>
     fetchWithFallback('/api/accounts/tuteurs-details/', mockTuteursDetails),
-  createTuteurDetail: (data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> =>
-    fetchWithFallback('/api/accounts/tuteurs-details/', {} as TuteurDetail, { method: 'POST', data, }),
-  updateTuteurDetail: (id: number, data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> =>
-    fetchWithFallback(`/api/accounts/tuteurs-details/${id}/`, {} as TuteurDetail, { method: 'PUT', data, }),
+  createTuteurDetail: (data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> => {
+    console.log('usersService: Creating tuteur detail with data:', data);
+    // Simulate creating a new tuteur with proper structure
+    const newId = Math.max(...mockTuteursDetails.map(t => t.id)) + 1;
+    const newUserId = Math.max(...mockUsers.map(u => u.id)) + 1;
+    
+    const mockResponse: TuteurDetail = {
+      id: newId,
+      user: {
+        id: newUserId,
+        email: data.user?.email || '',
+        nom: data.user?.nom || '',
+        prenom: data.user?.prenom || '',
+        genre: data.user?.genre || 'M',
+        date_naissance: data.user?.date_naissance || '',
+        lieu_naissance: data.user?.lieu_naissance || '',
+        adresse: data.user?.adresse || '',
+        tel1: data.user?.tel1 || '',
+        tel2: data.user?.tel2 || '',
+        whatsapp: data.user?.whatsapp || '',
+        photo: data.user?.photo || '',
+        is_staff: false,
+        is_active: data.user?.is_active !== undefined ? data.user.is_active : true,
+        is_superuser: false
+      },
+      profession: data.profession || ''
+    };
+    
+    // Add to mock data
+    mockTuteursDetails.push(mockResponse);
+    mockUsers.push(mockResponse.user as User);
+    
+    console.log('usersService: Created tuteur detail:', mockResponse);
+    return fetchWithFallback('/api/accounts/tuteurs-details/', mockResponse, { method: 'POST', data });
+  },
+  updateTuteurDetail: (id: number, data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> => {
+    console.log('usersService: Updating tuteur detail with id:', id, 'data:', data);
+    
+    const existingTuteur = mockTuteursDetails.find(t => t.id === id);
+    if (!existingTuteur) {
+      console.error('usersService: Tuteur not found for update');
+      return fetchWithFallback(`/api/accounts/tuteurs-details/${id}/`, {} as TuteurDetail, { method: 'PUT', data });
+    }
+
+    // Update the existing tuteur with proper structure
+    const updatedTuteur: TuteurDetail = {
+      ...existingTuteur,
+      user: {
+        ...existingTuteur.user,
+        email: data.user?.email || existingTuteur.user.email,
+        nom: data.user?.nom || existingTuteur.user.nom,
+        prenom: data.user?.prenom || existingTuteur.user.prenom,
+        genre: data.user?.genre || existingTuteur.user.genre,
+        date_naissance: data.user?.date_naissance || existingTuteur.user.date_naissance,
+        lieu_naissance: data.user?.lieu_naissance || existingTuteur.user.lieu_naissance,
+        adresse: data.user?.adresse || existingTuteur.user.adresse,
+        tel1: data.user?.tel1 || existingTuteur.user.tel1,
+        tel2: data.user?.tel2 || existingTuteur.user.tel2,
+        whatsapp: data.user?.whatsapp || existingTuteur.user.whatsapp,
+        photo: data.user?.photo || existingTuteur.user.photo,
+        is_active: data.user?.is_active !== undefined ? data.user.is_active : existingTuteur.user.is_active,
+      },
+      profession: data.profession || existingTuteur.profession
+    };
+    
+    // Update mock data
+    const tuteurIndex = mockTuteursDetails.findIndex(t => t.id === id);
+    if (tuteurIndex >= 0) {
+      mockTuteursDetails[tuteurIndex] = updatedTuteur;
+    }
+    
+    const userIndex = mockUsers.findIndex(u => u.id === existingTuteur.user.id);
+    if (userIndex >= 0) {
+      mockUsers[userIndex] = updatedTuteur.user as User;
+    }
+    
+    console.log('usersService: Updated tuteur detail:', updatedTuteur);
+    return fetchWithFallback(`/api/accounts/tuteurs-details/${id}/`, updatedTuteur, { method: 'PUT', data });
+  },
   deleteTuteurDetail: (id: number) =>
     fetchWithFallback(`/api/accounts/tuteurs-details/${id}/`, {}, { method: 'DELETE' }),
 
@@ -123,10 +199,87 @@ export const usersService = {
   // EleveDetail - Combined User + Eleve operations
   getElevesDetails: (): Promise<ApiResponse<EleveDetail[]>> =>
     fetchWithFallback('/api/accounts/eleves-details/', mockElevesDetails),
-  createEleveDetail: (data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> =>
-    fetchWithFallback('/api/accounts/eleves-details/', {} as EleveDetail, { method: 'POST', data, }),
-  updateEleveDetail: (id: number, data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> =>
-    fetchWithFallback(`/api/accounts/eleves-details/${id}/`, {} as EleveDetail, { method: 'PUT', data, }),
+  createEleveDetail: (data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> => {
+    console.log('usersService: Creating eleve detail with data:', data);
+    // Simulate creating a new eleve with proper structure
+    const newId = Math.max(...mockElevesDetails.map(e => e.id)) + 1;
+    const newUserId = Math.max(...mockUsers.map(u => u.id)) + 1;
+    
+    const mockResponse: EleveDetail = {
+      id: newId,
+      user: {
+        id: newUserId,
+        email: data.user?.email || '',
+        nom: data.user?.nom || '',
+        prenom: data.user?.prenom || '',
+        genre: data.user?.genre || 'M',
+        date_naissance: data.user?.date_naissance || '',
+        lieu_naissance: data.user?.lieu_naissance || '',
+        adresse: data.user?.adresse || '',
+        tel1: data.user?.tel1 || '',
+        tel2: data.user?.tel2 || '',
+        whatsapp: data.user?.whatsapp || '',
+        photo: data.user?.photo || '',
+        is_staff: false,
+        is_active: data.user?.is_active !== undefined ? data.user.is_active : true,
+        is_superuser: false
+      },
+      matricule: data.matricule || `E${new Date().getFullYear()}${String(newId).padStart(3, '0')}`,
+      tuteurs: data.tuteurs || []
+    };
+    
+    // Add to mock data
+    mockElevesDetails.push(mockResponse);
+    mockUsers.push(mockResponse.user as User);
+    
+    console.log('usersService: Created eleve detail:', mockResponse);
+    return fetchWithFallback('/api/accounts/eleves-details/', mockResponse, { method: 'POST', data });
+  },
+  updateEleveDetail: (id: number, data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> => {
+    console.log('usersService: Updating eleve detail with id:', id, 'data:', data);
+    
+    const existingEleve = mockElevesDetails.find(e => e.id === id);
+    if (!existingEleve) {
+      console.error('usersService: Eleve not found for update');
+      return fetchWithFallback(`/api/accounts/eleves-details/${id}/`, {} as EleveDetail, { method: 'PUT', data });
+    }
+
+    // Update the existing eleve with proper structure
+    const updatedEleve: EleveDetail = {
+      ...existingEleve,
+      user: {
+        ...existingEleve.user,
+        email: data.user?.email || existingEleve.user.email,
+        nom: data.user?.nom || existingEleve.user.nom,
+        prenom: data.user?.prenom || existingEleve.user.prenom,
+        genre: data.user?.genre || existingEleve.user.genre,
+        date_naissance: data.user?.date_naissance || existingEleve.user.date_naissance,
+        lieu_naissance: data.user?.lieu_naissance || existingEleve.user.lieu_naissance,
+        adresse: data.user?.adresse || existingEleve.user.adresse,
+        tel1: data.user?.tel1 || existingEleve.user.tel1,
+        tel2: data.user?.tel2 || existingEleve.user.tel2,
+        whatsapp: data.user?.whatsapp || existingEleve.user.whatsapp,
+        photo: data.user?.photo || existingEleve.user.photo,
+        is_active: data.user?.is_active !== undefined ? data.user.is_active : existingEleve.user.is_active,
+      },
+      matricule: data.matricule || existingEleve.matricule,
+      tuteurs: data.tuteurs || existingEleve.tuteurs
+    };
+    
+    // Update mock data
+    const eleveIndex = mockElevesDetails.findIndex(e => e.id === id);
+    if (eleveIndex >= 0) {
+      mockElevesDetails[eleveIndex] = updatedEleve;
+    }
+    
+    const userIndex = mockUsers.findIndex(u => u.id === existingEleve.user.id);
+    if (userIndex >= 0) {
+      mockUsers[userIndex] = updatedEleve.user as User;
+    }
+    
+    console.log('usersService: Updated eleve detail:', updatedEleve);
+    return fetchWithFallback(`/api/accounts/eleves-details/${id}/`, updatedEleve, { method: 'PUT', data });
+  },
   deleteEleveDetail: (id: number) =>
     fetchWithFallback(`/api/accounts/eleves-details/${id}/`, {}, { method: 'DELETE' }),
 

@@ -136,17 +136,19 @@ function DataManagementPage<T extends { id: number }>({
       console.log('Selected item:', selectedItem);
       console.log('Active tab:', activeTab);
       
+      let result;
+      
       if (activeTab === 'inscriptions') {
         if (isEdit) {
           console.log('Updating inscription with data:', data);
-          await academicService.updateInscription(selectedItem.id, data);
+          result = await academicService.updateInscription(selectedItem.id, data);
           toast({ 
             title: 'Inscription mise à jour', 
             description: 'L\'inscription a été modifiée avec succès.' 
           });
         } else {
           console.log('Creating new inscription with data:', data);
-          await academicService.createInscription(data);
+          result = await academicService.createInscription(data);
           toast({ 
             title: 'Inscription créée', 
             description: 'L\'inscription a été créée avec succès.' 
@@ -160,14 +162,14 @@ function DataManagementPage<T extends { id: number }>({
       } else if (activeTab === 'eleves') {
         if (isEdit && additionalProps.updateEleveDetail) {
           console.log('Updating eleve with data:', data);
-          await additionalProps.updateEleveDetail(selectedItem.id, data);
+          result = await additionalProps.updateEleveDetail(selectedItem.id, data);
           toast({ 
             title: 'Élève mis à jour', 
             description: 'L\'élève a été modifié avec succès.' 
           });
         } else if (!isEdit && additionalProps.createEleveDetail) {
           console.log('Creating new eleve with data:', data);
-          await additionalProps.createEleveDetail(data);
+          result = await additionalProps.createEleveDetail(data);
           toast({ 
             title: 'Élève créé', 
             description: 'L\'élève a été créé avec succès.' 
@@ -176,14 +178,14 @@ function DataManagementPage<T extends { id: number }>({
       } else if (activeTab === 'tuteurs') {
         if (isEdit && additionalProps.updateTuteurDetail) {
           console.log('Updating tuteur with data:', data);
-          await additionalProps.updateTuteurDetail(selectedItem.id, data);
+          result = await additionalProps.updateTuteurDetail(selectedItem.id, data);
           toast({ 
             title: 'Tuteur mis à jour', 
             description: 'Le tuteur a été modifié avec succès.' 
           });
         } else if (!isEdit && additionalProps.createTuteurDetail) {
           console.log('Creating new tuteur with data:', data);
-          await additionalProps.createTuteurDetail(data);
+          result = await additionalProps.createTuteurDetail(data);
           toast({ 
             title: 'Tuteur créé', 
             description: 'Le tuteur a été créé avec succès.' 
@@ -196,6 +198,9 @@ function DataManagementPage<T extends { id: number }>({
           description: `L'élément a été ${isEdit ? 'modifié' : 'créé'} avec succès.` 
         });
       }
+      
+      // Log the result for debugging
+      console.log('Operation result:', result);
       
     } catch (error) {
       console.error('Error saving item:', error);
