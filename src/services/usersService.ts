@@ -1,4 +1,3 @@
-
 import { fetchWithFallback, ApiResponse } from './api';
 import { 
   User, Eleve, Tuteur, Staff, RelationEleveTuteur,
@@ -49,12 +48,22 @@ const mockStaffs: Staff[] = [
 ];
 
 const mockStaffsDetails: StaffDetail[] = [
-  { id: 1, date_embauche: '2011-01-01', statut: 'ACTIF', user: mockUsers[7], poste: 1, domaines: [], niveaux: [] }, 
-  { id: 2, date_embauche: '2011-01-01', statut: 'ACTIF', user: mockUsers[9], poste: 1, domaines: [], niveaux: [] },
+  { id: 1, date_embauche: '2011-01-01', statut: 'ACTIF', user: mockUsers[6], poste: 1, domaines: [], niveaux: [] }, 
+  { id: 2, date_embauche: '2011-01-01', statut: 'ACTIF', user: mockUsers[8], poste: 1, domaines: [], niveaux: [] },
 ];
 
-const mockTuteursDetails: TuteurDetail[] = [];
-const mockElevesDetails: EleveDetail[] = [];
+const mockTuteursDetails: TuteurDetail[] = [
+  { id: 1, user: mockUsers[4], profession: 'Enseignant' },
+  { id: 2, user: mockUsers[5], profession: 'Enseignante' },
+  { id: 3, user: mockUsers[6], profession: 'Fonctionnaire' },
+];
+
+const mockElevesDetails: EleveDetail[] = [
+  { id: 1, user: mockUsers[0], matricule: 'E2024001', tuteurs: [1, 2] },
+  { id: 2, user: mockUsers[1], matricule: 'E2024002', tuteurs: [1] },
+  { id: 3, user: mockUsers[2], matricule: 'E2024003', tuteurs: [3] },
+  { id: 4, user: mockUsers[3], matricule: 'E2024004', tuteurs: [3] },
+];
 
 export const usersService = {
   getUsers: (): Promise<ApiResponse<User[]>> =>
@@ -68,10 +77,9 @@ export const usersService = {
   deleteUser: (id: number) =>
     fetchWithFallback(`/api/accounts/users/${id}/`, {}, { method: 'DELETE' }),
 
-
-  // Tuteurs
+  // Tuteurs - Basic endpoints (deprecated, use TuteurDetail instead)
   getTuteurs: (): Promise<ApiResponse<Tuteur[]>> =>
-    fetchWithFallback('/api/accounts/tuteurs/', mockTuteurs), // ex: [ { "id": 4, "user": 3, "profession": "Comptable" } ]
+    fetchWithFallback('/api/accounts/tuteurs/', mockTuteurs),
   createTuteur: (data: Partial<Tuteur>): Promise<ApiResponse<Tuteur>> =>
     fetchWithFallback('/api/accounts/tuteurs/', {} as Tuteur, { method: 'POST', data, }),
   updateTuteur: (id: number, data: Partial<Tuteur>): Promise<ApiResponse<Tuteur>> =>
@@ -79,8 +87,9 @@ export const usersService = {
   deleteTuteur: (id: number) =>
     fetchWithFallback(`/api/accounts/tuteurs/${id}/`, {}, { method: 'DELETE' }),
   
+  // TuteurDetail - Combined User + Tuteur operations
   getTuteursDetails: (): Promise<ApiResponse<TuteurDetail[]>> =>
-    fetchWithFallback('/api/accounts/tuteurs-details/', mockTuteursDetails), // ex: [ { "id": 4, "user": { "id": 3, "email": "parent1@csleguide.com", "nom": "Fokou", "prenom": "Jean", "genre": "M", "date_naissance": "1970-03-20", "lieu_naissance": "Bafoussam", "adresse": "Adresse 3", "tel1": "74000003", "tel2": "", "whatsapp": "", "photo": null }, "profession": "Comptable" } ]
+    fetchWithFallback('/api/accounts/tuteurs-details/', mockTuteursDetails),
   createTuteurDetail: (data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> =>
     fetchWithFallback('/api/accounts/tuteurs-details/', {} as TuteurDetail, { method: 'POST', data, }),
   updateTuteurDetail: (id: number, data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> =>
@@ -88,10 +97,9 @@ export const usersService = {
   deleteTuteurDetail: (id: number) =>
     fetchWithFallback(`/api/accounts/tuteurs-details/${id}/`, {}, { method: 'DELETE' }),
 
-
-  // Eleves
+  // Eleves - Basic endpoints (deprecated, use EleveDetail instead)
   getEleves: (): Promise<ApiResponse<Eleve[]>> =>
-    fetchWithFallback('/api/accounts/eleves/', mockEleves), // ex: [ { "id": 4, "matricule": "E2025001", "user": 4, "tuteurs": [ 4 ] } ]
+    fetchWithFallback('/api/accounts/eleves/', mockEleves),
   createEleve: (data: Partial<Eleve>): Promise<ApiResponse<Eleve>> =>
     fetchWithFallback('/api/accounts/eleves/', {} as Eleve, { method: 'POST', data, }),
   updateEleve: (id: number, data: Partial<Eleve>): Promise<ApiResponse<Eleve>> =>
@@ -99,8 +107,9 @@ export const usersService = {
   deleteEleve: (id: number) =>
     fetchWithFallback(`/api/accounts/eleves/${id}/`, {}, { method: 'DELETE' }),
   
+  // EleveDetail - Combined User + Eleve operations
   getElevesDetails: (): Promise<ApiResponse<EleveDetail[]>> =>
-    fetchWithFallback('/api/accounts/eleves-details/', mockElevesDetails), // ex: [{ "id": 4, "user": { "id": 4, "email": "eleve1@csleguide.com", "nom": "Fokou", "prenom": "Emma", "genre": "F", "date_naissance": "2010-09-01", "lieu_naissance": "Bafoussam", "adresse": "Adresse 3", "tel1": "74000004", "tel2": "", "whatsapp": "", "photo": null }, "matricule": "E2025001", "tuteurs": [ { "id": 4, "profession": "Comptable", "user": 3 }]
+    fetchWithFallback('/api/accounts/eleves-details/', mockElevesDetails),
   createEleveDetail: (data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> =>
     fetchWithFallback('/api/accounts/eleves-details/', {} as EleveDetail, { method: 'POST', data, }),
   updateEleveDetail: (id: number, data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> =>
@@ -108,19 +117,19 @@ export const usersService = {
   deleteEleveDetail: (id: number) =>
     fetchWithFallback(`/api/accounts/eleves-details/${id}/`, {}, { method: 'DELETE' }),
 
+  // Relations
   getRelations: (): Promise<ApiResponse<RelationEleveTuteur[]>> =>
-    fetchWithFallback('/api/accounts/tuteurs/', mockRelations), // ex: [ { "id": 2, "relation": "Père", "eleve": { "id": 4, "matricule": "E2025001", "user": 4, "tuteurs": [ 4 ] }, "tuteur": { "id": 4, "profession": "Comptable", "user": 3 } } ]
+    fetchWithFallback('/api/accounts/relations/', mockRelations),
   createRelation: (data: Partial<RelationEleveTuteur>): Promise<ApiResponse<RelationEleveTuteur>> =>
-    fetchWithFallback('/api/accounts/tuteurs/', {} as RelationEleveTuteur, { method: 'POST', data, }),
+    fetchWithFallback('/api/accounts/relations/', {} as RelationEleveTuteur, { method: 'POST', data, }),
   updateRelation: (id: number, data: Partial<RelationEleveTuteur>): Promise<ApiResponse<RelationEleveTuteur>> =>
-    fetchWithFallback(`/api/accounts/tuteurs/${id}/`, {} as RelationEleveTuteur, { method: 'PUT', data, }),
+    fetchWithFallback(`/api/accounts/relations/${id}/`, {} as RelationEleveTuteur, { method: 'PUT', data, }),
   deleteRelation: (id: number) =>
-    fetchWithFallback(`/api/accounts/tuteurs/${id}/`, {}, { method: 'DELETE' }),
+    fetchWithFallback(`/api/accounts/relations/${id}/`, {}, { method: 'DELETE' }),
   
-
-  // Staffs
+  // Staffs - Basic endpoints (deprecated, use StaffDetail instead)
   getStaffs: (): Promise<ApiResponse<Staff[]>> =>
-    fetchWithFallback('/api/accounts/staffs/', mockStaffs), // ex: [ { "id": 7, "user": { "id": 1, "is_superuser": false, "email": "prof1@csleguide.com", "nom": "Ngoma", "prenom": "Paul", "genre": "M", "date_naissance": "1980-01-01", "lieu_naissance": "Douala", "adresse": "Adresse 1", "tel1": "74000001", "tel2": "", "whatsapp": "", "photo": null }, "date_embauche": "2020-09-01", "statut": "ACTIF", "poste": 2, "domaines": [], "niveaux": [] }, ]
+    fetchWithFallback('/api/accounts/staffs/', mockStaffs),
   createStaff: (data: Partial<Staff>): Promise<ApiResponse<Staff>> =>
     fetchWithFallback('/api/accounts/staffs/', {} as Staff, { method: 'POST', data, }),
   updateStaff: (id: number, data: Partial<Staff>): Promise<ApiResponse<Staff>> =>
@@ -128,8 +137,9 @@ export const usersService = {
   deleteStaff: (id: number) =>
     fetchWithFallback(`/api/accounts/staffs/${id}/`, {}, { method: 'DELETE' }),
   
+  // StaffDetail - Combined User + Staff operations
   getStaffsDetails: (): Promise<ApiResponse<StaffDetail[]>> =>
-    fetchWithFallback('/api/accounts/staffs-details/', mockStaffsDetails), // ex: [ { "id": 7, "date_embauche": "2020-09-01", "statut": "ACTIF", "user": 1, "poste": 2, "domaines": [], "niveaux": [] },]
+    fetchWithFallback('/api/accounts/staffs-details/', mockStaffsDetails),
   createStaffDetail: (data: Partial<StaffDetail>): Promise<ApiResponse<StaffDetail>> =>
     fetchWithFallback('/api/accounts/staffs-details/', {} as StaffDetail, { method: 'POST', data, }),
   updateStaffDetail: (id: number, data: Partial<StaffDetail>): Promise<ApiResponse<StaffDetail>> =>

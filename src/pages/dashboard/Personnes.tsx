@@ -28,16 +28,35 @@ import { Plus, Filter, Edit, Trash2, Users } from 'lucide-react';
 import { useUsersData } from '@/hooks/useUsersData';
 import UserForm from '@/components/forms/UserForm';
 import UserFilters from '@/components/users/UserFilters';
-import { User } from '@/types/users';
+import { User, EleveDetail, TuteurDetail, StaffDetail } from '@/types/users';
 
 const Personnes: React.FC = () => {
   const { toast } = useToast();
-  const { users, eleves, tuteurs, loading, createUser, updateUser, deleteUser } = useUsersData();
+  const { 
+    users, 
+    elevesDetails, 
+    tuteursDetails, 
+    staffsDetails,
+    loading, 
+    createEleveDetail, 
+    updateEleveDetail, 
+    deleteEleveDetail,
+    createTuteurDetail, 
+    updateTuteurDetail, 
+    deleteTuteurDetail,
+    createStaffDetail, 
+    updateStaffDetail, 
+    deleteStaffDetail,
+    createUser, 
+    updateUser, 
+    deleteUser 
+  } = useUsersData();
   
   const [activeTab, setActiveTab] = useState('eleves');
   const [showFilters, setShowFilters] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<EleveDetail | TuteurDetail | StaffDetail | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -78,26 +97,6 @@ const Personnes: React.FC = () => {
     return result;
   }, [users, searchTerm, genreFilter, statutFilter, typeFilter]);
 
-  const elevesWithUserData = useMemo(() => {
-    return eleves.map(eleve => {
-      const userData = users.find(user => user.id === eleve.user);
-      return {
-        ...eleve,
-        userData
-      };
-    }).filter(eleve => eleve.userData);
-  }, [eleves, users]);
-
-  const tuteursWithUserData = useMemo(() => {
-    return tuteurs.map(tuteur => {
-      const userData = users.find(user => user.id === tuteur.user);
-      return {
-        ...tuteur,
-        userData
-      };
-    }).filter(tuteur => tuteur.userData);
-  }, [tuteurs, users]);
-
   const applyFilter = () => {
     // Les filtres sont appliqués automatiquement via useMemo
   };
@@ -111,17 +110,40 @@ const Personnes: React.FC = () => {
 
   const handleCreate = () => {
     setSelectedUser(null);
+    setSelectedEntity(null);
     setIsEditing(false);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (user: User) => {
+  const handleEditUser = (user: User) => {
     setSelectedUser(user);
+    setSelectedEntity(null);
     setIsEditing(true);
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (user: User) => {
+  const handleEditEleve = (eleve: EleveDetail) => {
+    setSelectedUser(typeof eleve.user === 'object' ? eleve.user : null);
+    setSelectedEntity(eleve);
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleEditTuteur = (tuteur: TuteurDetail) => {
+    setSelectedUser(typeof tuteur.user === 'object' ? tuteur.user : null);
+    setSelectedEntity(tuteur);
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleEditStaff = (staff: StaffDetail) => {
+    setSelectedUser(typeof staff.user === 'object' ? staff.user : null);
+    setSelectedEntity(staff);
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteUser = async (user: User) => {
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${user.prenom} ${user.nom} ?`)) {
       try {
         await deleteUser(user.id);
@@ -139,20 +161,101 @@ const Personnes: React.FC = () => {
     }
   };
 
+  const handleDeleteEleve = async (eleve: EleveDetail) => {
+    const userName = typeof eleve.user === 'object' ? `${eleve.user.prenom} ${eleve.user.nom}` : 'cet élève';
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
+      try {
+        await deleteEleveDetail(eleve.id);
+        toast({
+          title: "Suppression réussie",
+          description: "L'élève a été supprimé avec succès.",
+        });
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la suppression.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleDeleteTuteur = async (tuteur: TuteurDetail) => {
+    const userName = typeof tuteur.user === 'object' ? `${tuteur.user.prenom} ${tuteur.user.nom}` : 'ce tuteur';
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
+      try {
+        await deleteTuteurDetail(tuteur.id);
+        toast({
+          title: "Suppression réussie",
+          description: "Le tuteur a été supprimé avec succès.",
+        });
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la suppression.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleDeleteStaff = async (staff: StaffDetail) => {
+    const userName = typeof staff.user === 'object' ? `${staff.user.prenom} ${staff.user.nom}` : 'ce membre du personnel';
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
+      try {
+        await deleteStaffDetail(staff.id);
+        toast({
+          title: "Suppression réussie",
+          description: "Le membre du personnel a été supprimé avec succès.",
+        });
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la suppression.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
-      if (isEditing && selectedUser) {
-        await updateUser(selectedUser.id, data);
+      if (isEditing) {
+        if (selectedEntity) {
+          // Update using *Detail methods
+          if ('matricule' in selectedEntity) {
+            // It's an EleveDetail
+            await updateEleveDetail(selectedEntity.id, data);
+          } else if ('profession' in selectedEntity) {
+            // It's a TuteurDetail
+            await updateTuteurDetail(selectedEntity.id, data);
+          } else {
+            // It's a StaffDetail
+            await updateStaffDetail(selectedEntity.id, data);
+          }
+        } else if (selectedUser) {
+          // Update user only
+          await updateUser(selectedUser.id, data);
+        }
         toast({
           title: "Modification réussie",
-          description: "L'utilisateur a été modifié avec succès.",
+          description: "Les informations ont été modifiées avec succès.",
         });
       } else {
-        await createUser(data);
+        // Create new entity based on active tab
+        if (activeTab === 'eleves') {
+          await createEleveDetail(data);
+        } else if (activeTab === 'tuteurs') {
+          await createTuteurDetail(data);
+        } else if (activeTab === 'staff') {
+          await createStaffDetail(data);
+        } else {
+          await createUser(data);
+        }
         toast({
           title: "Création réussie",
-          description: "L'utilisateur a été créé avec succès.",
+          description: "La personne a été créée avec succès.",
         });
       }
       setIsModalOpen(false);
@@ -190,9 +293,10 @@ const Personnes: React.FC = () => {
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex justify-between items-center mb-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="eleves">Élèves ({elevesWithUserData.length})</TabsTrigger>
-            <TabsTrigger value="tuteurs">Tuteurs ({tuteursWithUserData.length})</TabsTrigger>
+          <TabsList className="grid w-full max-w-md grid-cols-4">
+            <TabsTrigger value="eleves">Élèves ({elevesDetails.length})</TabsTrigger>
+            <TabsTrigger value="tuteurs">Tuteurs ({tuteursDetails.length})</TabsTrigger>
+            <TabsTrigger value="staff">Personnel ({staffsDetails.length})</TabsTrigger>
             <TabsTrigger value="tous">Tous ({filteredUsers.length})</TabsTrigger>
           </TabsList>
           
@@ -244,42 +348,45 @@ const Personnes: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {elevesWithUserData.map((eleve) => (
-                    <TableRow key={eleve.id}>
-                      <TableCell className="font-medium">{eleve.matricule}</TableCell>
-                      <TableCell>{eleve.userData?.nom}</TableCell>
-                      <TableCell>{eleve.userData?.prenom}</TableCell>
-                      <TableCell>{eleve.userData?.email}</TableCell>
-                      <TableCell>{eleve.userData?.tel1}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          eleve.userData?.is_active 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {eleve.userData?.is_active ? 'Actif' : 'Inactif'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleEdit(eleve.userData!)}
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleDelete(eleve.userData!)}
-                          >
-                            <Trash2 size={16} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {elevesDetails.map((eleve) => {
+                    const userData = typeof eleve.user === 'object' ? eleve.user : null;
+                    return (
+                      <TableRow key={eleve.id}>
+                        <TableCell className="font-medium">{eleve.matricule}</TableCell>
+                        <TableCell>{userData?.nom}</TableCell>
+                        <TableCell>{userData?.prenom}</TableCell>
+                        <TableCell>{userData?.email}</TableCell>
+                        <TableCell>{userData?.tel1}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            userData?.is_active 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {userData?.is_active ? 'Actif' : 'Inactif'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => handleEditEleve(eleve)}
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => handleDeleteEleve(eleve)}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -302,42 +409,106 @@ const Personnes: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tuteursWithUserData.map((tuteur) => (
-                    <TableRow key={tuteur.id}>
-                      <TableCell className="font-medium">{tuteur.userData?.nom}</TableCell>
-                      <TableCell>{tuteur.userData?.prenom}</TableCell>
-                      <TableCell>{tuteur.userData?.email}</TableCell>
-                      <TableCell>{tuteur.userData?.tel1}</TableCell>
-                      <TableCell>{tuteur.profession}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          tuteur.userData?.is_active 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {tuteur.userData?.is_active ? 'Actif' : 'Inactif'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleEdit(tuteur.userData!)}
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleDelete(tuteur.userData!)}
-                          >
-                            <Trash2 size={16} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {tuteursDetails.map((tuteur) => {
+                    const userData = typeof tuteur.user === 'object' ? tuteur.user : null;
+                    return (
+                      <TableRow key={tuteur.id}>
+                        <TableCell className="font-medium">{userData?.nom}</TableCell>
+                        <TableCell>{userData?.prenom}</TableCell>
+                        <TableCell>{userData?.email}</TableCell>
+                        <TableCell>{userData?.tel1}</TableCell>
+                        <TableCell>{tuteur.profession}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            userData?.is_active 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {userData?.is_active ? 'Actif' : 'Inactif'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => handleEditTuteur(tuteur)}
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => handleDeleteTuteur(tuteur)}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="staff">
+          <ScrollArea className="h-[calc(100vh-25rem)]">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Prénom</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Téléphone</TableHead>
+                    <TableHead>Date embauche</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {staffsDetails.map((staff) => {
+                    const userData = typeof staff.user === 'object' ? staff.user : null;
+                    return (
+                      <TableRow key={staff.id}>
+                        <TableCell className="font-medium">{userData?.nom}</TableCell>
+                        <TableCell>{userData?.prenom}</TableCell>
+                        <TableCell>{userData?.email}</TableCell>
+                        <TableCell>{userData?.tel1}</TableCell>
+                        <TableCell>{new Date(staff.date_embauche).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            staff.statut === 'ACTIF' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {staff.statut}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => handleEditStaff(staff)}
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => handleDeleteStaff(staff)}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -391,14 +562,14 @@ const Personnes: React.FC = () => {
                           <Button 
                             variant="outline" 
                             size="icon"
-                            onClick={() => handleEdit(user)}
+                            onClick={() => handleEditUser(user)}
                           >
                             <Edit size={16} />
                           </Button>
                           <Button 
                             variant="outline" 
                             size="icon"
-                            onClick={() => handleDelete(user)}
+                            onClick={() => handleDeleteUser(user)}
                           >
                             <Trash2 size={16} />
                           </Button>
@@ -426,6 +597,7 @@ const Personnes: React.FC = () => {
           
           <UserForm
             user={selectedUser || undefined}
+            entity={selectedEntity || undefined}
             onSubmit={handleSubmit}
             onCancel={() => setIsModalOpen(false)}
             isSubmitting={isSubmitting}
