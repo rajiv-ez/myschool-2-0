@@ -1,870 +1,11 @@
+
 import * as XLSX from 'xlsx';
-import { Succursale, Batiment, Salle } from '@/types/infrastructure';
-import { Inscription, Session, Palier, ClasseSession, Niveau, Filiere, Specialite, Classe } from '@/types/academic';
-import { Domaine, UniteEnseignement, Matiere } from '@/types/teaching';
+import { Succursale, Batiment } from '@/types/infrastructure';
 
-export interface ExcelExportOptions {
-  filename: string;
-  sheetName: string;
-}
-
-// Export functions for infrastructure
-export const exportSuccursalesToExcel = (succursales: Succursale[], options?: Partial<ExcelExportOptions>) => {
-  const data = succursales.map(s => ({
-    ID: s.id,
-    Nom: s.nom,
-    Adresse: s.adresse,
-    Ville: s.ville,
-    Pays: s.pays,
-    'Est Siège': s.est_siege ? 'Oui' : 'Non'
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Succursales');
-  
-  const filename = options?.filename || `succursales_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-export const exportBatimentsToExcel = (batiments: Batiment[], succursales: Succursale[], options?: Partial<ExcelExportOptions>) => {
-  const data = batiments.map(b => {
-    const succursale = succursales.find(s => s.id === b.succursale);
-    return {
-      ID: b.id,
-      Nom: b.nom,
-      'ID Succursale': b.succursale,
-      'Nom Succursale': succursale?.nom || 'Inconnue'
-    };
-  });
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Bâtiments');
-  
-  const filename = options?.filename || `batiments_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-export const exportSallesToExcel = (salles: Salle[], batiments: Batiment[], options?: Partial<ExcelExportOptions>) => {
-  const data = salles.map(s => {
-    const batiment = batiments.find(b => b.id === s.batiment);
-    return {
-      ID: s.id,
-      Nom: s.nom,
-      Capacité: s.capacite,
-      'ID Bâtiment': s.batiment,
-      'Nom Bâtiment': batiment?.nom || 'Inconnu'
-    };
-  });
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Salles');
-  
-  const filename = options?.filename || `salles_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-// Export functions for inscriptions
-export const exportInscriptionsToExcel = (inscriptions: any[], options?: Partial<ExcelExportOptions>) => {
-  const data = inscriptions.map(i => ({
-    ID: i.id,
-    'Nom Élève': i.eleveNom || 'Inconnu',
-    'Classe/Session': i.classeSessionNom || 'Inconnue',
-    'Date Inscription': i.dateFormatted || i.date_inscription,
-    Type: i.typeLabel || (i.est_reinscription ? 'Réinscription' : 'Nouvelle'),
-    Statut: i.statutLabel || i.statut
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Inscriptions');
-  
-  const filename = options?.filename || `inscriptions_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-// Export functions for sessions
-export const exportSessionsToExcel = (sessions: Session[], options?: Partial<ExcelExportOptions>) => {
-  const data = sessions.map(s => ({
-    ID: s.id,
-    Nom: s.nom,
-    Début: s.debut,
-    Fin: s.fin,
-    'En Cours': s.en_cours ? 'Oui' : 'Non',
-    'Auto Activer Palier': s.auto_activer_palier ? 'Oui' : 'Non'
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Sessions');
-  
-  const filename = options?.filename || `sessions_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-export const exportPaliersToExcel = (paliers: Palier[], sessions: Session[], options?: Partial<ExcelExportOptions>) => {
-  const data = paliers.map(p => {
-    const session = sessions.find(s => s.id === p.session);
-    return {
-      ID: p.id,
-      Nom: p.nom,
-      'ID Session': p.session,
-      'Nom Session': session?.nom || 'Inconnue',
-      Début: p.debut,
-      Fin: p.fin,
-      'En Cours': p.en_cours ? 'Oui' : 'Non'
-    };
-  });
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Paliers');
-  
-  const filename = options?.filename || `paliers_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-export const exportClasseSessionsToExcel = (classeSessions: any[], options?: Partial<ExcelExportOptions>) => {
-  const data = classeSessions.map(cs => ({
-    ID: cs.id,
-    Classe: cs.classeData?.nom || 'Inconnue',
-    Session: cs.sessionData?.nom || 'Inconnue',
-    Capacité: cs.capacite,
-    Description: cs.classeData?.description || ''
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Classes');
-  
-  const filename = options?.filename || `classe_sessions_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-// Export functions for academic entities
-export const exportNiveauxToExcel = (niveaux: Niveau[], options?: Partial<ExcelExportOptions>) => {
-  const data = niveaux.map(n => ({
-    ID: n.id,
-    Nom: n.nom,
-    Description: n.description || ''
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Niveaux');
-  
-  const filename = options?.filename || `niveaux_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-export const exportFilieresToExcel = (filieres: Filiere[], niveaux: Niveau[], options?: Partial<ExcelExportOptions>) => {
-  const data = filieres.map(f => {
-    const niveau = niveaux.find(n => n.id === f.niveau);
-    return {
-      ID: f.id,
-      Nom: f.nom,
-      'ID Niveau': f.niveau,
-      'Nom Niveau': niveau?.nom || 'Inconnu',
-      Description: f.description || ''
-    };
-  });
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Filières');
-  
-  const filename = options?.filename || `filieres_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-export const exportSpecialitesToExcel = (specialites: Specialite[], filieres: Filiere[], options?: Partial<ExcelExportOptions>) => {
-  const data = specialites.map(s => {
-    const filiere = filieres.find(f => f.id === s.filiere);
-    return {
-      ID: s.id,
-      Nom: s.nom,
-      'ID Filière': s.filiere,
-      'Nom Filière': filiere?.nom || 'Inconnue',
-      Description: s.description || ''
-    };
-  });
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Spécialités');
-  
-  const filename = options?.filename || `specialites_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-export const exportClassesToExcel = (classes: Classe[], specialites: Specialite[], options?: Partial<ExcelExportOptions>) => {
-  const data = classes.map(c => {
-    const specialite = specialites.find(s => s.id === c.specialite);
-    return {
-      ID: c.id,
-      Nom: c.nom,
-      'ID Spécialité': c.specialite,
-      'Nom Spécialité': specialite?.nom || 'Inconnue',
-      Description: c.description || ''
-    };
-  });
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Classes');
-  
-  const filename = options?.filename || `classes_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-// Export functions for teaching entities
-export const exportDomainesToExcel = (domaines: Domaine[], options?: Partial<ExcelExportOptions>) => {
-  const data = domaines.map(d => ({
-    ID: d.id,
-    Nom: d.nom,
-    Description: d.description || ''
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Domaines');
-  
-  const filename = options?.filename || `domaines_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-export const exportUnitesToExcel = (unites: UniteEnseignement[], domaines: Domaine[], options?: Partial<ExcelExportOptions>) => {
-  const data = unites.map(u => ({
-    ID: u.id,
-    Nom: u.nom,
-    Description: u.description || '',
-    'Domaines IDs': u.domaines.join(', '),
-    'Domaines Noms': u.domaines.map(id => domaines.find(d => d.id === id)?.nom || 'Inconnu').join(', ')
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Unités');
-  
-  const filename = options?.filename || `unites_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-export const exportMatieresToExcel = (matieres: Matiere[], unites: UniteEnseignement[], options?: Partial<ExcelExportOptions>) => {
-  const data = matieres.map(m => {
-    const unite = unites.find(u => u.id === m.unite);
-    return {
-      ID: m.id,
-      Nom: m.nom,
-      'ID Unité': m.unite,
-      'Nom Unité': unite?.nom || 'Inconnue',
-      Coefficient: m.coefficient,
-      Description: m.description || ''
-    };
-  });
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Matières');
-  
-  const filename = options?.filename || `matieres_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-// Generic export function
-export const exportToExcel = (data: any[], entityType: string, options?: Partial<ExcelExportOptions>) => {
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || entityType);
-  
-  const filename = options?.filename || `${entityType.toLowerCase()}_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
-};
-
-// Template generation functions
-export const generateSuccursalesTemplate = () => {
-  const templateData = [
-    {
-      Nom: 'Exemple Succursale',
-      Adresse: '123 Rue Example',
-      Ville: 'Ville Exemple',
-      Pays: 'Pays Exemple',
-      'Est Siège': 'Non'
-    }
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Template Succursales');
-  
-  XLSX.writeFile(wb, 'template_succursales.xlsx');
-};
-
-export const generateBatimentsTemplate = () => {
-  const templateData = [
-    {
-      Nom: 'Exemple Bâtiment',
-      'ID Succursale': 1
-    }
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Template Bâtiments');
-  
-  XLSX.writeFile(wb, 'template_batiments.xlsx');
-};
-
-export const generateSallesTemplate = () => {
-  const templateData = [
-    {
-      Nom: 'Exemple Salle',
-      Capacité: 30,
-      'ID Bâtiment': 1
-    }
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Template Salles');
-  
-  XLSX.writeFile(wb, 'template_salles.xlsx');
-};
-
-export const generateInscriptionsTemplate = () => {
-  const templateData = [
-    {
-      'ID Élève': 1,
-      'ID Classe Session': 1,
-      'Date Inscription': '2024-01-01',
-      'Est Réinscription': 'Non',
-      'Statut': 'CONFIRMEE'
-    }
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Template Inscriptions');
-  
-  XLSX.writeFile(wb, 'template_inscriptions.xlsx');
-};
-
-// New template functions for academic entities
-export const generateSessionsTemplate = () => {
-  const templateData = [
-    {
-      Nom: 'Année scolaire 2024-2025',
-      Début: '2024-09-01',
-      Fin: '2025-06-30',
-      'En Cours': 'Oui',
-      'Auto Activer Palier': 'Oui'
-    }
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Template Sessions');
-  
-  XLSX.writeFile(wb, 'template_sessions.xlsx');
-};
-
-export const generateNiveauxTemplate = () => {
-  const templateData = [
-    {
-      Nom: 'Primaire',
-      Description: 'Enseignement primaire'
-    }
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Template Niveaux');
-  
-  XLSX.writeFile(wb, 'template_niveaux.xlsx');
-};
-
-export const generateDomainessTemplate = () => {
-  const templateData = [
-    {
-      Nom: 'Sciences',
-      Description: 'Domaine scientifique'
-    }
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Template Domaines');
-  
-  XLSX.writeFile(wb, 'template_domaines.xlsx');
-};
-
-// New template functions for Eleves and Tuteurs
-export const generateElevesTemplate = () => {
-  const templateData = [
-    {
-      Nom: 'Exemple Nom',
-      Prénom: 'Exemple Prénom',
-      Email: 'exemple@email.com',
-      Genre: 'M',
-      'Date de naissance': '2000-01-01',
-      'Lieu de naissance': 'Ville Exemple',
-      Adresse: '123 Rue Exemple',
-      'Téléphone 1': '0123456789',
-      'Téléphone 2': '',
-      WhatsApp: '',
-      Matricule: 'E202401',
-      Photo: '',
-      Statut: 'Actif'
-    }
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Template Élèves');
-  
-  XLSX.writeFile(wb, 'template_eleves.xlsx');
-};
-
-export const generateTuteursTemplate = () => {
-  const templateData = [
-    {
-      Nom: 'Exemple Nom',
-      Prénom: 'Exemple Prénom',
-      Email: 'exemple@email.com',
-      Genre: 'M',
-      'Date de naissance': '1970-01-01',
-      'Lieu de naissance': 'Ville Exemple',
-      Adresse: '123 Rue Exemple',
-      'Téléphone 1': '0123456789',
-      'Téléphone 2': '',
-      WhatsApp: '',
-      Profession: 'Enseignant',
-      Photo: '',
-      Statut: 'Actif'
-    }
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Template Tuteurs');
-  
-  XLSX.writeFile(wb, 'template_tuteurs.xlsx');
-};
-
-// Import validation functions
-export interface ImportValidationResult {
-  isValid: boolean;
-  errors: string[];
-  data?: any[];
-}
-
-export const validateSuccursalesImport = (data: any[]): ImportValidationResult => {
-  const errors: string[] = [];
-  const validData: any[] = [];
-
-  data.forEach((row, index) => {
-    const rowNumber = index + 2; // +2 because Excel starts at 1 and we have header
-    
-    if (!row.Nom || typeof row.Nom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
-    }
-    
-    if (!row.Adresse || typeof row.Adresse !== 'string') {
-      errors.push(`Ligne ${rowNumber}: L'adresse est requise et doit être du texte`);
-    }
-    
-    if (!row.Ville || typeof row.Ville !== 'string') {
-      errors.push(`Ligne ${rowNumber}: La ville est requise et doit être du texte`);
-    }
-    
-    if (!row.Pays || typeof row.Pays !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le pays est requis et doit être du texte`);
-    }
-    
-    if (row['Est Siège'] && !['Oui', 'Non'].includes(row['Est Siège'])) {
-      errors.push(`Ligne ${rowNumber}: "Est Siège" doit être "Oui" ou "Non"`);
-    }
-
-    if (errors.length === 0) {
-      validData.push({
-        nom: row.Nom,
-        adresse: row.Adresse,
-        ville: row.Ville,
-        pays: row.Pays,
-        est_siege: row['Est Siège'] === 'Oui'
-      });
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    data: validData
-  };
-};
-
-export const validateBatimentsImport = (data: any[], succursales: Succursale[]): ImportValidationResult => {
-  const errors: string[] = [];
-  const validData: any[] = [];
-
-  data.forEach((row, index) => {
-    const rowNumber = index + 2;
-    
-    if (!row.Nom || typeof row.Nom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
-    }
-    
-    if (!row['ID Succursale'] || typeof row['ID Succursale'] !== 'number') {
-      errors.push(`Ligne ${rowNumber}: L'ID Succursale est requis et doit être un nombre`);
-    } else {
-      const succursaleExists = succursales.some(s => s.id === row['ID Succursale']);
-      if (!succursaleExists) {
-        errors.push(`Ligne ${rowNumber}: La succursale avec l'ID ${row['ID Succursale']} n'existe pas`);
-      }
-    }
-
-    if (errors.length === 0) {
-      validData.push({
-        nom: row.Nom,
-        succursale: row['ID Succursale']
-      });
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    data: validData
-  };
-};
-
-export const validateSallesImport = (data: any[], batiments: Batiment[]): ImportValidationResult => {
-  const errors: string[] = [];
-  const validData: any[] = [];
-
-  data.forEach((row, index) => {
-    const rowNumber = index + 2;
-    
-    if (!row.Nom || typeof row.Nom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
-    }
-    
-    if (!row.Capacité || typeof row.Capacité !== 'number' || row.Capacité <= 0) {
-      errors.push(`Ligne ${rowNumber}: La capacité est requise et doit être un nombre positif`);
-    }
-    
-    if (!row['ID Bâtiment'] || typeof row['ID Bâtiment'] !== 'number') {
-      errors.push(`Ligne ${rowNumber}: L'ID Bâtiment est requis et doit être un nombre`);
-    } else {
-      const batimentExists = batiments.some(b => b.id === row['ID Bâtiment']);
-      if (!batimentExists) {
-        errors.push(`Ligne ${rowNumber}: Le bâtiment avec l'ID ${row['ID Bâtiment']} n'existe pas`);
-      }
-    }
-
-    if (errors.length === 0) {
-      validData.push({
-        nom: row.Nom,
-        capacite: row.Capacité,
-        batiment: row['ID Bâtiment']
-      });
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    data: validData
-  };
-};
-
-export const validateInscriptionsImport = (data: any[]): ImportValidationResult => {
-  const errors: string[] = [];
-  const validData: any[] = [];
-
-  data.forEach((row, index) => {
-    const rowNumber = index + 2;
-    
-    if (!row['ID Élève'] || typeof row['ID Élève'] !== 'number') {
-      errors.push(`Ligne ${rowNumber}: L'ID Élève est requis et doit être un nombre`);
-    }
-    
-    if (!row['ID Classe Session'] || typeof row['ID Classe Session'] !== 'number') {
-      errors.push(`Ligne ${rowNumber}: L'ID Classe Session est requis et doit être un nombre`);
-    }
-    
-    if (!row['Date Inscription']) {
-      errors.push(`Ligne ${rowNumber}: La date d'inscription est requise`);
-    }
-    
-    if (row['Est Réinscription'] && !['Oui', 'Non'].includes(row['Est Réinscription'])) {
-      errors.push(`Ligne ${rowNumber}: "Est Réinscription" doit être "Oui" ou "Non"`);
-    }
-    
-    if (row.Statut && !['CONFIRMEE', 'EN_ATTENTE', 'ANNULEE'].includes(row.Statut)) {
-      errors.push(`Ligne ${rowNumber}: Le statut doit être "CONFIRMEE", "EN_ATTENTE" ou "ANNULEE"`);
-    }
-
-    if (errors.length === 0) {
-      validData.push({
-        eleve: row['ID Élève'],
-        classe_session: row['ID Classe Session'],
-        date_inscription: row['Date Inscription'],
-        est_reinscription: row['Est Réinscription'] === 'Oui',
-        statut: row.Statut || 'CONFIRMEE'
-      });
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    data: validData
-  };
-};
-
-// New validation functions for academic entities
-export const validateSessionsImport = (data: any[]): ImportValidationResult => {
-  const errors: string[] = [];
-  const validData: any[] = [];
-
-  data.forEach((row, index) => {
-    const rowNumber = index + 2;
-    
-    if (!row.Nom || typeof row.Nom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
-    }
-    
-    if (!row.Début) {
-      errors.push(`Ligne ${rowNumber}: La date de début est requise`);
-    }
-    
-    if (!row.Fin) {
-      errors.push(`Ligne ${rowNumber}: La date de fin est requise`);
-    }
-    
-    if (row['En Cours'] && !['Oui', 'Non'].includes(row['En Cours'])) {
-      errors.push(`Ligne ${rowNumber}: "En Cours" doit être "Oui" ou "Non"`);
-    }
-    
-    if (row['Auto Activer Palier'] && !['Oui', 'Non'].includes(row['Auto Activer Palier'])) {
-      errors.push(`Ligne ${rowNumber}: "Auto Activer Palier" doit être "Oui" ou "Non"`);
-    }
-
-    if (errors.length === 0) {
-      validData.push({
-        nom: row.Nom,
-        debut: row.Début,
-        fin: row.Fin,
-        en_cours: row['En Cours'] === 'Oui',
-        auto_activer_palier: row['Auto Activer Palier'] === 'Oui'
-      });
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    data: validData
-  };
-};
-
-export const validateNiveauxImport = (data: any[]): ImportValidationResult => {
-  const errors: string[] = [];
-  const validData: any[] = [];
-
-  data.forEach((row, index) => {
-    const rowNumber = index + 2;
-    
-    if (!row.Nom || typeof row.Nom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
-    }
-
-    if (errors.length === 0) {
-      validData.push({
-        nom: row.Nom,
-        description: row.Description || ''
-      });
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    data: validData
-  };
-};
-
-export const validateDomainesImport = (data: any[]): ImportValidationResult => {
-  const errors: string[] = [];
-  const validData: any[] = [];
-
-  data.forEach((row, index) => {
-    const rowNumber = index + 2;
-    
-    if (!row.Nom || typeof row.Nom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
-    }
-
-    if (errors.length === 0) {
-      validData.push({
-        nom: row.Nom,
-        description: row.Description || ''
-      });
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    data: validData
-  };
-};
-
-export const validateElevesImport = (data: any[]): ImportValidationResult => {
-  const errors: string[] = [];
-  const validData: any[] = [];
-
-  data.forEach((row, index) => {
-    const rowNumber = index + 2;
-    
-    if (!row.Nom || typeof row.Nom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
-    }
-    
-    if (!row.Prénom || typeof row.Prénom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le prénom est requis et doit être du texte`);
-    }
-    
-    if (!row.Email || typeof row.Email !== 'string') {
-      errors.push(`Ligne ${rowNumber}: L'email est requis et doit être du texte`);
-    }
-    
-    if (!row.Genre || !['M', 'F', 'A'].includes(row.Genre)) {
-      errors.push(`Ligne ${rowNumber}: Le genre doit être "M", "F" ou "A"`);
-    }
-    
-    if (!row['Date de naissance']) {
-      errors.push(`Ligne ${rowNumber}: La date de naissance est requise`);
-    }
-    
-    if (!row['Lieu de naissance'] || typeof row['Lieu de naissance'] !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le lieu de naissance est requis`);
-    }
-    
-    if (!row.Adresse || typeof row.Adresse !== 'string') {
-      errors.push(`Ligne ${rowNumber}: L'adresse est requise`);
-    }
-    
-    if (!row['Téléphone 1'] || typeof row['Téléphone 1'] !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le téléphone principal est requis`);
-    }
-    
-    if (row.Statut && !['Actif', 'Inactif'].includes(row.Statut)) {
-      errors.push(`Ligne ${rowNumber}: Le statut doit être "Actif" ou "Inactif"`);
-    }
-
-    if (errors.length === 0) {
-      validData.push({
-        nom: row.Nom,
-        prenom: row.Prénom,
-        email: row.Email,
-        genre: row.Genre,
-        date_naissance: row['Date de naissance'],
-        lieu_naissance: row['Lieu de naissance'],
-        adresse: row.Adresse,
-        tel1: row['Téléphone 1'],
-        tel2: row['Téléphone 2'] || '',
-        whatsapp: row.WhatsApp || '',
-        matricule: row.Matricule || '',
-        photo: row.Photo || '',
-        is_active: row.Statut !== 'Inactif'
-      });
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    data: validData
-  };
-};
-
-export const validateTuteursImport = (data: any[]): ImportValidationResult => {
-  const errors: string[] = [];
-  const validData: any[] = [];
-
-  data.forEach((row, index) => {
-    const rowNumber = index + 2;
-    
-    if (!row.Nom || typeof row.Nom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le nom est requis et doit être du texte`);
-    }
-    
-    if (!row.Prénom || typeof row.Prénom !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le prénom est requis et doit être du texte`);
-    }
-    
-    if (!row.Email || typeof row.Email !== 'string') {
-      errors.push(`Ligne ${rowNumber}: L'email est requis et doit être du texte`);
-    }
-    
-    if (!row.Genre || !['M', 'F', 'A'].includes(row.Genre)) {
-      errors.push(`Ligne ${rowNumber}: Le genre doit être "M", "F" ou "A"`);
-    }
-    
-    if (!row['Date de naissance']) {
-      errors.push(`Ligne ${rowNumber}: La date de naissance est requise`);
-    }
-    
-    if (!row['Lieu de naissance'] || typeof row['Lieu de naissance'] !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le lieu de naissance est requis`);
-    }
-    
-    if (!row.Adresse || typeof row.Adresse !== 'string') {
-      errors.push(`Ligne ${rowNumber}: L'adresse est requise`);
-    }
-    
-    if (!row['Téléphone 1'] || typeof row['Téléphone 1'] !== 'string') {
-      errors.push(`Ligne ${rowNumber}: Le téléphone principal est requis`);
-    }
-    
-    if (row.Statut && !['Actif', 'Inactif'].includes(row.Statut)) {
-      errors.push(`Ligne ${rowNumber}: Le statut doit être "Actif" ou "Inactif"`);
-    }
-
-    if (errors.length === 0) {
-      validData.push({
-        nom: row.Nom,
-        prenom: row.Prénom,
-        email: row.Email,
-        genre: row.Genre,
-        date_naissance: row['Date de naissance'],
-        lieu_naissance: row['Lieu de naissance'],
-        adresse: row.Adresse,
-        tel1: row['Téléphone 1'],
-        tel2: row['Téléphone 2'] || '',
-        whatsapp: row.WhatsApp || '',
-        profession: row.Profession || '',
-        photo: row.Photo || '',
-        is_active: row.Statut !== 'Inactif'
-      });
-    }
-  });
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    data: validData
-  };
-};
-
+// Read Excel file utility
 export const readExcelFile = (file: File): Promise<any[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
@@ -877,8 +18,512 @@ export const readExcelFile = (file: File): Promise<any[]> => {
         reject(error);
       }
     };
-    
-    reader.onerror = () => reject(new Error('Erreur de lecture du fichier'));
     reader.readAsArrayBuffer(file);
   });
+};
+
+// Validation functions
+export const validateSuccursalesImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2; // Excel row number (header is row 1)
+    
+    if (!row.nom || typeof row.nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis`);
+    }
+    if (!row.adresse || typeof row.adresse !== 'string') {
+      errors.push(`Ligne ${rowNumber}: L'adresse est requise`);
+    }
+    if (!row.telephone || typeof row.telephone !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le téléphone est requis`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.nom,
+        adresse: row.adresse,
+        telephone: row.telephone,
+        email: row.email || '',
+        description: row.description || '',
+        is_active: row.is_active !== false
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateBatimentsImport = (data: any[], succursales: Succursale[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.nom || typeof row.nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis`);
+    }
+    if (!row.succursale_nom) {
+      errors.push(`Ligne ${rowNumber}: Le nom de la succursale est requis`);
+    } else {
+      const succursale = succursales.find(s => s.nom === row.succursale_nom);
+      if (!succursale) {
+        errors.push(`Ligne ${rowNumber}: Succursale "${row.succursale_nom}" non trouvée`);
+      }
+    }
+
+    if (errors.length === 0) {
+      const succursale = succursales.find(s => s.nom === row.succursale_nom);
+      validData.push({
+        nom: row.nom,
+        succursale: succursale!.id,
+        description: row.description || '',
+        is_active: row.is_active !== false
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateSallesImport = (data: any[], batiments: Batiment[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.nom || typeof row.nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis`);
+    }
+    if (!row.batiment_nom) {
+      errors.push(`Ligne ${rowNumber}: Le nom du bâtiment est requis`);
+    } else {
+      const batiment = batiments.find(b => b.nom === row.batiment_nom);
+      if (!batiment) {
+        errors.push(`Ligne ${rowNumber}: Bâtiment "${row.batiment_nom}" non trouvé`);
+      }
+    }
+    if (row.capacite && (isNaN(row.capacite) || row.capacite <= 0)) {
+      errors.push(`Ligne ${rowNumber}: La capacité doit être un nombre positif`);
+    }
+
+    if (errors.length === 0) {
+      const batiment = batiments.find(b => b.nom === row.batiment_nom);
+      validData.push({
+        nom: row.nom,
+        batiment: batiment!.id,
+        capacite: row.capacite || 0,
+        description: row.description || '',
+        is_active: row.is_active !== false
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateInscriptionsImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    // Validation basique pour les inscriptions
+    if (!row.nom_eleve || typeof row.nom_eleve !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom de l'élève est requis`);
+    }
+    if (!row.prenom_eleve || typeof row.prenom_eleve !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le prénom de l'élève est requis`);
+    }
+    if (!row.email_eleve || typeof row.email_eleve !== 'string') {
+      errors.push(`Ligne ${rowNumber}: L'email de l'élève est requis`);
+    }
+
+    if (errors.length === 0) {
+      validData.push(row);
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateSessionsImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.nom || typeof row.nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis`);
+    }
+    if (!row.date_debut) {
+      errors.push(`Ligne ${rowNumber}: La date de début est requise`);
+    }
+    if (!row.date_fin) {
+      errors.push(`Ligne ${rowNumber}: La date de fin est requise`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.nom,
+        date_debut: row.date_debut,
+        date_fin: row.date_fin,
+        description: row.description || '',
+        is_active: row.is_active !== false
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateNiveauxImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.nom || typeof row.nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis`);
+    }
+    if (row.ordre && (isNaN(row.ordre) || row.ordre < 0)) {
+      errors.push(`Ligne ${rowNumber}: L'ordre doit être un nombre positif`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.nom,
+        ordre: row.ordre || 0,
+        description: row.description || '',
+        is_active: row.is_active !== false
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateDomainesImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.nom || typeof row.nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.nom,
+        description: row.description || '',
+        is_active: row.is_active !== false
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateElevesImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.nom || typeof row.nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis`);
+    }
+    if (!row.prenom || typeof row.prenom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le prénom est requis`);
+    }
+    if (!row.email || typeof row.email !== 'string') {
+      errors.push(`Ligne ${rowNumber}: L'email est requis`);
+    }
+    if (!row.date_naissance) {
+      errors.push(`Ligne ${rowNumber}: La date de naissance est requise`);
+    }
+    if (!row.genre || !['M', 'F', 'A'].includes(row.genre)) {
+      errors.push(`Ligne ${rowNumber}: Le genre doit être M, F ou A`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        user: {
+          nom: row.nom,
+          prenom: row.prenom,
+          email: row.email,
+          genre: row.genre,
+          date_naissance: row.date_naissance,
+          lieu_naissance: row.lieu_naissance || '',
+          adresse: row.adresse || '',
+          tel1: row.tel1 || '',
+          tel2: row.tel2 || '',
+          whatsapp: row.whatsapp || '',
+          photo: row.photo || '',
+          is_active: row.is_active !== false
+        },
+        matricule: row.matricule || `E${new Date().getFullYear()}${String(Date.now()).slice(-3)}`
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateTuteursImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.nom || typeof row.nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis`);
+    }
+    if (!row.prenom || typeof row.prenom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le prénom est requis`);
+    }
+    if (!row.email || typeof row.email !== 'string') {
+      errors.push(`Ligne ${rowNumber}: L'email est requis`);
+    }
+    if (!row.genre || !['M', 'F', 'A'].includes(row.genre)) {
+      errors.push(`Ligne ${rowNumber}: Le genre doit être M, F ou A`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        user: {
+          nom: row.nom,
+          prenom: row.prenom,
+          email: row.email,
+          genre: row.genre,
+          date_naissance: row.date_naissance || '',
+          lieu_naissance: row.lieu_naissance || '',
+          adresse: row.adresse || '',
+          tel1: row.tel1 || '',
+          tel2: row.tel2 || '',
+          whatsapp: row.whatsapp || '',
+          photo: row.photo || '',
+          is_active: row.is_active !== false
+        },
+        profession: row.profession || ''
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+// Template generation functions
+export const generateSuccursalesTemplate = () => {
+  const data = [
+    {
+      nom: 'Succursale Centre',
+      adresse: '123 Avenue de la République',
+      telephone: '+241 01 23 45 67',
+      email: 'centre@ecole.ga',
+      description: 'Succursale principale au centre-ville',
+      is_active: true
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Succursales');
+  XLSX.writeFile(wb, 'template_succursales.xlsx');
+};
+
+export const generateBatimentsTemplate = () => {
+  const data = [
+    {
+      nom: 'Bâtiment A',
+      succursale_nom: 'Succursale Centre',
+      description: 'Bâtiment principal d\'enseignement',
+      is_active: true
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Batiments');
+  XLSX.writeFile(wb, 'template_batiments.xlsx');
+};
+
+export const generateSallesTemplate = () => {
+  const data = [
+    {
+      nom: 'Salle 101',
+      batiment_nom: 'Bâtiment A',
+      capacite: 30,
+      description: 'Salle de classe standard',
+      is_active: true
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Salles');
+  XLSX.writeFile(wb, 'template_salles.xlsx');
+};
+
+export const generateInscriptionsTemplate = () => {
+  const data = [
+    {
+      nom_eleve: 'NDONG',
+      prenom_eleve: 'Jean',
+      email_eleve: 'jean.ndong@email.com',
+      classe_nom: '6ème A',
+      session_nom: '2024-2025',
+      date_inscription: '2024-09-01',
+      statut: 'CONFIRME'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Inscriptions');
+  XLSX.writeFile(wb, 'template_inscriptions.xlsx');
+};
+
+export const generateSessionsTemplate = () => {
+  const data = [
+    {
+      nom: '2024-2025',
+      date_debut: '2024-09-01',
+      date_fin: '2025-06-30',
+      description: 'Année scolaire 2024-2025',
+      is_active: true
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sessions');
+  XLSX.writeFile(wb, 'template_sessions.xlsx');
+};
+
+export const generateNiveauxTemplate = () => {
+  const data = [
+    {
+      nom: '6ème',
+      ordre: 1,
+      description: 'Classe de sixième',
+      is_active: true
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Niveaux');
+  XLSX.writeFile(wb, 'template_niveaux.xlsx');
+};
+
+export const generateDomainessTemplate = () => {
+  const data = [
+    {
+      nom: 'Littéraire',
+      description: 'Domaine des sciences littéraires',
+      is_active: true
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Domaines');
+  XLSX.writeFile(wb, 'template_domaines.xlsx');
+};
+
+export const generateElevesTemplate = () => {
+  const data = [
+    {
+      matricule: 'E2024001',
+      nom: 'NDONG',
+      prenom: 'Jean',
+      email: 'jean.ndong@email.com',
+      genre: 'M',
+      date_naissance: '2010-05-15',
+      lieu_naissance: 'Libreville',
+      adresse: '123 Rue de la Paix',
+      tel1: '+241 01 23 45 67',
+      tel2: '',
+      whatsapp: '+241 01 23 45 67',
+      photo: '',
+      is_active: true
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Élèves');
+  XLSX.writeFile(wb, 'template_eleves.xlsx');
+};
+
+export const generateTuteursTemplate = () => {
+  const data = [
+    {
+      nom: 'NDONG',
+      prenom: 'Marc',
+      email: 'marc.ndong@email.com',
+      genre: 'M',
+      date_naissance: '1980-03-20',
+      lieu_naissance: 'Libreville',
+      adresse: '123 Rue de la Paix',
+      tel1: '+241 01 23 45 67',
+      tel2: '',
+      whatsapp: '+241 01 23 45 67',
+      profession: 'Enseignant',
+      photo: '',
+      is_active: true
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Tuteurs');
+  XLSX.writeFile(wb, 'template_tuteurs.xlsx');
 };

@@ -131,7 +131,7 @@ const Personnes: React.FC = () => {
           type: 'select' as const,
           placeholder: 'Statut',
           options: [
-            { value: 'all', label: 'Tous les statuts' },
+            { value: 'all', label: 'Tous' },
             { value: 'active', label: 'Actif' },
             { value: 'inactive', label: 'Inactif' }
           ],
@@ -151,7 +151,7 @@ const Personnes: React.FC = () => {
       ),
       createLabel: 'Nouvel élève',
       exportFunction: exportElevesToExcel,
-      importType: 'inscriptions' as const,
+      importType: 'eleves' as const,
       onImport: handleElevesImport
     },
     {
@@ -207,7 +207,7 @@ const Personnes: React.FC = () => {
           type: 'select' as const,
           placeholder: 'Statut',
           options: [
-            { value: 'all', label: 'Tous les statuts' },
+            { value: 'all', label: 'Tous' },
             { value: 'active', label: 'Actif' },
             { value: 'inactive', label: 'Inactif' }
           ],
@@ -227,7 +227,7 @@ const Personnes: React.FC = () => {
       ),
       createLabel: 'Nouveau tuteur',
       exportFunction: exportTuteursToExcel,
-      importType: 'inscriptions' as const,
+      importType: 'tuteurs' as const,
       onImport: handleTuteursImport
     }
   ];
@@ -248,7 +248,7 @@ const Personnes: React.FC = () => {
       title="Gestion des Personnes"
       description="Gérez les informations des élèves et tuteurs"
       tabs={tabs}
-      fromApi={true}
+      fromApi={false}
       additionalProps={{
         createEleveDetail,
         updateEleveDetail,

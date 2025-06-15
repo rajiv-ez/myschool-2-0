@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -30,14 +31,14 @@ export interface TabConfig<T> {
   form: React.ComponentType<any>;
   createLabel: string;
   exportFunction: (items: T[]) => void;
-  importType: 'succursales' | 'batiments' | 'salles' | 'inscriptions';
+  importType: 'succursales' | 'batiments' | 'salles' | 'inscriptions' | 'eleves' | 'tuteurs';
   onImport: (data: any[]) => Promise<void>;
 }
 
 export interface DataManagementPageProps<T extends { id: number }> {
   title: string;
   description: string;
-  tabs: TabConfig<any>[]; // Changed to accept any type for flexibility
+  tabs: TabConfig<any>[];
   fromApi: boolean;
   additionalProps?: Record<string, any>;
 }
@@ -58,7 +59,7 @@ function DataManagementPage<T extends { id: number }>({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null); // Changed to any for flexibility
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
   const currentTab = tabs.find(tab => tab.id === activeTab);
 
@@ -131,6 +132,10 @@ function DataManagementPage<T extends { id: number }>({
     const isEdit = !!selectedItem;
     
     try {
+      console.log('Form data received:', data);
+      console.log('Selected item:', selectedItem);
+      console.log('Active tab:', activeTab);
+      
       if (activeTab === 'inscriptions') {
         if (isEdit) {
           console.log('Updating inscription with data:', data);
@@ -154,12 +159,14 @@ function DataManagementPage<T extends { id: number }>({
         
       } else if (activeTab === 'eleves') {
         if (isEdit && additionalProps.updateEleveDetail) {
+          console.log('Updating eleve with data:', data);
           await additionalProps.updateEleveDetail(selectedItem.id, data);
           toast({ 
             title: 'Élève mis à jour', 
             description: 'L\'élève a été modifié avec succès.' 
           });
         } else if (!isEdit && additionalProps.createEleveDetail) {
+          console.log('Creating new eleve with data:', data);
           await additionalProps.createEleveDetail(data);
           toast({ 
             title: 'Élève créé', 
@@ -168,12 +175,14 @@ function DataManagementPage<T extends { id: number }>({
         }
       } else if (activeTab === 'tuteurs') {
         if (isEdit && additionalProps.updateTuteurDetail) {
+          console.log('Updating tuteur with data:', data);
           await additionalProps.updateTuteurDetail(selectedItem.id, data);
           toast({ 
             title: 'Tuteur mis à jour', 
             description: 'Le tuteur a été modifié avec succès.' 
           });
         } else if (!isEdit && additionalProps.createTuteurDetail) {
+          console.log('Creating new tuteur with data:', data);
           await additionalProps.createTuteurDetail(data);
           toast({ 
             title: 'Tuteur créé', 

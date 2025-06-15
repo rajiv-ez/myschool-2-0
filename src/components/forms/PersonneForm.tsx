@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Phone, GraduationCap, UserCheck, Camera } from 'lucide-react';
+import { User, Phone, GraduationCap, UserCheck, Camera, Upload } from 'lucide-react';
 import { EleveDetail, TuteurDetail } from '@/types/users';
 
 const personneSchema = z.object({
@@ -41,7 +41,7 @@ type PersonneFormData = z.infer<typeof personneSchema>;
 
 interface PersonneFormProps {
   item?: EleveDetail | TuteurDetail;
-  onSubmit: (data: PersonneFormData) => void;
+  onSubmit: (data: any) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
   entityType?: 'eleve' | 'tuteur';
@@ -57,40 +57,87 @@ export default function PersonneForm({
   const isEleve = entityType === 'eleve';
   const isEditing = !!item;
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<PersonneFormData>({
-    resolver: zodResolver(personneSchema),
-    defaultValues: item ? {
-      nom: item.user.nom,
-      prenom: item.user.prenom,
-      email: item.user.email,
-      genre: item.user.genre,
-      date_naissance: item.user.date_naissance,
-      lieu_naissance: item.user.lieu_naissance,
-      photo: item.user.photo || '',
-      adresse: item.user.adresse,
-      tel1: item.user.tel1,
-      tel2: item.user.tel2 || '',
-      whatsapp: item.user.whatsapp || '',
-      matricule: 'matricule' in item ? item.matricule : '',
-      profession: 'profession' in item ? item.profession : '',
-      is_active: item.user.is_active,
-    } : {
-      genre: 'M',
-      is_active: true,
+  // Prepare default values correctly
+  const getDefaultValues = () => {
+    if (item) {
+      return {
+        nom: item.user.nom || '',
+        prenom: item.user.prenom || '',
+        email: item.user.email || '',
+        genre: item.user.genre || 'M',
+        date_naissance: item.user.date_naissance || '',
+        lieu_naissance: item.user.lieu_naissance || '',
+        photo: item.user.photo || '',
+        adresse: item.user.adresse || '',
+        tel1: item.user.tel1 || '',
+        tel2: item.user.tel2 || '',
+        whatsapp: item.user.whatsapp || '',
+        matricule: 'matricule' in item ? item.matricule : '',
+        profession: 'profession' in item ? item.profession : '',
+        is_active: item.user.is_active ?? true,
+      };
+    }
+    
+    return {
+      nom: '',
+      prenom: '',
+      email: '',
+      genre: 'M' as const,
+      date_naissance: '',
+      lieu_naissance: '',
+      photo: '',
+      adresse: '',
+      tel1: '',
+      tel2: '',
+      whatsapp: '',
       matricule: isEleve ? `E${new Date().getFullYear()}${String(Date.now()).slice(-3)}` : '',
       profession: '',
-      photo: '',
-    }
+      is_active: true,
+    };
+  };
+
+  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<PersonneFormData>({
+    resolver: zodResolver(personneSchema),
+    defaultValues: getDefaultValues()
   });
 
+  // Reset form when item changes
+  React.useEffect(() => {
+    reset(getDefaultValues());
+  }, [item, reset]);
+
   const watchedPhoto = watch('photo');
+  const watchedGenre = watch('genre');
 
   const getInitials = (nom: string, prenom: string) => {
-    return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
+    return `${prenom?.charAt(0) || ''}${nom?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  const handleFormSubmit = (data: PersonneFormData) => {
+    // Transform data to match the expected API format
+    const transformedData = {
+      user: {
+        nom: data.nom,
+        prenom: data.prenom,
+        email: data.email,
+        genre: data.genre,
+        date_naissance: data.date_naissance,
+        lieu_naissance: data.lieu_naissance,
+        photo: data.photo || null,
+        adresse: data.adresse,
+        tel1: data.tel1,
+        tel2: data.tel2 || null,
+        whatsapp: data.whatsapp || null,
+        is_active: data.is_active,
+      },
+      ...(isEleve ? { matricule: data.matricule } : { profession: data.profession })
+    };
+
+    onSubmit(transformedData);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Tabs defaultValue="personal" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="personal" className="flex items-center gap-2">
@@ -125,14 +172,20 @@ export default function PersonneForm({
                 </Avatar>
                 <div className="flex-1">
                   <Label htmlFor="photo">Photo de profil</Label>
-                  <Input
-                    id="photo"
-                    {...register('photo')}
-                    placeholder="URL de la photo"
-                    className="mt-1"
-                  />
+                  <div className="flex gap-2 mt-1">
+                    <Input
+                      id="photo"
+                      {...register('photo')}
+                      placeholder="URL de la photo ou chemin local"
+                      className="flex-1"
+                    />
+                    <Button type="button" variant="outline" size="sm" className="flex items-center gap-1">
+                      <Upload size={14} />
+                      Parcourir
+                    </Button>
+                  </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Entrez l'URL d'une photo ou laissez vide
+                    Entrez l'URL d'une photo ou sélectionnez un fichier
                   </p>
                 </div>
               </div>
@@ -173,8 +226,11 @@ export default function PersonneForm({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="genre">Genre *</Label>
-                  <Select onValueChange={(value) => setValue('genre', value as 'M' | 'F' | 'A')} defaultValue={watch('genre')}>
-                    <SelectTrigger>
+                  <Select 
+                    value={watchedGenre} 
+                    onValueChange={(value) => setValue('genre', value as 'M' | 'F' | 'A')}
+                  >
+                    <SelectTrigger className={errors.genre ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Sélectionner le genre" />
                     </SelectTrigger>
                     <SelectContent>
