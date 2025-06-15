@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
@@ -18,7 +17,7 @@ import ExcelImportDialog from '@/components/excel/ExcelImportDialog';
 export interface TabConfig<T> {
   id: string;
   label: string;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ComponentType<{ size?: string | number }>;
   items: T[];
   columns: {
     key: string;
@@ -34,13 +33,7 @@ export interface TabConfig<T> {
       filterFunction?: (item: T, value: string) => boolean;
     };
   };
-  form: React.ComponentType<{
-    isEditing: boolean;
-    selectedItem: T | null;
-    onSubmit: (data: any) => void;
-    onCancel: () => void;
-    [key: string]: any;
-  }>;
+  form: React.ComponentType<any>;
   createLabel: string;
   exportFunction: (items: T[]) => void;
   importType: 'succursales' | 'batiments' | 'salles';

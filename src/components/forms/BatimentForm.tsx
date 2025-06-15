@@ -23,7 +23,7 @@ import { Batiment, Succursale } from "@/types/infrastructure";
 
 interface BatimentFormProps {
   isEditing: boolean;
-  selectedBatiment: Batiment | null;
+  selectedItem: Batiment | null;
   succursales: Succursale[];
   onSubmit: (data: any) => void;
   onCancel: () => void;
@@ -31,11 +31,13 @@ interface BatimentFormProps {
 
 const BatimentForm: React.FC<BatimentFormProps> = ({
   isEditing,
-  selectedBatiment,
+  selectedItem,
   succursales,
   onSubmit,
   onCancel
 }) => {
+  const selectedBatiment = selectedItem as Batiment | null;
+  
   const form = useForm({
     defaultValues: {
       nom: isEditing && selectedBatiment ? selectedBatiment.nom : '',

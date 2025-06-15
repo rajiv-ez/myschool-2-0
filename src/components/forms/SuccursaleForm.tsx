@@ -17,17 +17,19 @@ import { Succursale } from "@/types/infrastructure";
 
 interface SuccursaleFormProps {
   isEditing: boolean;
-  selectedSuccursale: Succursale | null;
+  selectedItem: Succursale | null;
   onSubmit: (data: any) => void;
   onCancel: () => void;
 }
 
 const SuccursaleForm: React.FC<SuccursaleFormProps> = ({
   isEditing,
-  selectedSuccursale,
+  selectedItem,
   onSubmit,
   onCancel
 }) => {
+  const selectedSuccursale = selectedItem as Succursale | null;
+  
   const form = useForm({
     defaultValues: {
       nom: isEditing && selectedSuccursale ? selectedSuccursale.nom : '',

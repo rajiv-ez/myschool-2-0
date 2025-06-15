@@ -23,7 +23,7 @@ import { Salle, Batiment } from "@/types/infrastructure";
 
 interface SalleFormProps {
   isEditing: boolean;
-  selectedSalle: Salle | null;
+  selectedItem: Salle | null;
   batiments: Batiment[];
   onSubmit: (data: any) => void;
   onCancel: () => void;
@@ -31,11 +31,13 @@ interface SalleFormProps {
 
 const SalleForm: React.FC<SalleFormProps> = ({
   isEditing,
-  selectedSalle,
+  selectedItem,
   batiments,
   onSubmit,
   onCancel
 }) => {
+  const selectedSalle = selectedItem as Salle | null;
+  
   const form = useForm({
     defaultValues: {
       nom: isEditing && selectedSalle ? selectedSalle.nom : '',
