@@ -35,18 +35,18 @@ const Personnes: React.FC = () => {
   const exportElevesToExcel = (items: EleveDetail[]) => {
     const data = items.map(eleve => ({
       'Matricule': eleve.matricule,
-      'Nom': eleve.user.nom,
-      'Prénom': eleve.user.prenom,
-      'Email': eleve.user.email,
-      'Genre': eleve.user.genre === 'M' ? 'Masculin' : eleve.user.genre === 'F' ? 'Féminin' : 'Autre',
-      'Date de naissance': eleve.user.date_naissance,
-      'Lieu de naissance': eleve.user.lieu_naissance,
-      'Adresse': eleve.user.adresse,
-      'Téléphone 1': eleve.user.tel1,
-      'Téléphone 2': eleve.user.tel2 || '',
-      'WhatsApp': eleve.user.whatsapp || '',
-      'Photo': eleve.user.photo || '',
-      'Statut': eleve.user.is_active ? 'Actif' : 'Inactif'
+      'Nom': eleve.user?.nom || '',
+      'Prénom': eleve.user?.prenom || '',
+      'Email': eleve.user?.email || '',
+      'Genre': eleve.user?.genre === 'M' ? 'Masculin' : eleve.user?.genre === 'F' ? 'Féminin' : 'Autre',
+      'Date de naissance': eleve.user?.date_naissance || '',
+      'Lieu de naissance': eleve.user?.lieu_naissance || '',
+      'Adresse': eleve.user?.adresse || '',
+      'Téléphone 1': eleve.user?.tel1 || '',
+      'Téléphone 2': eleve.user?.tel2 || '',
+      'WhatsApp': eleve.user?.whatsapp || '',
+      'Photo': eleve.user?.photo || '',
+      'Statut': eleve.user?.is_active ? 'Actif' : 'Inactif'
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -57,19 +57,19 @@ const Personnes: React.FC = () => {
 
   const exportTuteursToExcel = (items: TuteurDetail[]) => {
     const data = items.map(tuteur => ({
-      'Nom': tuteur.user.nom,
-      'Prénom': tuteur.user.prenom,
-      'Email': tuteur.user.email,
-      'Genre': tuteur.user.genre === 'M' ? 'Masculin' : tuteur.user.genre === 'F' ? 'Féminin' : 'Autre',
-      'Date de naissance': tuteur.user.date_naissance,
-      'Lieu de naissance': tuteur.user.lieu_naissance,
-      'Adresse': tuteur.user.adresse,
-      'Téléphone 1': tuteur.user.tel1,
-      'Téléphone 2': tuteur.user.tel2 || '',
-      'WhatsApp': tuteur.user.whatsapp || '',
+      'Nom': tuteur.user?.nom || '',
+      'Prénom': tuteur.user?.prenom || '',
+      'Email': tuteur.user?.email || '',
+      'Genre': tuteur.user?.genre === 'M' ? 'Masculin' : tuteur.user?.genre === 'F' ? 'Féminin' : 'Autre',
+      'Date de naissance': tuteur.user?.date_naissance || '',
+      'Lieu de naissance': tuteur.user?.lieu_naissance || '',
+      'Adresse': tuteur.user?.adresse || '',
+      'Téléphone 1': tuteur.user?.tel1 || '',
+      'Téléphone 2': tuteur.user?.tel2 || '',
+      'WhatsApp': tuteur.user?.whatsapp || '',
       'Profession': tuteur.profession,
-      'Photo': tuteur.user.photo || '',
-      'Statut': tuteur.user.is_active ? 'Actif' : 'Inactif'
+      'Photo': tuteur.user?.photo || '',
+      'Statut': tuteur.user?.is_active ? 'Actif' : 'Inactif'
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -99,35 +99,40 @@ const Personnes: React.FC = () => {
           key: 'matricule',
           label: 'Matricule',
           render: (item: EleveDetail) => (
-            <span className="font-medium">{item.matricule}</span>
+            <span className="font-medium">{item?.matricule || 'N/A'}</span>
           )
         },
         {
           key: 'nom',
           label: 'Nom',
-          render: (item: EleveDetail) => item.user.nom
+          render: (item: EleveDetail) => item?.user?.nom || 'N/A'
         },
         {
           key: 'prenom',
           label: 'Prénom',
-          render: (item: EleveDetail) => item.user.prenom
+          render: (item: EleveDetail) => item?.user?.prenom || 'N/A'
         },
         {
           key: 'email',
           label: 'Email',
-          render: (item: EleveDetail) => item.user.email
+          render: (item: EleveDetail) => item?.user?.email || 'N/A'
         },
         {
           key: 'tel1',
           label: 'Téléphone',
-          render: (item: EleveDetail) => item.user.tel1
+          render: (item: EleveDetail) => item?.user?.tel1 || 'N/A'
         },
         {
           key: 'statut',
           label: 'Statut',
           render: (item: EleveDetail) => {
             console.log('Rendering eleve status for item:', item);
-            console.log('item.user.is_active:', item.user.is_active);
+            console.log('item.user.is_active:', item?.user?.is_active);
+            
+            if (!item?.user) {
+              return <span className="text-muted-foreground">N/A</span>;
+            }
+            
             return (
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 item.user.is_active 
@@ -152,7 +157,7 @@ const Personnes: React.FC = () => {
           ],
           filterFunction: (item: EleveDetail, value: string) => 
             value === 'all' || 
-            (value === 'active' ? item.user.is_active : !item.user.is_active)
+            (value === 'active' ? item?.user?.is_active : !item?.user?.is_active)
         }
       },
       form: ({ item, onSubmit, onCancel, isSubmitting }: any) => (
@@ -179,35 +184,40 @@ const Personnes: React.FC = () => {
           key: 'nom',
           label: 'Nom',
           render: (item: TuteurDetail) => (
-            <span className="font-medium">{item.user.nom}</span>
+            <span className="font-medium">{item?.user?.nom || 'N/A'}</span>
           )
         },
         {
           key: 'prenom',
           label: 'Prénom',
-          render: (item: TuteurDetail) => item.user.prenom
+          render: (item: TuteurDetail) => item?.user?.prenom || 'N/A'
         },
         {
           key: 'email',
           label: 'Email',
-          render: (item: TuteurDetail) => item.user.email
+          render: (item: TuteurDetail) => item?.user?.email || 'N/A'
         },
         {
           key: 'tel1',
           label: 'Téléphone',
-          render: (item: TuteurDetail) => item.user.tel1
+          render: (item: TuteurDetail) => item?.user?.tel1 || 'N/A'
         },
         {
           key: 'profession',
           label: 'Profession',
-          render: (item: TuteurDetail) => item.profession
+          render: (item: TuteurDetail) => item?.profession || 'N/A'
         },
         {
           key: 'statut',
           label: 'Statut',
           render: (item: TuteurDetail) => {
             console.log('Rendering tuteur status for item:', item);
-            console.log('item.user.is_active:', item.user.is_active);
+            console.log('item.user.is_active:', item?.user?.is_active);
+            
+            if (!item?.user) {
+              return <span className="text-muted-foreground">N/A</span>;
+            }
+            
             return (
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 item.user.is_active 
@@ -232,7 +242,7 @@ const Personnes: React.FC = () => {
           ],
           filterFunction: (item: TuteurDetail, value: string) => 
             value === 'all' || 
-            (value === 'active' ? item.user.is_active : !item.user.is_active)
+            (value === 'active' ? item?.user?.is_active : !item?.user?.is_active)
         }
       },
       form: ({ item, onSubmit, onCancel, isSubmitting }: any) => (
