@@ -60,14 +60,29 @@ export interface UserLite {
   tel2?: string;
   whatsapp?: string;
   photo?: string;
-  is_staff: boolean;
-  is_active: boolean;
 }
 
 export interface EleveDetail {
   id: number;
   user: UserLite;
   matricule: string;
-  tuteurs: number[]; // ou un tableau enrichi si souhaité
+  tuteurs: number[];
+}
+
+
+export interface StaffDetail {
+  id: number;
+  user: UserLite;
+  poste: number;
+  date_embauche: string;
+  statut: 'ACTIF' | 'CONGE' | 'SUSPENDU' | 'INACTIF';
+  domaines: number[];
+  niveaux: number[];
+}
+
+export interface TuteurDetail {
+  id: number;
+  user: UserLite;
+  profession: string;
 }
 

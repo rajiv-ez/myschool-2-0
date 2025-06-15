@@ -1,19 +1,22 @@
 
 import { useEffect, useState } from 'react';
 import { usersService } from '@/services/usersService';
-import { User, Eleve, Tuteur, Staff, RelationEleveTuteur } from '@/types/users';
+import { 
+  User, Eleve, Tuteur, Staff, RelationEleveTuteur, 
+  UserLite, EleveDetail, TuteurDetail, StaffDetail
+} from '@/types/users';
 
 export function useUsersData() {
   const [users, setUsers] = useState<User[]>([]);
 
   const [eleves, setEleves] = useState<Eleve[]>([]);
-  const [elevesDetails, setElevesDetails] = useState<Eleve[]>([]);
+  const [elevesDetails, setElevesDetails] = useState<EleveDetail[]>([]);
 
   const [tuteurs, setTuteurs] = useState<Tuteur[]>([]);
-  const [tuteursDetails, setTuteursDetails] = useState<Tuteur[]>([]);
+  const [tuteursDetails, setTuteursDetails] = useState<TuteurDetail[]>([]);
   
   const [staffs, setStaffs] = useState<Staff[]>([]);
-  const [staffsDetails, setStaffsDetails] = useState<Staff[]>([]);
+  const [staffsDetails, setStaffsDetails] = useState<StaffDetail[]>([]);
 
   const [relations, setRelations] = useState<RelationEleveTuteur[]>([]);
 
@@ -75,16 +78,16 @@ export function useUsersData() {
   const deleteStaff = async (id: number) => { await usersService.deleteStaff(id); setStaffs(prev => prev.filter(s => s.id !== id)); };
   
 
-  const createTuteurDetail = async (data: Partial<Tuteur>) => { const r = await usersService.createTuteurDetail(data); if (r.fromApi) setTuteursDetails(prev => [...prev, r.data]); return r; };
-  const updateTuteurDetail = async (id: number, data: Partial<Tuteur>) => { const r = await usersService.updateTuteurDetail(id, data); if (r.fromApi) setTuteursDetails(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
+  const createTuteurDetail = async (data: Partial<TuteurDetail                                                                                                >) => { const r = await usersService.createTuteurDetail(data); if (r.fromApi) setTuteursDetails(prev => [...prev, r.data]); return r; };
+  const updateTuteurDetail = async (id: number, data: Partial<TuteurDetail                                                                                                >) => { const r = await usersService.updateTuteurDetail(id, data); if (r.fromApi) setTuteursDetails(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
   const deleteTuteurDetail = async (id: number) => { await usersService.deleteTuteurDetail(id); setTuteursDetails(prev => prev.filter(s => s.id !== id)); };
   
-  const createEleveDetail = async (data: Partial<Eleve>) => { const r = await usersService.createEleveDetail(data); if (r.fromApi) setElevesDetails(prev => [...prev, r.data]); return r; };
-  const updateEleveDetail = async (id: number, data: Partial<Eleve>) => { const r = await usersService.updateEleveDetail(id, data); if (r.fromApi) setElevesDetails(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
+  const createEleveDetail = async (data: Partial<EleveDetail>) => { const r = await usersService.createEleveDetail(data); if (r.fromApi) setElevesDetails(prev => [...prev, r.data]); return r; };
+  const updateEleveDetail = async (id: number, data: Partial<EleveDetail>) => { const r = await usersService.updateEleveDetail(id, data); if (r.fromApi) setElevesDetails(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
   const deleteEleveDetail = async (id: number) => { await usersService.deleteEleveDetail(id); setElevesDetails(prev => prev.filter(s => s.id !== id)); };
 
-  const createStaffDetail = async (data: Partial<Staff>) => { const r = await usersService.createStaffDetail(data); if (r.fromApi) setStaffsDetails(prev => [...prev, r.data]); return r; };
-  const updateStaffDetail = async (id: number, data: Partial<Staff>) => { const r = await usersService.updateStaffDetail(id, data); if (r.fromApi) setStaffsDetails(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
+  const createStaffDetail = async (data: Partial<StaffDetail>) => { const r = await usersService.createStaffDetail(data); if (r.fromApi) setStaffsDetails(prev => [...prev, r.data]); return r; };
+  const updateStaffDetail = async (id: number, data: Partial<StaffDetail>) => { const r = await usersService.updateStaffDetail(id, data); if (r.fromApi) setStaffsDetails(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
   const deleteStaffDetail = async (id: number) => { await usersService.deleteStaffDetail(id); setStaffsDetails(prev => prev.filter(s => s.id !== id)); };
 
   
