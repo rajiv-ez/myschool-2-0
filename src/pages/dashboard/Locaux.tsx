@@ -426,7 +426,7 @@ const Locaux: React.FC = () => {
             <p className="text-muted-foreground">Gérez les succursales, bâtiments et salles de votre établissement</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
           <Button variant="outline" onClick={handleImportExcel} className="flex items-center gap-2">
             <Upload size={16} />
             Importer Excel
