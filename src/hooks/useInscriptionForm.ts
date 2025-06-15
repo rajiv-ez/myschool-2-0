@@ -69,31 +69,59 @@ export function useInscriptionForm({
 
   const form = useForm({
     defaultValues: {
-      eleve: isEditing && selectedInscription ? selectedInscription.eleve.toString() : '',
+      eleve: '',
       classeAcademiqueId: '',
-      est_reinscription: isEditing && selectedInscription ? selectedInscription.est_reinscription : false,
-      statut: isEditing && selectedInscription ? selectedInscription.statut : 'CONFIRMEE',
-      date_inscription: isEditing && selectedInscription 
-        ? selectedInscription.date_inscription
-        : new Date().toISOString().split('T')[0]
+      est_reinscription: false,
+      statut: 'CONFIRMEE',
+      date_inscription: new Date().toISOString().split('T')[0]
     }
   });
   
-  // Initialiser la classe académique sélectionnée si en mode édition
+  // Initialiser les valeurs du formulaire et la classe académique sélectionnée si en mode édition
   useEffect(() => {
     if (isEditing && selectedInscription) {
+      console.log('Initializing form for editing:', selectedInscription);
+      
+      // Trouver l'élève correspondant pour obtenir son ID d'élève (pas son user ID)
+      const eleveRecord = eleves.find(e => e.user === selectedInscription.eleve);
+      const eleveId = eleveRecord ? eleveRecord.id.toString() : selectedInscription.eleve.toString();
+      
+      // Réinitialiser les valeurs du formulaire
+      form.reset({
+        eleve: eleveId,
+        classeAcademiqueId: selectedInscription.classe_session.toString(),
+        est_reinscription: selectedInscription.est_reinscription,
+        statut: selectedInscription.statut,
+        date_inscription: selectedInscription.date_inscription
+      });
+      
+      // Trouver et définir la classe académique correspondante
       const classeAcademique = classesAcademiques.find(ca => 
         ca.id === selectedInscription.classe_session
       );
       
       if (classeAcademique) {
+        console.log('Found matching classe academique:', classeAcademique);
         setSelectedClasseAcademique(classeAcademique);
-        form.setValue('classeAcademiqueId', classeAcademique.id.toString());
+      } else {
+        console.warn('No matching classe academique found for id:', selectedInscription.classe_session);
       }
+    } else {
+      // Mode création - réinitialiser le formulaire avec des valeurs par défaut
+      console.log('Initializing form for creation');
+      form.reset({
+        eleve: '',
+        classeAcademiqueId: '',
+        est_reinscription: false,
+        statut: 'CONFIRMEE',
+        date_inscription: new Date().toISOString().split('T')[0]
+      });
+      setSelectedClasseAcademique(null);
     }
-  }, [isEditing, selectedInscription, classesAcademiques, form]);
+  }, [isEditing, selectedInscription, classesAcademiques, eleves, form]);
   
   const handleClasseAcademiqueChange = (value: string) => {
+    console.log('Classe academique changed to:', value);
     const id = parseInt(value);
     const classeAcademique = classesAcademiques.find(ca => ca.id === id);
     setSelectedClasseAcademique(classeAcademique || null);
@@ -103,16 +131,25 @@ export function useInscriptionForm({
   const activeClassesAcademiques = classesAcademiques.filter(ca => ca.statut === 'Actif');
   
   const handleSubmit = (data: any) => {
-    if (!selectedClasseAcademique) return;
+    console.log('Form submitted with data:', data);
+    if (!selectedClasseAcademique) {
+      console.error('No classe academique selected');
+      return;
+    }
+    
+    // Trouver l'élève sélectionné pour obtenir son user ID
+    const selectedEleve = elevesWithUserInfo.find(e => e.id.toString() === data.eleve);
+    const eleveUserId = selectedEleve ? selectedEleve.user : parseInt(data.eleve);
     
     const formData = {
-      eleve: parseInt(data.eleve),
+      eleve: eleveUserId, // Utiliser l'user ID de l'élève
       classe_session: selectedClasseAcademique.id,
       est_reinscription: data.est_reinscription,
       statut: data.statut,
       date_inscription: data.date_inscription
     };
     
+    console.log('Processed form data:', formData);
     onSubmit(formData);
   };
 

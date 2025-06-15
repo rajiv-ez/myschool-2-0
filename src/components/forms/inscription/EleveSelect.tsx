@@ -50,7 +50,7 @@ const EleveSelect: React.FC<EleveSelectProps> = ({
             </FormControl>
             <SelectContent>
               {elevesWithUserInfo.map((eleve) => (
-                <SelectItem key={eleve.id} value={eleve.user.toString()}>
+                <SelectItem key={eleve.id} value={eleve.id.toString()}>
                   {eleve.fullName} ({eleve.matricule})
                 </SelectItem>
               ))}

@@ -81,18 +81,19 @@ const inscriptionsData: Inscription[] = [
 
 export function useInscriptionsData() {
   // Récupérer les données des utilisateurs et élèves
-  const { data: usersResponse } = useQuery({
+  const { data: usersResponse, isLoading: usersLoading } = useQuery({
     queryKey: ['users'],
     queryFn: () => usersService.getUsers(),
   });
 
-  const { data: elevesResponse } = useQuery({
+  const { data: elevesResponse, isLoading: elevesLoading } = useQuery({
     queryKey: ['eleves'],
     queryFn: () => usersService.getEleves(),
   });
 
   const users = usersResponse?.data || [];
   const eleves = elevesResponse?.data || [];
+  const fromApi = usersResponse?.fromApi && elevesResponse?.fromApi;
 
   // Fonctions utilitaires
   const getEleveFullName = (eleveId: number) => {
@@ -169,7 +170,7 @@ export function useInscriptionsData() {
     getClasseSessionName,
     getStatutLabel,
     getStatutColor,
-    isLoading: false,
-    fromApi: false
+    isLoading: usersLoading || elevesLoading,
+    fromApi
   };
 }
