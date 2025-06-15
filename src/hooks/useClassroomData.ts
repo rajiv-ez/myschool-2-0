@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { configurationService } from '@/services/configurationService';
@@ -25,13 +26,13 @@ export const useClassroomData = () => {
   // Fetch classe sessions
   const { data: classeSessionsResponse } = useQuery({
     queryKey: ['classe-sessions'],
-    queryFn: academicService.getClasseSessions,
+    queryFn: () => academicService.getClasseSessions(),
   });
 
   // Fetch inscriptions
   const { data: inscriptionsResponse } = useQuery({
     queryKey: ['inscriptions'],
-    queryFn: academicService.getInscriptions,
+    queryFn: () => academicService.getInscriptions(),
   });
 
   const configurations = configurationsResponse?.data || [];
