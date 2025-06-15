@@ -1,3 +1,4 @@
+
 // src/types/academic.ts
 export interface Session {
   id: number;
@@ -20,6 +21,7 @@ export interface Palier {
 export interface Niveau {
   id: number;
   nom: string;
+  description?: string;
 }
 
 export interface Filiere {
