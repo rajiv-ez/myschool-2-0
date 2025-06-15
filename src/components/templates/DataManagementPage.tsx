@@ -370,7 +370,7 @@ function DataManagementPage<T extends { id: number }>({
         onCreateModalClose={() => setIsCreateModalOpen(false)}
         onEditModalClose={() => setIsEditModalOpen(false)}
         onDeleteModalClose={() => setIsDeleteModalOpen(false)}
-        onDetailsModalClose={() => setIsDetailsModalClose(false)}
+        onDetailsModalClose={() => setIsDetailsModalOpen(false)}
         onImportModalClose={() => setIsImportModalOpen(false)}
         onFormSubmit={handleFormSubmit}
         onFormCancel={handleFormCancel}
