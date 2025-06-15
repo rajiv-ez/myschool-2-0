@@ -1,7 +1,9 @@
+
 export interface Domaine {
   id: number;
   nom: string;
   description: string;
+  is_active: boolean;
 }
 
 export interface UniteEnseignement {
@@ -9,6 +11,7 @@ export interface UniteEnseignement {
   nom: string;
   description: string;
   domaines: number[];
+  is_active: boolean;
 }
 
 export interface Matiere {
@@ -17,6 +20,7 @@ export interface Matiere {
   unite: number;
   coefficient: number;
   description: string;
+  is_active: boolean;
 }
 
 export interface MatiereGroupee {

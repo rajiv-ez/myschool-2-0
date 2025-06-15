@@ -5,13 +5,19 @@ export interface Succursale {
   adresse: string;
   ville: string;
   pays: string;
+  telephone: string;
+  email: string;
   est_siege: boolean;
+  description: string;
+  is_active: boolean;
 }
 
 export interface Batiment {
   id: number;
   succursale: number; // FK to Succursale
   nom: string;
+  description: string;
+  is_active: boolean;
 }
 
 export interface Salle {
@@ -19,4 +25,6 @@ export interface Salle {
   batiment: number; // FK to Batiment
   nom: string;
   capacite: number;
+  description: string;
+  is_active: boolean;
 }

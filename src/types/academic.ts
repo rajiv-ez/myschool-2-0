@@ -7,6 +7,8 @@ export interface Session {
   fin: string;
   en_cours: boolean;
   auto_activer_palier: boolean;
+  description: string;
+  is_active: boolean;
 }
 
 export interface Palier {
@@ -16,12 +18,16 @@ export interface Palier {
   debut: string;
   fin: string;
   en_cours: boolean;
+  description: string;
+  is_active: boolean;
 }
 
 export interface Niveau {
   id: number;
   nom: string;
+  ordre: number;
   description?: string;
+  is_active: boolean;
 }
 
 export interface Filiere {
@@ -29,6 +35,7 @@ export interface Filiere {
   niveau: number;
   nom: string;
   description: string;
+  is_active: boolean;
 }
 
 export interface Specialite {
@@ -36,6 +43,7 @@ export interface Specialite {
   filiere: number;
   nom: string;
   description: string;
+  is_active: boolean;
 }
 
 export interface Classe {
@@ -43,6 +51,7 @@ export interface Classe {
   specialite: number;
   nom: string;
   description: string;
+  is_active: boolean;
 }
 
 export interface ClasseSession {
@@ -50,6 +59,7 @@ export interface ClasseSession {
   classe: number;
   session: number;
   capacite: number;
+  is_active: boolean;
 }
 
 export interface Inscription {
