@@ -104,7 +104,8 @@ export const usersService = {
   getTuteursDetails: (): Promise<ApiResponse<TuteurDetail[]>> =>
     fetchWithFallback('/api/accounts/tuteurs-details/', mockTuteursDetails),
   createTuteurDetail: (data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> => {
-    console.log('usersService: Creating tuteur detail with data:', data);
+    console.log('========== TUTEUR CREATE SERVICE ==========');
+    console.log('usersService: Creating tuteur detail with data:', JSON.stringify(data, null, 2));
     console.log('usersService: Data structure validation:');
     console.log('- Has user object:', !!data.user);
     console.log('- User object type:', typeof data.user);
@@ -115,6 +116,15 @@ export const usersService = {
     if (!data.user || typeof data.user !== 'object') {
       console.error('usersService: Invalid user data structure');
       throw new Error('Les données utilisateur sont invalides ou manquantes');
+    }
+    
+    // Validate required user fields
+    const requiredUserFields = ['nom', 'prenom', 'email', 'genre', 'date_naissance', 'lieu_naissance', 'adresse', 'tel1'];
+    for (const field of requiredUserFields) {
+      if (!data.user[field]) {
+        console.error(`usersService: Missing required field: ${field}`);
+        throw new Error(`Le champ ${field} est requis`);
+      }
     }
     
     // Simulate creating a new tuteur with proper structure
@@ -133,12 +143,12 @@ export const usersService = {
         lieu_naissance: data.user.lieu_naissance || '',
         adresse: data.user.adresse || '',
         tel1: data.user.tel1 || '',
-        tel2: data.user.tel2 || null,
-        whatsapp: data.user.whatsapp || null,
-        photo: data.user.photo || null,
-        is_staff: false,
+        tel2: data.user.tel2 || '',
+        whatsapp: data.user.whatsapp || '',
+        photo: data.user.photo || '',
+        is_staff: data.user.is_staff || false,
         is_active: data.user.is_active !== undefined ? data.user.is_active : true,
-        is_superuser: false
+        is_superuser: data.user.is_superuser || false
       },
       profession: data.profession || ''
     };
@@ -147,11 +157,14 @@ export const usersService = {
     mockTuteursDetails.push(mockResponse);
     mockUsers.push(mockResponse.user as User);
     
-    console.log('usersService: Created tuteur detail:', mockResponse);
+    console.log('usersService: Created tuteur detail:', JSON.stringify(mockResponse, null, 2));
+    console.log('=======================================');
     return fetchWithFallback('/api/accounts/tuteurs-details/', mockResponse, { method: 'POST', data });
   },
   updateTuteurDetail: (id: number, data: Partial<TuteurDetail>): Promise<ApiResponse<TuteurDetail>> => {
-    console.log('usersService: Updating tuteur detail with id:', id, 'data:', data);
+    console.log('========== TUTEUR UPDATE SERVICE ==========');
+    console.log('usersService: Updating tuteur detail with id:', id);
+    console.log('usersService: Update data:', JSON.stringify(data, null, 2));
     console.log('usersService: Data structure validation:');
     console.log('- Has user object:', !!data.user);
     console.log('- User object type:', typeof data.user);
@@ -164,13 +177,15 @@ export const usersService = {
       throw new Error(`Tuteur avec l'ID ${id} introuvable`);
     }
 
+    console.log('usersService: Existing tuteur:', JSON.stringify(existingTuteur, null, 2));
+
     // Validate required data structure
     if (!data.user || typeof data.user !== 'object') {
       console.error('usersService: Invalid user data structure for update');
       throw new Error('Les données utilisateur sont invalides ou manquantes');
     }
 
-    // Update the existing tuteur with proper structure
+    // Update the existing tuteur with proper structure and preserve all fields
     const updatedTuteur: TuteurDetail = {
       ...existingTuteur,
       user: {
@@ -187,6 +202,8 @@ export const usersService = {
         whatsapp: data.user.whatsapp !== undefined ? data.user.whatsapp : existingTuteur.user.whatsapp,
         photo: data.user.photo !== undefined ? data.user.photo : existingTuteur.user.photo,
         is_active: data.user.is_active !== undefined ? data.user.is_active : existingTuteur.user.is_active,
+        is_staff: data.user.is_staff !== undefined ? data.user.is_staff : existingTuteur.user.is_staff,
+        is_superuser: data.user.is_superuser !== undefined ? data.user.is_superuser : existingTuteur.user.is_superuser,
       },
       profession: data.profession !== undefined ? data.profession : existingTuteur.profession
     };
@@ -202,7 +219,8 @@ export const usersService = {
       mockUsers[userIndex] = updatedTuteur.user as User;
     }
     
-    console.log('usersService: Updated tuteur detail:', updatedTuteur);
+    console.log('usersService: Updated tuteur detail:', JSON.stringify(updatedTuteur, null, 2));
+    console.log('=======================================');
     return fetchWithFallback(`/api/accounts/tuteurs-details/${id}/`, updatedTuteur, { method: 'PUT', data });
   },
   deleteTuteurDetail: (id: number) =>
@@ -222,7 +240,8 @@ export const usersService = {
   getElevesDetails: (): Promise<ApiResponse<EleveDetail[]>> =>
     fetchWithFallback('/api/accounts/eleves-details/', mockElevesDetails),
   createEleveDetail: (data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> => {
-    console.log('usersService: Creating eleve detail with data:', data);
+    console.log('========== ELEVE CREATE SERVICE ==========');
+    console.log('usersService: Creating eleve detail with data:', JSON.stringify(data, null, 2));
     console.log('usersService: Data structure validation:');
     console.log('- Has user object:', !!data.user);
     console.log('- User object type:', typeof data.user);
@@ -233,6 +252,15 @@ export const usersService = {
     if (!data.user || typeof data.user !== 'object') {
       console.error('usersService: Invalid user data structure');
       throw new Error('Les données utilisateur sont invalides ou manquantes');
+    }
+    
+    // Validate required user fields
+    const requiredUserFields = ['nom', 'prenom', 'email', 'genre', 'date_naissance', 'lieu_naissance', 'adresse', 'tel1'];
+    for (const field of requiredUserFields) {
+      if (!data.user[field]) {
+        console.error(`usersService: Missing required field: ${field}`);
+        throw new Error(`Le champ ${field} est requis`);
+      }
     }
     
     // Simulate creating a new eleve with proper structure
@@ -251,12 +279,12 @@ export const usersService = {
         lieu_naissance: data.user.lieu_naissance || '',
         adresse: data.user.adresse || '',
         tel1: data.user.tel1 || '',
-        tel2: data.user.tel2 || null,
-        whatsapp: data.user.whatsapp || null,
-        photo: data.user.photo || null,
-        is_staff: false,
+        tel2: data.user.tel2 || '',
+        whatsapp: data.user.whatsapp || '',
+        photo: data.user.photo || '',
+        is_staff: data.user.is_staff || false,
         is_active: data.user.is_active !== undefined ? data.user.is_active : true,
-        is_superuser: false
+        is_superuser: data.user.is_superuser || false
       },
       matricule: data.matricule || `E${new Date().getFullYear()}${String(newId).padStart(3, '0')}`,
       tuteurs: data.tuteurs || []
@@ -266,11 +294,14 @@ export const usersService = {
     mockElevesDetails.push(mockResponse);
     mockUsers.push(mockResponse.user as User);
     
-    console.log('usersService: Created eleve detail:', mockResponse);
+    console.log('usersService: Created eleve detail:', JSON.stringify(mockResponse, null, 2));
+    console.log('=======================================');
     return fetchWithFallback('/api/accounts/eleves-details/', mockResponse, { method: 'POST', data });
   },
   updateEleveDetail: (id: number, data: Partial<EleveDetail>): Promise<ApiResponse<EleveDetail>> => {
-    console.log('usersService: Updating eleve detail with id:', id, 'data:', data);
+    console.log('========== ELEVE UPDATE SERVICE ==========');
+    console.log('usersService: Updating eleve detail with id:', id);
+    console.log('usersService: Update data:', JSON.stringify(data, null, 2));
     console.log('usersService: Data structure validation:');
     console.log('- Has user object:', !!data.user);
     console.log('- User object type:', typeof data.user);
@@ -283,13 +314,15 @@ export const usersService = {
       throw new Error(`Élève avec l'ID ${id} introuvable`);
     }
 
+    console.log('usersService: Existing eleve:', JSON.stringify(existingEleve, null, 2));
+
     // Validate required data structure
     if (!data.user || typeof data.user !== 'object') {
       console.error('usersService: Invalid user data structure for update');
       throw new Error('Les données utilisateur sont invalides ou manquantes');
     }
 
-    // Update the existing eleve with proper structure
+    // Update the existing eleve with proper structure and preserve all fields
     const updatedEleve: EleveDetail = {
       ...existingEleve,
       user: {
@@ -306,6 +339,8 @@ export const usersService = {
         whatsapp: data.user.whatsapp !== undefined ? data.user.whatsapp : existingEleve.user.whatsapp,
         photo: data.user.photo !== undefined ? data.user.photo : existingEleve.user.photo,
         is_active: data.user.is_active !== undefined ? data.user.is_active : existingEleve.user.is_active,
+        is_staff: data.user.is_staff !== undefined ? data.user.is_staff : existingEleve.user.is_staff,
+        is_superuser: data.user.is_superuser !== undefined ? data.user.is_superuser : existingEleve.user.is_superuser,
       },
       matricule: data.matricule || existingEleve.matricule,
       tuteurs: data.tuteurs || existingEleve.tuteurs
@@ -322,7 +357,8 @@ export const usersService = {
       mockUsers[userIndex] = updatedEleve.user as User;
     }
     
-    console.log('usersService: Updated eleve detail:', updatedEleve);
+    console.log('usersService: Updated eleve detail:', JSON.stringify(updatedEleve, null, 2));
+    console.log('=======================================');
     return fetchWithFallback(`/api/accounts/eleves-details/${id}/`, updatedEleve, { method: 'PUT', data });
   },
   deleteEleveDetail: (id: number) =>

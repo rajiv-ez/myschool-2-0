@@ -134,7 +134,7 @@ function DataManagementPage<T extends { id: number }>({
     console.log('Active tab:', activeTab);
     console.log('Is edit:', !!selectedItem);
     console.log('Selected item:', selectedItem);
-    console.log('Form data received:', data);
+    console.log('Form data received:', JSON.stringify(data, null, 2));
     console.log('Additional props available:', Object.keys(additionalProps));
     console.log('Context:', context);
     console.log('====================================');
@@ -222,17 +222,25 @@ function DataManagementPage<T extends { id: number }>({
           console.log('DataManagementPage: Updating eleve with ID:', selectedItem.id);
           console.log('DataManagementPage: Update function available:', !!additionalProps.updateEleveDetail);
           
-          // Validate data structure before sending
+          // Enhanced data validation before sending
           if (!data.user) {
             throw new Error('Les données utilisateur sont manquantes');
           }
           
-          // Log detailed data structure
+          // Validate required user fields
+          const requiredFields = ['nom', 'prenom', 'email', 'genre', 'date_naissance', 'lieu_naissance', 'adresse', 'tel1'];
+          for (const field of requiredFields) {
+            if (!data.user[field]) {
+              throw new Error(`Le champ ${field} est requis`);
+            }
+          }
+          
+          // Log detailed data structure before sending
           console.log('DataManagementPage: Eleve update data structure check:');
           console.log('- Has user object:', !!data.user);
           console.log('- User object keys:', data.user ? Object.keys(data.user) : 'N/A');
           console.log('- Has matricule:', !!data.matricule);
-          console.log('- Full data:', JSON.stringify(data, null, 2));
+          console.log('- Full data being sent:', JSON.stringify(data, null, 2));
           
           result = await additionalProps.updateEleveDetail(selectedItem.id, data);
           console.log('DataManagementPage: Eleve update result:', result);
@@ -244,10 +252,20 @@ function DataManagementPage<T extends { id: number }>({
         } else if (!isEdit && additionalProps.createEleveDetail) {
           console.log('DataManagementPage: Creating new eleve');
           
-          // Validate data structure before sending
+          // Enhanced data validation before sending
           if (!data.user) {
             throw new Error('Les données utilisateur sont manquantes');
           }
+          
+          // Validate required user fields
+          const requiredFields = ['nom', 'prenom', 'email', 'genre', 'date_naissance', 'lieu_naissance', 'adresse', 'tel1'];
+          for (const field of requiredFields) {
+            if (!data.user[field]) {
+              throw new Error(`Le champ ${field} est requis`);
+            }
+          }
+          
+          console.log('DataManagementPage: Eleve create data being sent:', JSON.stringify(data, null, 2));
           
           result = await additionalProps.createEleveDetail(data);
           console.log('DataManagementPage: Eleve create result:', result);
@@ -263,10 +281,20 @@ function DataManagementPage<T extends { id: number }>({
         if (isEdit && additionalProps.updateTuteurDetail) {
           console.log('DataManagementPage: Updating tuteur with ID:', selectedItem.id);
           
-          // Validate data structure before sending
+          // Enhanced data validation before sending
           if (!data.user) {
             throw new Error('Les données utilisateur sont manquantes');
           }
+          
+          // Validate required user fields
+          const requiredFields = ['nom', 'prenom', 'email', 'genre', 'date_naissance', 'lieu_naissance', 'adresse', 'tel1'];
+          for (const field of requiredFields) {
+            if (!data.user[field]) {
+              throw new Error(`Le champ ${field} est requis`);
+            }
+          }
+          
+          console.log('DataManagementPage: Tuteur update data being sent:', JSON.stringify(data, null, 2));
           
           result = await additionalProps.updateTuteurDetail(selectedItem.id, data);
           console.log('DataManagementPage: Tuteur update result:', result);
@@ -278,10 +306,20 @@ function DataManagementPage<T extends { id: number }>({
         } else if (!isEdit && additionalProps.createTuteurDetail) {
           console.log('DataManagementPage: Creating new tuteur');
           
-          // Validate data structure before sending
+          // Enhanced data validation before sending
           if (!data.user) {
             throw new Error('Les données utilisateur sont manquantes');
           }
+          
+          // Validate required user fields
+          const requiredFields = ['nom', 'prenom', 'email', 'genre', 'date_naissance', 'lieu_naissance', 'adresse', 'tel1'];
+          for (const field of requiredFields) {
+            if (!data.user[field]) {
+              throw new Error(`Le champ ${field} est requis`);
+            }
+          }
+          
+          console.log('DataManagementPage: Tuteur create data being sent:', JSON.stringify(data, null, 2));
           
           result = await additionalProps.createTuteurDetail(data);
           console.log('DataManagementPage: Tuteur create result:', result);

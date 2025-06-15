@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,17 +20,17 @@ const personneSchema = z.object({
   genre: z.enum(['M', 'F', 'A'], { required_error: 'Le genre est requis' }),
   date_naissance: z.string().min(1, 'La date de naissance est requise').regex(/^\d{4}-\d{2}-\d{2}$/, 'Format de date invalide (YYYY-MM-DD)'),
   lieu_naissance: z.string().min(1, 'Le lieu de naissance est requis').max(255, 'Le lieu de naissance ne peut pas dépasser 255 caractères'),
-  photo: z.string().nullable().optional(),
+  photo: z.string().optional(),
   
   // Informations de contact
   adresse: z.string().min(1, 'L\'adresse est requise'),
   tel1: z.string().min(1, 'Le téléphone principal est requis').regex(/^[\+]?[0-9\s\-\(\)]+$/, 'Format de téléphone invalide'),
-  tel2: z.string().nullable().optional().refine(val => !val || /^[\+]?[0-9\s\-\(\)]+$/.test(val), 'Format de téléphone invalide'),
-  whatsapp: z.string().nullable().optional().refine(val => !val || /^[\+]?[0-9\s\-\(\)]+$/.test(val), 'Format WhatsApp invalide'),
+  tel2: z.string().optional(),
+  whatsapp: z.string().optional(),
   
   // Informations spécifiques
-  matricule: z.string().optional().refine(val => !val || /^[A-Z0-9]+$/.test(val), 'Le matricule ne peut contenir que des lettres majuscules et des chiffres'),
-  profession: z.string().nullable().optional(),
+  matricule: z.string().optional(),
+  profession: z.string().optional(),
   
   // Statut
   is_active: z.boolean().default(true),
@@ -71,13 +70,13 @@ export default function PersonneForm({
         genre: (user.genre as 'M' | 'F' | 'A') || 'M',
         date_naissance: user.date_naissance || '',
         lieu_naissance: user.lieu_naissance || '',
-        photo: user.photo || null,
+        photo: user.photo || '',
         adresse: user.adresse || '',
         tel1: user.tel1 || '',
-        tel2: user.tel2 || null,
-        whatsapp: user.whatsapp || null,
+        tel2: user.tel2 || '',
+        whatsapp: user.whatsapp || '',
         matricule: 'matricule' in item ? (item.matricule || '') : '',
-        profession: 'profession' in item ? (item.profession || null) : null,
+        profession: 'profession' in item ? (item.profession || '') : '',
         is_active: user.is_active !== undefined ? user.is_active : true,
       };
     }
@@ -89,13 +88,13 @@ export default function PersonneForm({
       genre: 'M',
       date_naissance: '',
       lieu_naissance: '',
-      photo: null,
+      photo: '',
       adresse: '',
       tel1: '',
-      tel2: null,
-      whatsapp: null,
+      tel2: '',
+      whatsapp: '',
       matricule: isEleve ? `E${new Date().getFullYear()}${String(Date.now()).slice(-3)}` : '',
-      profession: null,
+      profession: '',
       is_active: true,
     };
   };
@@ -123,11 +122,11 @@ export default function PersonneForm({
     return `${prenom?.charAt(0) || ''}${nom?.charAt(0) || ''}`.toUpperCase();
   };
 
-  // Enhanced data validation and formatting
+  // Enhanced data validation and formatting to match backend expectations
   const validateAndFormatData = (data: PersonneFormData) => {
     console.log('PersonneForm: Validating and formatting data:', data);
     
-    // Clean and format user data
+    // Clean and format user data with ALL required fields
     const userData = {
       nom: data.nom.trim(),
       prenom: data.prenom.trim(),
@@ -135,13 +134,21 @@ export default function PersonneForm({
       genre: data.genre,
       date_naissance: data.date_naissance,
       lieu_naissance: data.lieu_naissance.trim(),
-      photo: data.photo?.trim() || null,
+      photo: data.photo?.trim() || '', // Use empty string instead of null
       adresse: data.adresse.trim(),
       tel1: data.tel1.trim(),
-      tel2: data.tel2?.trim() || null,
-      whatsapp: data.whatsapp?.trim() || null,
-      is_active: data.is_active
+      tel2: data.tel2?.trim() || '', // Use empty string instead of null
+      whatsapp: data.whatsapp?.trim() || '', // Use empty string instead of null
+      is_active: data.is_active,
+      // Include required backend fields
+      is_staff: false,
+      is_superuser: false
     };
+
+    // If editing, preserve the existing user ID
+    if (isEditing && item?.user?.id) {
+      userData.id = item.user.id;
+    }
 
     // Validate required fields
     const requiredFields = ['nom', 'prenom', 'email', 'date_naissance', 'lieu_naissance', 'adresse', 'tel1'];
@@ -190,10 +197,20 @@ export default function PersonneForm({
       const transformedData = {
         user: userData,
         ...(isEleve 
-          ? { matricule: data.matricule?.trim() || `E${new Date().getFullYear()}${String(Date.now()).slice(-3)}` }
-          : { profession: data.profession?.trim() || null }
+          ? { 
+              matricule: data.matricule?.trim() || `E${new Date().getFullYear()}${String(Date.now()).slice(-3)}`,
+              tuteurs: item && 'tuteurs' in item ? item.tuteurs : []
+            }
+          : { 
+              profession: data.profession?.trim() || ''
+            }
         )
       };
+
+      // If editing, preserve the existing entity ID
+      if (isEditing && item?.id) {
+        transformedData.id = item.id;
+      }
 
       console.log('PersonneForm: Final transformed data for submission:', transformedData);
       console.log('PersonneForm: Entity type:', entityType);
