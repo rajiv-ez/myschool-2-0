@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -127,7 +128,7 @@ export default function PersonneForm({
     console.log('PersonneForm: Validating and formatting data:', data);
     
     // Clean and format user data with ALL required fields
-    const userData = {
+    const baseUserData = {
       nom: data.nom.trim(),
       prenom: data.prenom.trim(),
       email: data.email.trim().toLowerCase(),
@@ -146,9 +147,9 @@ export default function PersonneForm({
     };
 
     // If editing, preserve the existing user ID
-    if (isEditing && item?.user?.id) {
-      userData.id = item.user.id;
-    }
+    const userData = isEditing && item?.user?.id 
+      ? { ...baseUserData, id: item.user.id }
+      : baseUserData;
 
     // Validate required fields
     const requiredFields = ['nom', 'prenom', 'email', 'date_naissance', 'lieu_naissance', 'adresse', 'tel1'];
@@ -194,7 +195,7 @@ export default function PersonneForm({
       const userData = validateAndFormatData(data);
       
       // Transform data to match the expected API format
-      const transformedData = {
+      const baseTransformedData = {
         user: userData,
         ...(isEleve 
           ? { 
@@ -208,9 +209,9 @@ export default function PersonneForm({
       };
 
       // If editing, preserve the existing entity ID
-      if (isEditing && item?.id) {
-        transformedData.id = item.id;
-      }
+      const transformedData = isEditing && item?.id 
+        ? { ...baseTransformedData, id: item.id }
+        : baseTransformedData;
 
       console.log('PersonneForm: Final transformed data for submission:', transformedData);
       console.log('PersonneForm: Entity type:', entityType);
