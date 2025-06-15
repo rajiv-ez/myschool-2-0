@@ -1,124 +1,113 @@
 
 import React from 'react';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { DialogFooter } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { Specialite, Filiere } from "@/types/academic";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DialogFooter } from '@/components/ui/dialog';
+
+const specialiteSchema = z.object({
+  nom: z.string().min(1, 'Le nom est requis'),
+  filiere: z.number().min(1, 'La filière est requise'),
+  description: z.string().min(1, 'La description est requise'),
+});
+
+type SpecialiteFormData = z.infer<typeof specialiteSchema>;
 
 interface SpecialiteFormProps {
-  isEditing: boolean;
-  selectedSpecialite: Specialite | null;
-  filieres: Filiere[];
-  onSubmit: (data: any) => void;
+  isEditing?: boolean;
+  selectedItem?: any;
+  onSubmit: (data: SpecialiteFormData) => void;
   onCancel: () => void;
+  filieres: any[];
 }
 
 const SpecialiteForm: React.FC<SpecialiteFormProps> = ({
-  isEditing,
-  selectedSpecialite,
-  filieres,
+  isEditing = false,
+  selectedItem,
   onSubmit,
-  onCancel
+  onCancel,
+  filieres
 }) => {
-  const form = useForm({
-    defaultValues: {
-      nom: isEditing && selectedSpecialite ? selectedSpecialite.nom : '',
-      description: isEditing && selectedSpecialite ? selectedSpecialite.description : '',
-      filiere: isEditing && selectedSpecialite ? selectedSpecialite.filiere.toString() : '',
-    }
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors }
+  } = useForm<SpecialiteFormData>({
+    resolver: zodResolver(specialiteSchema),
+    defaultValues: selectedItem ? {
+      nom: selectedItem.nom,
+      filiere: selectedItem.filiere,
+      description: selectedItem.description,
+    } : {}
   });
 
-  const handleSubmit = (data: any) => {
-    const formData = {
-      ...data,
-      filiere: parseInt(data.filiere)
-    };
-    onSubmit(formData);
-  };
+  const selectedFiliere = watch('filiere');
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="nom"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nom de la spécialité</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Mathématiques-Physique" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="nom">Nom de la spécialité *</Label>
+        <Input
+          id="nom"
+          {...register('nom')}
+          placeholder="Ex: Mathématiques-Physique..."
         />
+        {errors.nom && (
+          <p className="text-sm text-destructive">{errors.nom.message}</p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="filiere"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Filière</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une filière" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {filieres.map((filiere) => (
-                    <SelectItem key={filiere.id} value={filiere.id.toString()}>
-                      {filiere.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div className="space-y-2">
+        <Label>Filière *</Label>
+        <Select 
+          value={selectedFiliere?.toString()} 
+          onValueChange={(value) => setValue('filiere', parseInt(value))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Sélectionner une filière" />
+          </SelectTrigger>
+          <SelectContent>
+            {filieres.map(filiere => (
+              <SelectItem key={filiere.id} value={filiere.id.toString()}>
+                {filiere.nom}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.filiere && (
+          <p className="text-sm text-destructive">{errors.filiere.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description *</Label>
+        <Textarea
+          id="description"
+          {...register('description')}
+          placeholder="Description de la spécialité"
+          rows={3}
         />
+        {errors.description && (
+          <p className="text-sm text-destructive">{errors.description.message}</p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder="Description de la spécialité" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Annuler
-          </Button>
-          <Button type="submit">
-            {isEditing ? 'Mettre à jour' : 'Créer'}
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Annuler
+        </Button>
+        <Button type="submit">
+          {isEditing ? 'Modifier' : 'Créer'}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 };
 

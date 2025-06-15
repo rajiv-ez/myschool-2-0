@@ -1,65 +1,82 @@
 
 import React from 'react';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { Niveau } from "@/types/academic";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { DialogFooter } from '@/components/ui/dialog';
+
+const niveauSchema = z.object({
+  nom: z.string().min(1, 'Le nom est requis'),
+  description: z.string().optional(),
+});
+
+type NiveauFormData = z.infer<typeof niveauSchema>;
 
 interface NiveauFormProps {
-  isEditing: boolean;
-  selectedNiveau: Niveau | null;
-  onSubmit: (data: any) => void;
+  isEditing?: boolean;
+  selectedItem?: any;
+  onSubmit: (data: NiveauFormData) => void;
   onCancel: () => void;
 }
 
 const NiveauForm: React.FC<NiveauFormProps> = ({
-  isEditing,
-  selectedNiveau,
+  isEditing = false,
+  selectedItem,
   onSubmit,
   onCancel
 }) => {
-  const form = useForm({
-    defaultValues: {
-      nom: isEditing && selectedNiveau ? selectedNiveau.nom : '',
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<NiveauFormData>({
+    resolver: zodResolver(niveauSchema),
+    defaultValues: selectedItem ? {
+      nom: selectedItem.nom,
+      description: selectedItem.description || '',
+    } : {}
   });
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="nom"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nom du niveau</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Primaire" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="nom">Nom du niveau *</Label>
+        <Input
+          id="nom"
+          {...register('nom')}
+          placeholder="Ex: Maternelle, Primaire..."
         />
+        {errors.nom && (
+          <p className="text-sm text-destructive">{errors.nom.message}</p>
+        )}
+      </div>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Annuler
-          </Button>
-          <Button type="submit">
-            {isEditing ? 'Mettre à jour' : 'Créer'}
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          {...register('description')}
+          placeholder="Description du niveau d'enseignement"
+          rows={3}
+        />
+        {errors.description && (
+          <p className="text-sm text-destructive">{errors.description.message}</p>
+        )}
+      </div>
+
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Annuler
+        </Button>
+        <Button type="submit">
+          {isEditing ? 'Modifier' : 'Créer'}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 };
 
