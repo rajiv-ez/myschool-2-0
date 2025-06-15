@@ -65,29 +65,6 @@ const mockInscriptions: Inscription[] = [
 ];
 
 export const academicService = {
-  // getSessions: () => fetchWithFallback('/api/academic/sessions/', mockSessions),
-
-  // createSession: (session: Omit<Session, 'id'>) => {
-  //   const newSession: Session = { ...session, id: Date.now() };
-  //   return fetchWithFallback('/api/academic/sessions/', newSession, { method: 'POST', data: session });
-  // },
-
-  // getPaliers: () => fetchWithFallback('/api/academic/paliers/', mockPaliers),
-
-  getPaliersBySession: (sessionId: number) => {
-    const filtered = mockPaliers.filter(p => p.session === sessionId);
-    return fetchWithFallback(`/api/academic/sessions/${sessionId}/paliers/`, filtered);
-  },
-
-  // getNiveaux: () => fetchWithFallback('/api/academic/niveaux/', mockNiveaux),
-  // getFilieres: () => fetchWithFallback('/api/academic/filieres/', mockFilieres),
-  // getClasses: () => fetchWithFallback('/api/academic/classes/', mockClasses),
-
-  // getClasseSessions: () => fetchWithFallback('/api/academic/classe-sessions/', mockClasseSessions),
-
-  // getInscriptions: () => fetchWithFallback('/api/academic/inscriptions/', mockInscriptions),
-
-
   // === SESSIONS ===
   getSessions: () => fetchWithFallback('/api/academic/sessions/', mockSessions),
   createSession: (data: Partial<Session>): Promise<ApiResponse<Session>> =>
