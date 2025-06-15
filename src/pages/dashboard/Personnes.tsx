@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Users, GraduationCap, UserCheck } from 'lucide-react';
 import DataManagementPage from '@/components/templates/DataManagementPage';
@@ -74,8 +73,8 @@ const Personnes: React.FC = () => {
     console.log('Importing tuteurs:', data);
   };
 
-  // Tab configurations
-  const tabs = [
+  // Tab configurations - using union type to support both EleveDetail and TuteurDetail
+  const tabs: (TabConfig<EleveDetail> | TabConfig<TuteurDetail>)[] = [
     {
       id: 'eleves',
       label: 'Élèves',
