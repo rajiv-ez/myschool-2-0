@@ -1,3 +1,28 @@
+export type AnnonceCategorie = 'INFO' | 'ALERTE' | 'EVENEMENT';
+export type AnnonceEtat = 'BROUILLON' | 'A_VALIDER' | 'PUBLIE';
+
+export interface Annonce {
+  id: number;
+  titre: string;
+  contenu: string;
+  categorie: AnnonceCategorie;
+  etat: AnnonceEtat;
+  cible_global: boolean;
+  classes: number[];
+  visible_depuis: string;
+  visible_jusquau?: string | null;
+  publie_par?: number | null;
+  date_creation: string;
+  date_modification: string;
+}
+
+export interface LuParAnnonce {
+  id: number;
+  annonce: number;
+  user: number;
+  date_lecture: string;
+}
+
 export interface PreferenceUser {
   id: number;
   user: number;

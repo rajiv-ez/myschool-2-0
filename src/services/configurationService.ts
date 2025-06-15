@@ -2,10 +2,14 @@
 import { fetchWithFallback, ApiResponse } from './api';
 import api from './api';
 import { 
+  Annonce, LuParAnnonce,
   PreferenceUser, 
   ConfigurationClasse, DispositionClasse, 
   Place, DemandeChangementPlace
 } from '../types/configuration';
+
+const mockAnnonces: Annonce[] = [];
+const mockLectures: LuParAnnonce[] = [];
 
 const mockPreferences: PreferenceUser[] = [
   { id: 1, user: 1, theme: 'light', couleur: 'purple', disposition: 'tabs' },
@@ -17,6 +21,22 @@ const mockPlaces: Place[] = [];
 const mockDemandes: DemandeChangementPlace[] = [];
 
 export const configurationService = {
+  getAnnonces: (): Promise<ApiResponse<Annonce[]>> =>
+    fetchWithFallback('/api/annonces/', mockAnnonces),
+  createAnnonce: (data: Partial<Annonce>) =>
+    fetchWithFallback('/api/annonces/', {}, { method: 'POST', data }),
+  updateAnnonce: (id: number, data: Partial<Annonce>) =>
+    fetchWithFallback(`/api/annonces/${id}/`, {}, { method: 'PUT', data }),
+  deleteAnnonce: (id: number) =>
+    fetchWithFallback(`/api/annonces/${id}/`, {}, { method: 'DELETE' }),
+
+  // LECTURES
+  getLectures: (userId?: number, annonceId?: number): Promise<ApiResponse<LuParAnnonce[]>> =>
+    fetchWithFallback( `/api/lectures/${ userId ? `?user=${userId}` : '' }${annonceId ? `?annonce=${annonceId}` : ''}`,mockLectures),
+  createLecture: (data: Partial<LuParAnnonce>) =>
+    fetchWithFallback('/api/lectures/', {}, { method: 'POST', data }),
+
+  // PREFERENCES
   getPreferences: (): Promise<ApiResponse<PreferenceUser[]>> =>
     fetchWithFallback('/api/config/preferences/me/', mockPreferences),
 
