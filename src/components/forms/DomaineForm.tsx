@@ -1,81 +1,82 @@
 
 import React from 'react';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { Domaine } from "@/types/teaching";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { DialogFooter } from '@/components/ui/dialog';
+
+const domaineSchema = z.object({
+  nom: z.string().min(1, 'Le nom est requis'),
+  description: z.string().min(1, 'La description est requise'),
+});
+
+type DomaineFormData = z.infer<typeof domaineSchema>;
 
 interface DomaineFormProps {
-  isEditing: boolean;
-  selectedDomaine: Domaine | null;
-  onSubmit: (data: any) => void;
+  isEditing?: boolean;
+  selectedItem?: any;
+  onSubmit: (data: DomaineFormData) => void;
   onCancel: () => void;
 }
 
 const DomaineForm: React.FC<DomaineFormProps> = ({
-  isEditing,
-  selectedDomaine,
+  isEditing = false,
+  selectedItem,
   onSubmit,
   onCancel
 }) => {
-  const form = useForm({
-    defaultValues: {
-      nom: isEditing && selectedDomaine ? selectedDomaine.nom : '',
-      description: isEditing && selectedDomaine ? selectedDomaine.description : '',
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<DomaineFormData>({
+    resolver: zodResolver(domaineSchema),
+    defaultValues: selectedItem ? {
+      nom: selectedItem.nom,
+      description: selectedItem.description,
+    } : {}
   });
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="nom"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nom du domaine</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Sciences Exactes" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="nom">Nom du domaine *</Label>
+        <Input
+          id="nom"
+          {...register('nom')}
+          placeholder="Ex: Sciences Exactes, Sciences Humaines..."
         />
+        {errors.nom && (
+          <p className="text-sm text-destructive">{errors.nom.message}</p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder="Description du domaine d'enseignement" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div className="space-y-2">
+        <Label htmlFor="description">Description *</Label>
+        <Textarea
+          id="description"
+          {...register('description')}
+          placeholder="Description du domaine d'enseignement"
+          rows={3}
         />
+        {errors.description && (
+          <p className="text-sm text-destructive">{errors.description.message}</p>
+        )}
+      </div>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Annuler
-          </Button>
-          <Button type="submit">
-            {isEditing ? 'Mettre à jour' : 'Créer'}
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Annuler
+        </Button>
+        <Button type="submit">
+          {isEditing ? 'Modifier' : 'Créer'}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 };
 

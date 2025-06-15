@@ -1,140 +1,130 @@
 
 import React from 'react';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { DialogFooter } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { Matiere, UniteEnseignement } from "@/types/teaching";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DialogFooter } from '@/components/ui/dialog';
+
+const matiereSchema = z.object({
+  nom: z.string().min(1, 'Le nom est requis'),
+  unite: z.number().min(1, 'L\'unité est requise'),
+  coefficient: z.number().min(1, 'Le coefficient doit être supérieur à 0').max(10, 'Le coefficient ne peut pas dépasser 10'),
+  description: z.string().min(1, 'La description est requise'),
+});
+
+type MatiereFormData = z.infer<typeof matiereSchema>;
 
 interface MatiereFormProps {
-  isEditing: boolean;
-  selectedMatiere: Matiere | null;
-  unites: UniteEnseignement[];
-  onSubmit: (data: any) => void;
+  isEditing?: boolean;
+  selectedItem?: any;
+  onSubmit: (data: MatiereFormData) => void;
   onCancel: () => void;
+  unites: any[];
 }
 
 const MatiereForm: React.FC<MatiereFormProps> = ({
-  isEditing,
-  selectedMatiere,
-  unites,
+  isEditing = false,
+  selectedItem,
   onSubmit,
-  onCancel
+  onCancel,
+  unites
 }) => {
-  const form = useForm({
-    defaultValues: {
-      nom: isEditing && selectedMatiere ? selectedMatiere.nom : '',
-      description: isEditing && selectedMatiere ? selectedMatiere.description : '',
-      coefficient: isEditing && selectedMatiere ? selectedMatiere.coefficient.toString() : '',
-      unite: isEditing && selectedMatiere ? selectedMatiere.unite.toString() : '',
-    }
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors }
+  } = useForm<MatiereFormData>({
+    resolver: zodResolver(matiereSchema),
+    defaultValues: selectedItem ? {
+      nom: selectedItem.nom,
+      unite: selectedItem.unite,
+      coefficient: selectedItem.coefficient,
+      description: selectedItem.description,
+    } : {}
   });
 
-  const handleSubmit = (data: any) => {
-    const formData = {
-      ...data,
-      coefficient: parseInt(data.coefficient),
-      unite: parseInt(data.unite)
-    };
-    onSubmit(formData);
-  };
+  const selectedUnite = watch('unite');
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="nom"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nom de la matière</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Algèbre" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="nom">Nom de la matière *</Label>
+        <Input
+          id="nom"
+          {...register('nom')}
+          placeholder="Ex: Algèbre, Géométrie..."
         />
+        {errors.nom && (
+          <p className="text-sm text-destructive">{errors.nom.message}</p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="unite"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Unité d'enseignement</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une unité" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {unites.map((unite) => (
-                    <SelectItem key={unite.id} value={unite.id.toString()}>
-                      {unite.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div className="space-y-2">
+        <Label>Unité d'enseignement *</Label>
+        <Select 
+          value={selectedUnite?.toString()} 
+          onValueChange={(value) => setValue('unite', parseInt(value))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Sélectionner une unité" />
+          </SelectTrigger>
+          <SelectContent>
+            {unites.map(unite => (
+              <SelectItem key={unite.id} value={unite.id.toString()}>
+                {unite.nom}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.unite && (
+          <p className="text-sm text-destructive">{errors.unite.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="coefficient">Coefficient *</Label>
+        <Input
+          id="coefficient"
+          type="number"
+          min={1}
+          max={10}
+          {...register('coefficient', { valueAsNumber: true })}
+          placeholder="Ex: 3"
         />
+        {errors.coefficient && (
+          <p className="text-sm text-destructive">{errors.coefficient.message}</p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="coefficient"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Coefficient</FormLabel>
-              <FormControl>
-                <Input {...field} type="number" placeholder="3" min="1" max="10" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div className="space-y-2">
+        <Label htmlFor="description">Description *</Label>
+        <Textarea
+          id="description"
+          {...register('description')}
+          placeholder="Description de la matière"
+          rows={3}
         />
+        {errors.description && (
+          <p className="text-sm text-destructive">{errors.description.message}</p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder="Description de la matière" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Annuler
-          </Button>
-          <Button type="submit">
-            {isEditing ? 'Mettre à jour' : 'Créer'}
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Annuler
+        </Button>
+        <Button type="submit">
+          {isEditing ? 'Modifier' : 'Créer'}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 };
 

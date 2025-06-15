@@ -1,135 +1,123 @@
 
 import React from 'react';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DialogFooter } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { UniteEnseignement, Domaine } from "@/types/teaching";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DialogFooter } from '@/components/ui/dialog';
+
+const uniteSchema = z.object({
+  nom: z.string().min(1, 'Le nom est requis'),
+  description: z.string().min(1, 'La description est requise'),
+  domaines: z.array(z.number()).min(1, 'Au moins un domaine doit être sélectionné'),
+});
+
+type UniteFormData = z.infer<typeof uniteSchema>;
 
 interface UniteFormProps {
-  isEditing: boolean;
-  selectedUnite: UniteEnseignement | null;
-  domaines: Domaine[];
-  onSubmit: (data: any) => void;
+  isEditing?: boolean;
+  selectedItem?: any;
+  onSubmit: (data: UniteFormData) => void;
   onCancel: () => void;
+  domaines: any[];
 }
 
 const UniteForm: React.FC<UniteFormProps> = ({
-  isEditing,
-  selectedUnite,
-  domaines,
+  isEditing = false,
+  selectedItem,
   onSubmit,
-  onCancel
+  onCancel,
+  domaines
 }) => {
-  const form = useForm({
-    defaultValues: {
-      nom: isEditing && selectedUnite ? selectedUnite.nom : '',
-      description: isEditing && selectedUnite ? selectedUnite.description : '',
-      domaines: isEditing && selectedUnite ? selectedUnite.domaines : [],
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors }
+  } = useForm<UniteFormData>({
+    resolver: zodResolver(uniteSchema),
+    defaultValues: selectedItem ? {
+      nom: selectedItem.nom,
+      description: selectedItem.description,
+      domaines: selectedItem.domaines || [],
+    } : {
+      domaines: [],
     }
   });
 
-  const handleSubmit = (data: any) => {
-    onSubmit(data);
+  const selectedDomaines = watch('domaines') || [];
+
+  const handleDomaineChange = (domaineId: number, checked: boolean) => {
+    const currentDomaines = selectedDomaines;
+    if (checked) {
+      setValue('domaines', [...currentDomaines, domaineId]);
+    } else {
+      setValue('domaines', currentDomaines.filter(id => id !== domaineId));
+    }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="nom"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nom de l'unité</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Mathématiques" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="nom">Nom de l'unité *</Label>
+        <Input
+          id="nom"
+          {...register('nom')}
+          placeholder="Ex: Mathématiques, Sciences Physiques..."
         />
+        {errors.nom && (
+          <p className="text-sm text-destructive">{errors.nom.message}</p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder="Description de l'unité d'enseignement" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div className="space-y-2">
+        <Label htmlFor="description">Description *</Label>
+        <Textarea
+          id="description"
+          {...register('description')}
+          placeholder="Description de l'unité d'enseignement"
+          rows={3}
         />
+        {errors.description && (
+          <p className="text-sm text-destructive">{errors.description.message}</p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="domaines"
-          render={() => (
-            <FormItem>
-              <div className="mb-4">
-                <FormLabel className="text-base">Domaines</FormLabel>
-              </div>
-              {domaines.map((domaine) => (
-                <FormField
-                  key={domaine.id}
-                  control={form.control}
-                  name="domaines"
-                  render={({ field }) => {
-                    return (
-                      <FormItem
-                        key={domaine.id}
-                        className="flex flex-row items-start space-x-3 space-y-0"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(domaine.id)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...field.value, domaine.id])
-                                : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== domaine.id
-                                    )
-                                  );
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          {domaine.nom}
-                        </FormLabel>
-                      </FormItem>
-                    );
-                  }}
-                />
-              ))}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <div className="space-y-2">
+        <Label>Domaines *</Label>
+        <div className="space-y-2">
+          {domaines.map(domaine => (
+            <div key={domaine.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={`domaine-${domaine.id}`}
+                checked={selectedDomaines.includes(domaine.id)}
+                onCheckedChange={(checked) => handleDomaineChange(domaine.id, checked as boolean)}
+              />
+              <Label htmlFor={`domaine-${domaine.id}`} className="text-sm font-normal">
+                {domaine.nom}
+              </Label>
+            </div>
+          ))}
+        </div>
+        {errors.domaines && (
+          <p className="text-sm text-destructive">{errors.domaines.message}</p>
+        )}
+      </div>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Annuler
-          </Button>
-          <Button type="submit">
-            {isEditing ? 'Mettre à jour' : 'Créer'}
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Annuler
+        </Button>
+        <Button type="submit">
+          {isEditing ? 'Modifier' : 'Créer'}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 };
 
