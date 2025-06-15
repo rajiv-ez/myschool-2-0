@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -83,32 +84,31 @@ function DataManagementPage<T extends { id: number }>({
   };
 
   const handleConfirmDelete = async () => {
-    if (selectedItem && activeTab === 'inscriptions') {
+    if (selectedItem) {
       try {
-        await academicService.deleteInscription(selectedItem.id);
-        
-        // Refresh the data
-        await queryClient.invalidateQueries({ queryKey: ['inscriptions'] });
-        await queryClient.invalidateQueries({ queryKey: ['users'] });
-        await queryClient.invalidateQueries({ queryKey: ['eleves'] });
+        if (activeTab === 'inscriptions') {
+          await academicService.deleteInscription(selectedItem.id);
+          await queryClient.invalidateQueries({ queryKey: ['inscriptions'] });
+          await queryClient.invalidateQueries({ queryKey: ['users'] });
+          await queryClient.invalidateQueries({ queryKey: ['eleves'] });
+        } else if (activeTab === 'eleves' && additionalProps.deleteEleveDetail) {
+          await additionalProps.deleteEleveDetail(selectedItem.id);
+        } else if (activeTab === 'tuteurs' && additionalProps.deleteTuteurDetail) {
+          await additionalProps.deleteTuteurDetail(selectedItem.id);
+        }
         
         toast({
-          title: 'Inscription supprimée',
-          description: 'L\'inscription a été supprimée avec succès.',
+          title: 'Suppression réussie',
+          description: 'L\'élément a été supprimé avec succès.',
         });
       } catch (error) {
-        console.error('Error deleting inscription:', error);
+        console.error('Error deleting item:', error);
         toast({
           title: 'Erreur',
-          description: 'Erreur lors de la suppression de l\'inscription.',
+          description: 'Erreur lors de la suppression.',
           variant: 'destructive'
         });
       }
-    } else {
-      toast({
-        title: 'Élément supprimé',
-        description: 'L\'élément a été supprimé avec succès.',
-      });
     }
     setIsDeleteModalOpen(false);
     setSelectedItem(null);
@@ -131,8 +131,8 @@ function DataManagementPage<T extends { id: number }>({
   const handleFormSubmit = async (data: any) => {
     const isEdit = !!selectedItem;
     
-    if (activeTab === 'inscriptions') {
-      try {
+    try {
+      if (activeTab === 'inscriptions') {
         if (isEdit) {
           console.log('Updating inscription with data:', data);
           await academicService.updateInscription(selectedItem.id, data);
@@ -149,26 +149,54 @@ function DataManagementPage<T extends { id: number }>({
           });
         }
         
-        // Refresh the data
         await queryClient.invalidateQueries({ queryKey: ['inscriptions'] });
         await queryClient.invalidateQueries({ queryKey: ['users'] });
         await queryClient.invalidateQueries({ queryKey: ['eleves'] });
         
-      } catch (error) {
-        console.error('Error saving inscription:', error);
-        toast({
-          title: 'Erreur',
-          description: `Erreur lors de ${isEdit ? 'la modification' : 'la création'} de l'inscription.`,
-          variant: 'destructive'
+      } else if (activeTab === 'eleves') {
+        if (isEdit && additionalProps.updateEleveDetail) {
+          await additionalProps.updateEleveDetail(selectedItem.id, data);
+          toast({ 
+            title: 'Élève mis à jour', 
+            description: 'L\'élève a été modifié avec succès.' 
+          });
+        } else if (!isEdit && additionalProps.createEleveDetail) {
+          await additionalProps.createEleveDetail(data);
+          toast({ 
+            title: 'Élève créé', 
+            description: 'L\'élève a été créé avec succès.' 
+          });
+        }
+      } else if (activeTab === 'tuteurs') {
+        if (isEdit && additionalProps.updateTuteurDetail) {
+          await additionalProps.updateTuteurDetail(selectedItem.id, data);
+          toast({ 
+            title: 'Tuteur mis à jour', 
+            description: 'Le tuteur a été modifié avec succès.' 
+          });
+        } else if (!isEdit && additionalProps.createTuteurDetail) {
+          await additionalProps.createTuteurDetail(data);
+          toast({ 
+            title: 'Tuteur créé', 
+            description: 'Le tuteur a été créé avec succès.' 
+          });
+        }
+      } else {
+        // For other tabs, use the existing logic
+        toast({ 
+          title: `Élément ${isEdit ? 'mis à jour' : 'créé'}`, 
+          description: `L'élément a été ${isEdit ? 'modifié' : 'créé'} avec succès.` 
         });
-        return; // Don't close modal on error
       }
-    } else {
-      // For other tabs, use the existing logic
-      toast({ 
-        title: `Élément ${isEdit ? 'mis à jour' : 'créé'}`, 
-        description: `L'élément a été ${isEdit ? 'modifié' : 'créé'} avec succès.` 
+      
+    } catch (error) {
+      console.error('Error saving item:', error);
+      toast({
+        title: 'Erreur',
+        description: `Erreur lors de ${isEdit ? 'la modification' : 'la création'}.`,
+        variant: 'destructive'
       });
+      return; // Don't close modal on error
     }
     
     setIsCreateModalOpen(false);

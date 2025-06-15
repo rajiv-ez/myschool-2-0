@@ -1,297 +1,258 @@
-import React, { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from '@/components/ui/tabs';
-import { 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableHead, 
-  TableRow, 
-  TableCell 
-} from '@/components/ui/table';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/components/ui/use-toast';
-import { Plus, Filter, Edit, Trash2, Users } from 'lucide-react';
+
+import React, { useState } from 'react';
+import { Users, GraduationCap, UserCheck } from 'lucide-react';
+import DataManagementPage from '@/components/templates/DataManagementPage';
+import PersonneForm from '@/components/forms/PersonneForm';
 import { useUsersData } from '@/hooks/useUsersData';
-import UserForm from '@/components/forms/UserForm';
-import UserFilters from '@/components/users/UserFilters';
-import { User, EleveDetail, TuteurDetail, StaffDetail } from '@/types/users';
+import { EleveDetail, TuteurDetail } from '@/types/users';
+import * as XLSX from 'xlsx';
 
 const Personnes: React.FC = () => {
-  const { toast } = useToast();
-  const { 
-    users, 
-    elevesDetails, 
-    tuteursDetails, 
-    staffsDetails,
-    loading, 
-    createEleveDetail, 
-    updateEleveDetail, 
+  const {
+    elevesDetails,
+    tuteursDetails,
+    loading,
+    createEleveDetail,
+    updateEleveDetail,
     deleteEleveDetail,
-    createTuteurDetail, 
-    updateTuteurDetail, 
+    createTuteurDetail,
+    updateTuteurDetail,
     deleteTuteurDetail,
-    createStaffDetail, 
-    updateStaffDetail, 
-    deleteStaffDetail,
-    createUser, 
-    updateUser, 
-    deleteUser 
   } = useUsersData();
-  
-  const [activeTab, setActiveTab] = useState('eleves');
-  const [showFilters, setShowFilters] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedEntity, setSelectedEntity] = useState<EleveDetail | TuteurDetail | StaffDetail | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // États des filtres
-  const [searchTerm, setSearchTerm] = useState('');
-  const [genreFilter, setGenreFilter] = useState('all');
-  const [statutFilter, setStatutFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
+  // Export functions
+  const exportElevesToExcel = (items: EleveDetail[]) => {
+    const data = items.map(eleve => ({
+      'Matricule': eleve.matricule,
+      'Nom': eleve.user.nom,
+      'Prénom': eleve.user.prenom,
+      'Email': eleve.user.email,
+      'Genre': eleve.user.genre === 'M' ? 'Masculin' : eleve.user.genre === 'F' ? 'Féminin' : 'Autre',
+      'Date de naissance': eleve.user.date_naissance,
+      'Lieu de naissance': eleve.user.lieu_naissance,
+      'Adresse': eleve.user.adresse,
+      'Téléphone 1': eleve.user.tel1,
+      'Téléphone 2': eleve.user.tel2 || '',
+      'WhatsApp': eleve.user.whatsapp || '',
+      'Statut': eleve.user.is_active ? 'Actif' : 'Inactif'
+    }));
 
-  // Données filtrées
-  const filteredUsers = useMemo(() => {
-    let result = [...users];
-
-    if (searchTerm) {
-      result = result.filter(user =>
-        user.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (genreFilter !== 'all') {
-      result = result.filter(user => user.genre === genreFilter);
-    }
-
-    if (statutFilter !== 'all') {
-      result = result.filter(user => 
-        statutFilter === 'active' ? user.is_active : !user.is_active
-      );
-    }
-
-    if (typeFilter !== 'all') {
-      result = result.filter(user => 
-        typeFilter === 'staff' ? user.is_staff : !user.is_staff
-      );
-    }
-
-    return result;
-  }, [users, searchTerm, genreFilter, statutFilter, typeFilter]);
-
-  const applyFilter = () => {
-    // Les filtres sont appliqués automatiquement via useMemo
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Élèves');
+    XLSX.writeFile(wb, 'eleves.xlsx');
   };
 
-  const resetFilter = () => {
-    setSearchTerm('');
-    setGenreFilter('all');
-    setStatutFilter('all');
-    setTypeFilter('all');
+  const exportTuteursToExcel = (items: TuteurDetail[]) => {
+    const data = items.map(tuteur => ({
+      'Nom': tuteur.user.nom,
+      'Prénom': tuteur.user.prenom,
+      'Email': tuteur.user.email,
+      'Genre': tuteur.user.genre === 'M' ? 'Masculin' : tuteur.user.genre === 'F' ? 'Féminin' : 'Autre',
+      'Date de naissance': tuteur.user.date_naissance,
+      'Lieu de naissance': tuteur.user.lieu_naissance,
+      'Adresse': tuteur.user.adresse,
+      'Téléphone 1': tuteur.user.tel1,
+      'Téléphone 2': tuteur.user.tel2 || '',
+      'WhatsApp': tuteur.user.whatsapp || '',
+      'Profession': tuteur.profession,
+      'Statut': tuteur.user.is_active ? 'Actif' : 'Inactif'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Tuteurs');
+    XLSX.writeFile(wb, 'tuteurs.xlsx');
   };
 
-  const handleCreate = () => {
-    setSelectedUser(null);
-    setSelectedEntity(null);
-    setIsEditing(false);
-    setIsModalOpen(true);
+  // Import functions
+  const handleElevesImport = async (data: any[]) => {
+    console.log('Importing eleves:', data);
   };
 
-  const handleEditUser = (user: User) => {
-    setSelectedUser(user);
-    setSelectedEntity(null);
-    setIsEditing(true);
-    setIsModalOpen(true);
+  const handleTuteursImport = async (data: any[]) => {
+    console.log('Importing tuteurs:', data);
   };
 
-  const handleEditEleve = (eleve: EleveDetail) => {
-    // Convert UserLite to User by adding missing properties
-    const userData = eleve.user;
-    const fullUser: User = {
-      ...userData,
-      is_staff: userData.is_staff,
-      is_active: userData.is_active,
-      is_superuser: userData.is_superuser
-    };
-    setSelectedUser(fullUser);
-    setSelectedEntity(eleve);
-    setIsEditing(true);
-    setIsModalOpen(true);
-  };
-
-  const handleEditTuteur = (tuteur: TuteurDetail) => {
-    // Convert UserLite to User by adding missing properties
-    const userData = tuteur.user;
-    const fullUser: User = {
-      ...userData,
-      is_staff: userData.is_staff,
-      is_active: userData.is_active,
-      is_superuser: userData.is_superuser
-    };
-    setSelectedUser(fullUser);
-    setSelectedEntity(tuteur);
-    setIsEditing(true);
-    setIsModalOpen(true);
-  };
-
-  const handleEditStaff = (staff: StaffDetail) => {
-    // Convert UserLite to User by adding missing properties
-    const userData = staff.user;
-    const fullUser: User = {
-      ...userData,
-      is_staff: userData.is_staff,
-      is_active: userData.is_active,
-      is_superuser: userData.is_superuser
-    };
-    setSelectedUser(fullUser);
-    setSelectedEntity(staff);
-    setIsEditing(true);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteUser = async (user: User) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${user.prenom} ${user.nom} ?`)) {
-      try {
-        await deleteUser(user.id);
-        toast({
-          title: "Suppression réussie",
-          description: "L'utilisateur a été supprimé avec succès.",
-        });
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la suppression.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const handleDeleteEleve = async (eleve: EleveDetail) => {
-    const userName = `${eleve.user.prenom} ${eleve.user.nom}`;
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
-      try {
-        await deleteEleveDetail(eleve.id);
-        toast({
-          title: "Suppression réussie",
-          description: "L'élève a été supprimé avec succès.",
-        });
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la suppression.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const handleDeleteTuteur = async (tuteur: TuteurDetail) => {
-    const userName = `${tuteur.user.prenom} ${tuteur.user.nom}`;
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
-      try {
-        await deleteTuteurDetail(tuteur.id);
-        toast({
-          title: "Suppression réussie",
-          description: "Le tuteur a été supprimé avec succès.",
-        });
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la suppression.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const handleDeleteStaff = async (staff: StaffDetail) => {
-    const userName = `${staff.user.prenom} ${staff.user.nom}`;
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
-      try {
-        await deleteStaffDetail(staff.id);
-        toast({
-          title: "Suppression réussie",
-          description: "Le membre du personnel a été supprimé avec succès.",
-        });
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la suppression.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
-    try {
-      if (isEditing) {
-        if (selectedEntity) {
-          // Update using *Detail methods
-          if ('matricule' in selectedEntity) {
-            // It's an EleveDetail
-            await updateEleveDetail(selectedEntity.id, data);
-          } else if ('profession' in selectedEntity) {
-            // It's a TuteurDetail
-            await updateTuteurDetail(selectedEntity.id, data);
-          } else {
-            // It's a StaffDetail
-            await updateStaffDetail(selectedEntity.id, data);
-          }
-        } else if (selectedUser) {
-          // Update user only
-          await updateUser(selectedUser.id, data);
+  // Tab configurations
+  const tabs = [
+    {
+      id: 'eleves',
+      label: 'Élèves',
+      icon: GraduationCap,
+      items: elevesDetails,
+      columns: [
+        {
+          key: 'matricule',
+          label: 'Matricule',
+          render: (item: EleveDetail) => (
+            <span className="font-medium">{item.matricule}</span>
+          )
+        },
+        {
+          key: 'nom',
+          label: 'Nom',
+          render: (item: EleveDetail) => item.user.nom
+        },
+        {
+          key: 'prenom',
+          label: 'Prénom',
+          render: (item: EleveDetail) => item.user.prenom
+        },
+        {
+          key: 'email',
+          label: 'Email',
+          render: (item: EleveDetail) => item.user.email
+        },
+        {
+          key: 'tel1',
+          label: 'Téléphone',
+          render: (item: EleveDetail) => item.user.tel1
+        },
+        {
+          key: 'statut',
+          label: 'Statut',
+          render: (item: EleveDetail) => (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              item.user.is_active 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {item.user.is_active ? 'Actif' : 'Inactif'}
+            </span>
+          )
         }
-        toast({
-          title: "Modification réussie",
-          description: "Les informations ont été modifiées avec succès.",
-        });
-      } else {
-        // Create new entity based on active tab
-        if (activeTab === 'eleves') {
-          await createEleveDetail(data);
-        } else if (activeTab === 'tuteurs') {
-          await createTuteurDetail(data);
-        } else if (activeTab === 'staff') {
-          await createStaffDetail(data);
-        } else {
-          await createUser(data);
+      ],
+      searchFields: ['user.nom', 'user.prenom', 'user.email', 'matricule'],
+      filters: {
+        genre: {
+          type: 'select' as const,
+          placeholder: 'Genre',
+          options: [
+            { value: 'all', label: 'Tous les genres' },
+            { value: 'M', label: 'Masculin' },
+            { value: 'F', label: 'Féminin' },
+            { value: 'A', label: 'Autre' }
+          ],
+          filterFunction: (item: EleveDetail, value: string) => 
+            value === 'all' || item.user.genre === value
+        },
+        statut: {
+          type: 'select' as const,
+          placeholder: 'Statut',
+          options: [
+            { value: 'all', label: 'Tous les statuts' },
+            { value: 'active', label: 'Actif' },
+            { value: 'inactive', label: 'Inactif' }
+          ],
+          filterFunction: (item: EleveDetail, value: string) => 
+            value === 'all' || 
+            (value === 'active' ? item.user.is_active : !item.user.is_active)
         }
-        toast({
-          title: "Création réussie",
-          description: "La personne a été créée avec succès.",
-        });
-      }
-      setIsModalOpen(false);
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'enregistrement.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+      },
+      form: ({ item, onSubmit, onCancel, isSubmitting }: any) => (
+        <PersonneForm
+          item={item}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+          entityType="eleve"
+        />
+      ),
+      createLabel: 'Nouvel élève',
+      exportFunction: exportElevesToExcel,
+      importType: 'inscriptions' as const,
+      onImport: handleElevesImport
+    },
+    {
+      id: 'tuteurs',
+      label: 'Tuteurs',
+      icon: UserCheck,
+      items: tuteursDetails,
+      columns: [
+        {
+          key: 'nom',
+          label: 'Nom',
+          render: (item: TuteurDetail) => (
+            <span className="font-medium">{item.user.nom}</span>
+          )
+        },
+        {
+          key: 'prenom',
+          label: 'Prénom',
+          render: (item: TuteurDetail) => item.user.prenom
+        },
+        {
+          key: 'email',
+          label: 'Email',
+          render: (item: TuteurDetail) => item.user.email
+        },
+        {
+          key: 'tel1',
+          label: 'Téléphone',
+          render: (item: TuteurDetail) => item.user.tel1
+        },
+        {
+          key: 'profession',
+          label: 'Profession',
+          render: (item: TuteurDetail) => item.profession
+        },
+        {
+          key: 'statut',
+          label: 'Statut',
+          render: (item: TuteurDetail) => (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              item.user.is_active 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {item.user.is_active ? 'Actif' : 'Inactif'}
+            </span>
+          )
+        }
+      ],
+      searchFields: ['user.nom', 'user.prenom', 'user.email', 'profession'],
+      filters: {
+        genre: {
+          type: 'select' as const,
+          placeholder: 'Genre',
+          options: [
+            { value: 'all', label: 'Tous les genres' },
+            { value: 'M', label: 'Masculin' },
+            { value: 'F', label: 'Féminin' },
+            { value: 'A', label: 'Autre' }
+          ],
+          filterFunction: (item: TuteurDetail, value: string) => 
+            value === 'all' || item.user.genre === value
+        },
+        statut: {
+          type: 'select' as const,
+          placeholder: 'Statut',
+          options: [
+            { value: 'all', label: 'Tous les statuts' },
+            { value: 'active', label: 'Actif' },
+            { value: 'inactive', label: 'Inactif' }
+          ],
+          filterFunction: (item: TuteurDetail, value: string) => 
+            value === 'all' || 
+            (value === 'active' ? item.user.is_active : !item.user.is_active)
+        }
+      },
+      form: ({ item, onSubmit, onCancel, isSubmitting }: any) => (
+        <PersonneForm
+          item={item}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+          entityType="tuteur"
+        />
+      ),
+      createLabel: 'Nouveau tuteur',
+      exportFunction: exportTuteursToExcel,
+      importType: 'inscriptions' as const,
+      onImport: handleTuteursImport
     }
-  };
+  ];
 
   if (loading) {
     return (
@@ -305,329 +266,20 @@ const Personnes: React.FC = () => {
   }
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          Gestion des Personnes
-        </h2>
-        <p className="text-muted-foreground">Gérez les informations des élèves, tuteurs et personnel</p>
-      </div>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex justify-between items-center mb-6">
-          <TabsList className="grid w-full max-w-md grid-cols-4">
-            <TabsTrigger value="eleves">Élèves ({elevesDetails.length})</TabsTrigger>
-            <TabsTrigger value="tuteurs">Tuteurs ({tuteursDetails.length})</TabsTrigger>
-            <TabsTrigger value="staff">Personnel ({staffsDetails.length})</TabsTrigger>
-            <TabsTrigger value="tous">Tous ({filteredUsers.length})</TabsTrigger>
-          </TabsList>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2"
-            >
-              <Filter size={16} />
-              Filtres
-            </Button>
-            <Button onClick={handleCreate} className="flex items-center gap-2">
-              <Plus size={18} />
-              Nouvelle personne
-            </Button>
-          </div>
-        </div>
-
-        {showFilters && (
-          <UserFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            genreFilter={genreFilter}
-            setGenreFilter={setGenreFilter}
-            statutFilter={statutFilter}
-            setStatutFilter={setStatutFilter}
-            typeFilter={typeFilter}
-            setTypeFilter={setTypeFilter}
-            applyFilter={applyFilter}
-            resetFilter={resetFilter}
-            onClose={() => setShowFilters(false)}
-          />
-        )}
-        
-        <TabsContent value="eleves">
-          <ScrollArea className="h-[calc(100vh-25rem)]">
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Matricule</TableHead>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Prénom</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {elevesDetails.map((eleve) => {
-                    const userData = eleve.user;
-                    return (
-                      <TableRow key={eleve.id}>
-                        <TableCell className="font-medium">{eleve.matricule}</TableCell>
-                        <TableCell>{userData.nom}</TableCell>
-                        <TableCell>{userData.prenom}</TableCell>
-                        <TableCell>{userData.email}</TableCell>
-                        <TableCell>{userData.tel1}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            userData.is_active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {userData.is_active ? 'Actif' : 'Inactif'}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              onClick={() => handleEditEleve(eleve)}
-                            >
-                              <Edit size={16} />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              onClick={() => handleDeleteEleve(eleve)}
-                            >
-                              <Trash2 size={16} />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
-        </TabsContent>
-        
-        <TabsContent value="tuteurs">
-          <ScrollArea className="h-[calc(100vh-25rem)]">
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Prénom</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Profession</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tuteursDetails.map((tuteur) => {
-                    const userData = tuteur.user;
-                    return (
-                      <TableRow key={tuteur.id}>
-                        <TableCell className="font-medium">{userData.nom}</TableCell>
-                        <TableCell>{userData.prenom}</TableCell>
-                        <TableCell>{userData.email}</TableCell>
-                        <TableCell>{userData.tel1}</TableCell>
-                        <TableCell>{tuteur.profession}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            userData.is_active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {userData.is_active ? 'Actif' : 'Inactif'}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              onClick={() => handleEditTuteur(tuteur)}
-                            >
-                              <Edit size={16} />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              onClick={() => handleDeleteTuteur(tuteur)}
-                            >
-                              <Trash2 size={16} />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
-        </TabsContent>
-
-        <TabsContent value="staff">
-          <ScrollArea className="h-[calc(100vh-25rem)]">
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Prénom</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Date embauche</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {staffsDetails.map((staff) => {
-                    const userData = staff.user;
-                    return (
-                      <TableRow key={staff.id}>
-                        <TableCell className="font-medium">{userData.nom}</TableCell>
-                        <TableCell>{userData.prenom}</TableCell>
-                        <TableCell>{userData.email}</TableCell>
-                        <TableCell>{userData.tel1}</TableCell>
-                        <TableCell>{new Date(staff.date_embauche).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            staff.statut === 'ACTIF' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {staff.statut}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              onClick={() => handleEditStaff(staff)}
-                            >
-                              <Edit size={16} />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              onClick={() => handleDeleteStaff(staff)}
-                            >
-                              <Trash2 size={16} />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
-        </TabsContent>
-
-        <TabsContent value="tous">
-          <ScrollArea className="h-[calc(100vh-25rem)]">
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Prénom</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Genre</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.nom}</TableCell>
-                      <TableCell>{user.prenom}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.genre === 'M' ? 'Masculin' : user.genre === 'F' ? 'Féminin' : 'Autre'}</TableCell>
-                      <TableCell>{user.tel1}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.is_staff 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-purple-100 text-purple-800'
-                        }`}>
-                          {user.is_staff ? 'Personnel' : 'Étudiant'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.is_active 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {user.is_active ? 'Actif' : 'Inactif'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleEditUser(user)}
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleDeleteUser(user)}
-                          >
-                            <Trash2 size={16} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
-
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {isEditing ? 'Modifier la personne' : 'Créer une nouvelle personne'}
-            </DialogTitle>
-            <DialogDescription>
-              {isEditing ? 'Modifiez les informations de la personne' : 'Remplissez les informations pour créer une nouvelle personne'}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <UserForm
-            user={selectedUser || undefined}
-            entity={selectedEntity || undefined}
-            onSubmit={handleSubmit}
-            onCancel={() => setIsModalOpen(false)}
-            isSubmitting={isSubmitting}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
+    <DataManagementPage
+      title="Gestion des Personnes"
+      description="Gérez les informations des élèves et tuteurs"
+      tabs={tabs}
+      fromApi={true}
+      additionalProps={{
+        createEleveDetail,
+        updateEleveDetail,
+        deleteEleveDetail,
+        createTuteurDetail,
+        updateTuteurDetail,
+        deleteTuteurDetail,
+      }}
+    />
   );
 };
 
