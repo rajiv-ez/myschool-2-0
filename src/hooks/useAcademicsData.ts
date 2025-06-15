@@ -1,47 +1,46 @@
-
 import { useState, useEffect } from 'react';
 import { academicService } from '@/services/academicService';
 import { Niveau, Filiere, Specialite, Classe } from '@/types/academic';
 
 // Données fictives étendues
 const niveauxData: (Niveau & { description?: string })[] = [
-  { id: 1, nom: 'Maternelle', description: 'De 3 à 5 ans' },
-  { id: 2, nom: 'Primaire', description: 'De 6 à 11 ans' },
-  { id: 3, nom: 'Collège', description: 'De 12 à 15 ans' },
-  { id: 4, nom: 'Lycée', description: 'De 16 à 18 ans' },
+  { id: 1, nom: 'Maternelle', ordre: 1, description: 'De 3 à 5 ans', is_active: true },
+  { id: 2, nom: 'Primaire', ordre: 2, description: 'De 6 à 11 ans', is_active: true },
+  { id: 3, nom: 'Collège', ordre: 3, description: 'De 12 à 15 ans', is_active: true },
+  { id: 4, nom: 'Lycée', ordre: 4, description: 'De 16 à 18 ans', is_active: true },
 ];
 
 const filieresData: Filiere[] = [
-  { id: 1, niveau: 2, nom: 'Générale Primaire', description: 'Formation générale du primaire' },
-  { id: 2, niveau: 3, nom: 'Générale Collège', description: 'Formation générale du collège' },
-  { id: 3, niveau: 4, nom: 'Scientifique', description: 'Formation scientifique' },
-  { id: 4, niveau: 4, nom: 'Littéraire', description: 'Formation littéraire' },
-  { id: 5, niveau: 4, nom: 'Économique et Social', description: 'Formation économique et sociale' },
+  { id: 1, niveau: 2, nom: 'Générale Primaire', description: 'Formation générale du primaire', is_active: true },
+  { id: 2, niveau: 3, nom: 'Générale Collège', description: 'Formation générale du collège', is_active: true },
+  { id: 3, niveau: 4, nom: 'Scientifique', description: 'Formation scientifique', is_active: true },
+  { id: 4, niveau: 4, nom: 'Littéraire', description: 'Formation littéraire', is_active: true },
+  { id: 5, niveau: 4, nom: 'Économique et Social', description: 'Formation économique et sociale', is_active: true },
 ];
 
 const specialitesData: Specialite[] = [
-  { id: 1, filiere: 1, nom: 'Standard', description: 'Spécialité standard primaire' },
-  { id: 2, filiere: 2, nom: 'Standard', description: 'Spécialité standard collège' },
-  { id: 3, filiere: 3, nom: 'Mathématiques-Physique', description: 'Spécialité maths-physique' },
-  { id: 4, filiere: 3, nom: 'Sciences Naturelles', description: 'Spécialité sciences naturelles' },
-  { id: 5, filiere: 4, nom: 'Philosophie', description: 'Spécialité philosophie' },
-  { id: 6, filiere: 4, nom: 'Lettres Classiques', description: 'Spécialité lettres classiques' },
-  { id: 7, filiere: 5, nom: 'Économie-Gestion', description: 'Spécialité économie-gestion' },
+  { id: 1, filiere: 1, nom: 'Standard', description: 'Spécialité standard primaire', is_active: true },
+  { id: 2, filiere: 2, nom: 'Standard', description: 'Spécialité standard collège', is_active: true },
+  { id: 3, filiere: 3, nom: 'Mathématiques-Physique', description: 'Spécialité maths-physique', is_active: true },
+  { id: 4, filiere: 3, nom: 'Sciences Naturelles', description: 'Spécialité sciences naturelles', is_active: true },
+  { id: 5, filiere: 4, nom: 'Philosophie', description: 'Spécialité philosophie', is_active: true },
+  { id: 6, filiere: 4, nom: 'Lettres Classiques', description: 'Spécialité lettres classiques', is_active: true },
+  { id: 7, filiere: 5, nom: 'Économie-Gestion', description: 'Spécialité économie-gestion', is_active: true },
 ];
 
 const classesData: Classe[] = [
-  { id: 1, specialite: 1, nom: 'CP', description: 'Cours Préparatoire' },
-  { id: 2, specialite: 1, nom: 'CE1', description: 'Cours Élémentaire 1ère année' },
-  { id: 3, specialite: 1, nom: 'CE2', description: 'Cours Élémentaire 2ème année' },
-  { id: 4, specialite: 1, nom: 'CM1', description: 'Cours Moyen 1ère année' },
-  { id: 5, specialite: 1, nom: 'CM2', description: 'Cours Moyen 2ème année' },
-  { id: 6, specialite: 2, nom: '6ème', description: 'Sixième' },
-  { id: 7, specialite: 2, nom: '5ème', description: 'Cinquième' },
-  { id: 8, specialite: 2, nom: '4ème', description: 'Quatrième' },
-  { id: 9, specialite: 2, nom: '3ème', description: 'Troisième' },
-  { id: 10, specialite: 3, nom: 'Seconde S', description: 'Seconde Scientifique' },
-  { id: 11, specialite: 3, nom: 'Première S', description: 'Première Scientifique' },
-  { id: 12, specialite: 3, nom: 'Terminale S', description: 'Terminale Scientifique' },
+  { id: 1, specialite: 1, nom: 'CP', description: 'Cours Préparatoire', is_active: true },
+  { id: 2, specialite: 1, nom: 'CE1', description: 'Cours Élémentaire 1ère année', is_active: true },
+  { id: 3, specialite: 1, nom: 'CE2', description: 'Cours Élémentaire 2ème année', is_active: true },
+  { id: 4, specialite: 1, nom: 'CM1', description: 'Cours Moyen 1ère année', is_active: true },
+  { id: 5, specialite: 1, nom: 'CM2', description: 'Cours Moyen 2ème année', is_active: true },
+  { id: 6, specialite: 2, nom: '6ème', description: 'Sixième', is_active: true },
+  { id: 7, specialite: 2, nom: '5ème', description: 'Cinquième', is_active: true },
+  { id: 8, specialite: 2, nom: '4ème', description: 'Quatrième', is_active: true },
+  { id: 9, specialite: 2, nom: '3ème', description: 'Troisième', is_active: true },
+  { id: 10, specialite: 3, nom: 'Seconde S', description: 'Seconde Scientifique', is_active: true },
+  { id: 11, specialite: 3, nom: 'Première S', description: 'Première Scientifique', is_active: true },
+  { id: 12, specialite: 3, nom: 'Terminale S', description: 'Terminale Scientifique', is_active: true },
 ];
 
 export function useAcademicsData() {

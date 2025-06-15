@@ -12,51 +12,51 @@ import {
 } from '../types/academic';
 
 const mockSessions: Session[] = [
-  { id: 1, nom: 'Année scolaire 2023-2024', debut: '2023-09-01', fin: '2024-06-30', en_cours: false, auto_activer_palier: true, },
-  { id: 2, nom: 'Année scolaire 2024-2025', debut: '2024-09-01', fin: '2025-06-30', en_cours: true, auto_activer_palier: true, },
+  { id: 1, nom: 'Année scolaire 2023-2024', debut: '2023-09-01', fin: '2024-06-30', en_cours: false, auto_activer_palier: true, description: 'Année scolaire précédente', is_active: false },
+  { id: 2, nom: 'Année scolaire 2024-2025', debut: '2024-09-01', fin: '2025-06-30', en_cours: true, auto_activer_palier: true, description: 'Année scolaire en cours', is_active: true },
 ];
 
 const mockPaliers: Palier[] = [
-  { id: 1, session: 1, nom: 'Trimestre 1', debut: '2023-09-01', fin: '2023-12-15', en_cours: false },
-  { id: 2, session: 1, nom: 'Trimestre 2', debut: '2024-01-08', fin: '2024-03-29', en_cours: false },
-  { id: 3, session: 1, nom: 'Trimestre 3', debut: '2024-04-08', fin: '2024-06-30', en_cours: false },
-  { id: 4, session: 2, nom: 'Trimestre 1', debut: '2024-09-01', fin: '2024-12-15', en_cours: true },
-  { id: 5, session: 2, nom: 'Trimestre 2', debut: '2025-01-08', fin: '2025-03-29', en_cours: false },
+  { id: 1, session: 1, nom: 'Trimestre 1', debut: '2023-09-01', fin: '2023-12-15', en_cours: false, description: 'Premier trimestre 2023-2024', is_active: false },
+  { id: 2, session: 1, nom: 'Trimestre 2', debut: '2024-01-08', fin: '2024-03-29', en_cours: false, description: 'Deuxième trimestre 2023-2024', is_active: false },
+  { id: 3, session: 1, nom: 'Trimestre 3', debut: '2024-04-08', fin: '2024-06-30', en_cours: false, description: 'Troisième trimestre 2023-2024', is_active: false },
+  { id: 4, session: 2, nom: 'Trimestre 1', debut: '2024-09-01', fin: '2024-12-15', en_cours: true, description: 'Premier trimestre 2024-2025', is_active: true },
+  { id: 5, session: 2, nom: 'Trimestre 2', debut: '2025-01-08', fin: '2025-03-29', en_cours: false, description: 'Deuxième trimestre 2024-2025', is_active: true },
 ];
 
 const mockNiveaux: Niveau[] = [
-  { id: 1, nom: 'Maternelle' },
-  { id: 2, nom: 'Primaire' },
-  { id: 3, nom: 'Collège' },
-  { id: 4, nom: 'Lycée' },
+  { id: 1, nom: 'Maternelle', ordre: 1, description: 'Niveau maternelle', is_active: true },
+  { id: 2, nom: 'Primaire', ordre: 2, description: 'Niveau primaire', is_active: true },
+  { id: 3, nom: 'Collège', ordre: 3, description: 'Niveau collège', is_active: true },
+  { id: 4, nom: 'Lycée', ordre: 4, description: 'Niveau lycée', is_active: true },
 ];
 
 const mockFilieres: Filiere[] = [
-  { id: 1, niveau: 4, nom: 'Scientifique', description: 'Option sciences' },
-  { id: 2, niveau: 4, nom: 'Littéraire', description: 'Option lettres et philosophie' },
-  { id: 3, niveau: 4, nom: 'Économique', description: 'Option économie et gestion' },
-  { id: 4, niveau: 2, nom: 'Générale', description: 'Programme général' },
+  { id: 1, niveau: 4, nom: 'Scientifique', description: 'Option sciences', is_active: true },
+  { id: 2, niveau: 4, nom: 'Littéraire', description: 'Option lettres et philosophie', is_active: true },
+  { id: 3, niveau: 4, nom: 'Économique', description: 'Option économie et gestion', is_active: true },
+  { id: 4, niveau: 2, nom: 'Générale', description: 'Programme général', is_active: true },
 ];
 
 const mockSpecialites: Specialite[] = [
-  { id: 1, filiere: 1, nom: 'Mathématiques-Physique', description: 'Spécialité mathématiques et physique' },
-  { id: 2, filiere: 1, nom: 'Sciences de la Vie et de la Terre', description: 'Spécialité SVT' },
-  { id: 3, filiere: 2, nom: 'Philosophie', description: 'Spécialité philosophie' },
-  { id: 4, filiere: 3, nom: 'Économie-Gestion', description: 'Spécialité économie et gestion' },
+  { id: 1, filiere: 1, nom: 'Mathématiques-Physique', description: 'Spécialité mathématiques et physique', is_active: true },
+  { id: 2, filiere: 1, nom: 'Sciences de la Vie et de la Terre', description: 'Spécialité SVT', is_active: true },
+  { id: 3, filiere: 2, nom: 'Philosophie', description: 'Spécialité philosophie', is_active: true },
+  { id: 4, filiere: 3, nom: 'Économie-Gestion', description: 'Spécialité économie et gestion', is_active: true },
 ];
 
 const mockClasses: Classe[] = [
-  { id: 1, specialite: 1, nom: 'CP', description: 'Cours Préparatoire' },
-  { id: 2, specialite: 1, nom: 'CE1', description: 'Cours Élémentaire 1' },
-  { id: 3, specialite: 1, nom: 'CM1', description: 'Cours Moyen 1' },
-  { id: 4, specialite: 2, nom: 'Terminale S', description: 'Terminale Scientifique' },
+  { id: 1, specialite: 1, nom: 'CP', description: 'Cours Préparatoire', is_active: true },
+  { id: 2, specialite: 1, nom: 'CE1', description: 'Cours Élémentaire 1', is_active: true },
+  { id: 3, specialite: 1, nom: 'CM1', description: 'Cours Moyen 1', is_active: true },
+  { id: 4, specialite: 2, nom: 'Terminale S', description: 'Terminale Scientifique', is_active: true },
 ];
 
 const mockClasseSessions: ClasseSession[] = [
-  { id: 1, classe: 1, session: 1, capacite: 30 },
-  { id: 2, classe: 2, session: 1, capacite: 25 },
-  { id: 3, classe: 3, session: 1, capacite: 20 },
-  { id: 4, classe: 4, session: 2, capacite: 30 },
+  { id: 1, classe: 1, session: 1, capacite: 30, is_active: false },
+  { id: 2, classe: 2, session: 1, capacite: 25, is_active: false },
+  { id: 3, classe: 3, session: 1, capacite: 20, is_active: false },
+  { id: 4, classe: 4, session: 2, capacite: 30, is_active: true },
 ];
 
 const mockInscriptions: Inscription[] = [
