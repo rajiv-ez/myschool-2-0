@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Users, GraduationCap, UserCheck } from 'lucide-react';
 import DataManagementPage, { TabConfig } from '@/components/templates/DataManagementPage';
@@ -22,6 +23,13 @@ const Personnes: React.FC = () => {
   console.log('Personnes page - Loading:', loading);
   console.log('Personnes page - ElevesDetails:', elevesDetails);
   console.log('Personnes page - TuteursDetails:', tuteursDetails);
+
+  // Check if we have API data (non-empty arrays indicate successful API load)
+  const hasApiData = elevesDetails.length > 0 || tuteursDetails.length > 0;
+  const fromApi = !loading && hasApiData;
+
+  console.log('Personnes page - fromApi calculated as:', fromApi);
+  console.log('Personnes page - hasApiData:', hasApiData);
 
   // Export functions
   const exportElevesToExcel = (items: EleveDetail[]) => {
@@ -117,15 +125,19 @@ const Personnes: React.FC = () => {
         {
           key: 'statut',
           label: 'Statut',
-          render: (item: EleveDetail) => (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              item.user.is_active 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {item.user.is_active ? 'Actif' : 'Inactif'}
-            </span>
-          )
+          render: (item: EleveDetail) => {
+            console.log('Rendering eleve status for item:', item);
+            console.log('item.user.is_active:', item.user.is_active);
+            return (
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                item.user.is_active 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {item.user.is_active ? 'Actif' : 'Inactif'}
+              </span>
+            );
+          }
         }
       ],
       searchFields: ['user.nom', 'user.prenom', 'user.email', 'matricule'],
@@ -193,15 +205,19 @@ const Personnes: React.FC = () => {
         {
           key: 'statut',
           label: 'Statut',
-          render: (item: TuteurDetail) => (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              item.user.is_active 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {item.user.is_active ? 'Actif' : 'Inactif'}
-            </span>
-          )
+          render: (item: TuteurDetail) => {
+            console.log('Rendering tuteur status for item:', item);
+            console.log('item.user.is_active:', item.user.is_active);
+            return (
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                item.user.is_active 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {item.user.is_active ? 'Actif' : 'Inactif'}
+              </span>
+            );
+          }
         }
       ],
       searchFields: ['user.nom', 'user.prenom', 'user.email', 'profession'],
@@ -251,7 +267,7 @@ const Personnes: React.FC = () => {
       title="Gestion des Personnes"
       description="Gérez les informations des élèves et tuteurs"
       tabs={tabs}
-      fromApi={true}
+      fromApi={fromApi}
       additionalProps={{
         createEleveDetail,
         updateEleveDetail,

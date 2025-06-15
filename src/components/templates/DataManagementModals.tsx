@@ -44,6 +44,19 @@ function DataManagementModals<T extends { id: number }>({
   onEditFromDetails,
   additionalProps
 }: DataManagementModalsProps<T>) {
+  // Determine entity type based on current tab
+  const getEntityType = () => {
+    if (currentTab?.id === 'eleves') return 'eleve';
+    if (currentTab?.id === 'tuteurs') return 'tuteur';
+    return undefined;
+  };
+
+  const entityType = getEntityType();
+
+  console.log('DataManagementModals - selectedItem:', selectedItem);
+  console.log('DataManagementModals - entityType:', entityType);
+  console.log('DataManagementModals - currentTab id:', currentTab?.id);
+
   return (
     <>
       {/* Create/Edit Modal */}
@@ -63,10 +76,12 @@ function DataManagementModals<T extends { id: number }>({
           {currentTab && (
             <currentTab.form
               isEditing={!!selectedItem}
+              item={selectedItem}
               selectedItem={selectedItem}
               selectedInscription={selectedItem}
               onSubmit={onFormSubmit}
               onCancel={onFormCancel}
+              entityType={entityType}
               {...additionalProps}
             />
           )}
