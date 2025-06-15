@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User } from '@/types/users';
+import { User, EleveDetail, TuteurDetail, StaffDetail } from '@/types/users';
 
 const userSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -28,12 +28,13 @@ type UserFormData = z.infer<typeof userSchema>;
 
 interface UserFormProps {
   user?: User;
+  entity?: EleveDetail | TuteurDetail | StaffDetail;
   onSubmit: (data: UserFormData) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
 }
 
-export default function UserForm({ user, onSubmit, onCancel, isSubmitting = false }: UserFormProps) {
+export default function UserForm({ user, entity, onSubmit, onCancel, isSubmitting = false }: UserFormProps) {
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: user ? {

@@ -1,3 +1,4 @@
+
 export interface User {
   id: number;
   email: string;
@@ -60,6 +61,9 @@ export interface UserLite {
   tel2?: string;
   whatsapp?: string;
   photo?: string;
+  is_staff: boolean;
+  is_active: boolean;
+  is_superuser: boolean;
 }
 
 export interface EleveDetail {
@@ -68,7 +72,6 @@ export interface EleveDetail {
   matricule: string;
   tuteurs: number[];
 }
-
 
 export interface StaffDetail {
   id: number;
@@ -85,4 +88,3 @@ export interface TuteurDetail {
   user: UserLite;
   profession: string;
 }
-

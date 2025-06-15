@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -123,21 +122,45 @@ const Personnes: React.FC = () => {
   };
 
   const handleEditEleve = (eleve: EleveDetail) => {
-    setSelectedUser(typeof eleve.user === 'object' ? eleve.user : null);
+    // Convert UserLite to User by adding missing properties
+    const userData = eleve.user;
+    const fullUser: User = {
+      ...userData,
+      is_staff: userData.is_staff,
+      is_active: userData.is_active,
+      is_superuser: userData.is_superuser
+    };
+    setSelectedUser(fullUser);
     setSelectedEntity(eleve);
     setIsEditing(true);
     setIsModalOpen(true);
   };
 
   const handleEditTuteur = (tuteur: TuteurDetail) => {
-    setSelectedUser(typeof tuteur.user === 'object' ? tuteur.user : null);
+    // Convert UserLite to User by adding missing properties
+    const userData = tuteur.user;
+    const fullUser: User = {
+      ...userData,
+      is_staff: userData.is_staff,
+      is_active: userData.is_active,
+      is_superuser: userData.is_superuser
+    };
+    setSelectedUser(fullUser);
     setSelectedEntity(tuteur);
     setIsEditing(true);
     setIsModalOpen(true);
   };
 
   const handleEditStaff = (staff: StaffDetail) => {
-    setSelectedUser(typeof staff.user === 'object' ? staff.user : null);
+    // Convert UserLite to User by adding missing properties
+    const userData = staff.user;
+    const fullUser: User = {
+      ...userData,
+      is_staff: userData.is_staff,
+      is_active: userData.is_active,
+      is_superuser: userData.is_superuser
+    };
+    setSelectedUser(fullUser);
     setSelectedEntity(staff);
     setIsEditing(true);
     setIsModalOpen(true);
@@ -162,7 +185,7 @@ const Personnes: React.FC = () => {
   };
 
   const handleDeleteEleve = async (eleve: EleveDetail) => {
-    const userName = typeof eleve.user === 'object' ? `${eleve.user.prenom} ${eleve.user.nom}` : 'cet élève';
+    const userName = `${eleve.user.prenom} ${eleve.user.nom}`;
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
       try {
         await deleteEleveDetail(eleve.id);
@@ -181,7 +204,7 @@ const Personnes: React.FC = () => {
   };
 
   const handleDeleteTuteur = async (tuteur: TuteurDetail) => {
-    const userName = typeof tuteur.user === 'object' ? `${tuteur.user.prenom} ${tuteur.user.nom}` : 'ce tuteur';
+    const userName = `${tuteur.user.prenom} ${tuteur.user.nom}`;
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
       try {
         await deleteTuteurDetail(tuteur.id);
@@ -200,7 +223,7 @@ const Personnes: React.FC = () => {
   };
 
   const handleDeleteStaff = async (staff: StaffDetail) => {
-    const userName = typeof staff.user === 'object' ? `${staff.user.prenom} ${staff.user.nom}` : 'ce membre du personnel';
+    const userName = `${staff.user.prenom} ${staff.user.nom}`;
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${userName} ?`)) {
       try {
         await deleteStaffDetail(staff.id);
@@ -349,21 +372,21 @@ const Personnes: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {elevesDetails.map((eleve) => {
-                    const userData = typeof eleve.user === 'object' ? eleve.user : null;
+                    const userData = eleve.user;
                     return (
                       <TableRow key={eleve.id}>
                         <TableCell className="font-medium">{eleve.matricule}</TableCell>
-                        <TableCell>{userData?.nom}</TableCell>
-                        <TableCell>{userData?.prenom}</TableCell>
-                        <TableCell>{userData?.email}</TableCell>
-                        <TableCell>{userData?.tel1}</TableCell>
+                        <TableCell>{userData.nom}</TableCell>
+                        <TableCell>{userData.prenom}</TableCell>
+                        <TableCell>{userData.email}</TableCell>
+                        <TableCell>{userData.tel1}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            userData?.is_active 
+                            userData.is_active 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-red-100 text-red-800'
                           }`}>
-                            {userData?.is_active ? 'Actif' : 'Inactif'}
+                            {userData.is_active ? 'Actif' : 'Inactif'}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
@@ -410,21 +433,21 @@ const Personnes: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {tuteursDetails.map((tuteur) => {
-                    const userData = typeof tuteur.user === 'object' ? tuteur.user : null;
+                    const userData = tuteur.user;
                     return (
                       <TableRow key={tuteur.id}>
-                        <TableCell className="font-medium">{userData?.nom}</TableCell>
-                        <TableCell>{userData?.prenom}</TableCell>
-                        <TableCell>{userData?.email}</TableCell>
-                        <TableCell>{userData?.tel1}</TableCell>
+                        <TableCell className="font-medium">{userData.nom}</TableCell>
+                        <TableCell>{userData.prenom}</TableCell>
+                        <TableCell>{userData.email}</TableCell>
+                        <TableCell>{userData.tel1}</TableCell>
                         <TableCell>{tuteur.profession}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            userData?.is_active 
+                            userData.is_active 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-red-100 text-red-800'
                           }`}>
-                            {userData?.is_active ? 'Actif' : 'Inactif'}
+                            {userData.is_active ? 'Actif' : 'Inactif'}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
@@ -471,13 +494,13 @@ const Personnes: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {staffsDetails.map((staff) => {
-                    const userData = typeof staff.user === 'object' ? staff.user : null;
+                    const userData = staff.user;
                     return (
                       <TableRow key={staff.id}>
-                        <TableCell className="font-medium">{userData?.nom}</TableCell>
-                        <TableCell>{userData?.prenom}</TableCell>
-                        <TableCell>{userData?.email}</TableCell>
-                        <TableCell>{userData?.tel1}</TableCell>
+                        <TableCell className="font-medium">{userData.nom}</TableCell>
+                        <TableCell>{userData.prenom}</TableCell>
+                        <TableCell>{userData.email}</TableCell>
+                        <TableCell>{userData.tel1}</TableCell>
                         <TableCell>{new Date(staff.date_embauche).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
