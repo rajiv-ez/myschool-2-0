@@ -19,8 +19,21 @@ const mockUsers: User[] = [
 ];
 
 const mockUserLites: UserLite[] = [
-    { id: 7, email: 'emilie.nziengui@email.com', nom: 'NZIENGUI', prenom: 'Emilie', genre: 'F', date_naissance: '1992-08-25', lieu_naissance: 'Franceville', adresse: '789 Boulevard Principal', tel1: '+241 03 45 67 89', },
-]
+    { 
+      id: 7, 
+      email: 'emilie.nziengui@email.com', 
+      nom: 'NZIENGUI', 
+      prenom: 'Emilie', 
+      genre: 'F', 
+      date_naissance: '1992-08-25', 
+      lieu_naissance: 'Franceville', 
+      adresse: '789 Boulevard Principal', 
+      tel1: '+241 03 45 67 89',
+      is_staff: false,
+      is_active: true,
+      is_superuser: false
+    },
+];
 
 const mockTuteurs: Tuteur[] = [
   { id: 1, user: 5, profession: 'Enseignant' },
