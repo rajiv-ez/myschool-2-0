@@ -5,9 +5,14 @@ import DataManagementPage, { TabConfig } from '@/components/templates/DataManage
 import InscriptionForm from '@/components/forms/InscriptionForm';
 import { useInscriptionsData } from '@/hooks/useInscriptionsData';
 import { exportInscriptionsToExcel } from '@/utils/excelUtils';
+import { academicService } from '@/services/academicService';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Inscription } from '@/types/academic';
 
 const Inscriptions: React.FC = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { 
     inscriptions, 
     classesAcademiques, 
@@ -28,6 +33,44 @@ const Inscriptions: React.FC = () => {
       </div>
     );
   }
+
+  const handleImportInscriptions = async (data: any[]) => {
+    console.log('Starting import of inscriptions:', data);
+    
+    try {
+      const results = [];
+      for (const item of data) {
+        try {
+          console.log('Creating inscription:', item);
+          const result = await academicService.createInscription(item);
+          results.push(result);
+        } catch (error) {
+          console.error('Error creating inscription:', error);
+          throw error;
+        }
+      }
+      
+      // Refresh all related data
+      await queryClient.invalidateQueries({ queryKey: ['inscriptions'] });
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
+      await queryClient.invalidateQueries({ queryKey: ['eleves'] });
+      
+      toast({
+        title: 'Import réussi',
+        description: `${results.length} inscription(s) importée(s) avec succès`,
+      });
+      
+      console.log('Import completed successfully:', results);
+    } catch (error) {
+      console.error('Import failed:', error);
+      toast({
+        title: 'Erreur d\'import',
+        description: 'Une erreur est survenue lors de l\'import des inscriptions',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
 
   const tabs: TabConfig<Inscription & { 
     eleveNom: string;
@@ -140,9 +183,7 @@ const Inscriptions: React.FC = () => {
         exportInscriptionsToExcel(items);
       },
       importType: 'inscriptions',
-      onImport: async (data) => {
-        console.log('Import des inscriptions:', data);
-      }
+      onImport: handleImportInscriptions
     }
   ];
 

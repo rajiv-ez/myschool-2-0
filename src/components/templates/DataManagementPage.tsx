@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -31,7 +30,7 @@ export interface TabConfig<T> {
   form: React.ComponentType<any>;
   createLabel: string;
   exportFunction: (items: T[]) => void;
-  importType: 'succursales' | 'batiments' | 'salles';
+  importType: 'succursales' | 'batiments' | 'salles' | 'inscriptions';
   onImport: (data: any[]) => Promise<void>;
 }
 

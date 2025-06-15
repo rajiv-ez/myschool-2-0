@@ -5,46 +5,6 @@ import { academicService } from '@/services/academicService';
 import { User, Eleve } from '@/types/users';
 import { Inscription, ClasseSession, Session, Classe, Specialite, Filiere, Niveau } from '@/types/academic';
 
-// Données fictives basées sur les vrais types
-const sessionsData: Session[] = [
-  { id: 1, nom: '2024-2025', debut: '2024-09-01', fin: '2025-06-30', en_cours: true, auto_activer_palier: true },
-  { id: 2, nom: '2023-2024', debut: '2023-09-01', fin: '2024-06-30', en_cours: false, auto_activer_palier: false },
-];
-
-const niveauxData: Niveau[] = [
-  { id: 1, nom: 'Primaire' },
-  { id: 2, nom: 'Collège' },
-  { id: 3, nom: 'Lycée' },
-];
-
-const filieresData: Filiere[] = [
-  { id: 1, niveau: 1, nom: 'Générale', description: 'Formation générale primaire' },
-  { id: 2, niveau: 2, nom: 'Générale', description: 'Formation générale collège' },
-  { id: 3, niveau: 3, nom: 'Scientifique', description: 'Formation scientifique' },
-  { id: 4, niveau: 3, nom: 'Littéraire', description: 'Formation littéraire' },
-];
-
-const specialitesData: Specialite[] = [
-  { id: 1, filiere: 1, nom: 'Standard', description: 'Formation standard primaire' },
-  { id: 2, filiere: 2, nom: 'Standard', description: 'Formation standard collège' },
-  { id: 3, filiere: 3, nom: 'Mathématiques', description: 'Spécialité mathématiques' },
-  { id: 4, filiere: 4, nom: 'Philosophie', description: 'Spécialité philosophie' },
-];
-
-const classesData: Classe[] = [
-  { id: 1, specialite: 1, nom: 'CP', description: 'Cours Préparatoire' },
-  { id: 2, specialite: 1, nom: 'CE1', description: 'Cours Élémentaire 1' },
-  { id: 3, specialite: 2, nom: '6ème', description: 'Sixième' },
-  { id: 4, specialite: 3, nom: 'Terminale S', description: 'Terminale Scientifique' },
-];
-
-const classeSessionsData: ClasseSession[] = [
-  { id: 1, classe: 1, session: 1, capacite: 30 },
-  { id: 2, classe: 2, session: 1, capacite: 28 },
-  { id: 3, classe: 3, session: 1, capacite: 25 },
-  { id: 4, classe: 4, session: 1, capacite: 32 },
-];
-
 export function useInscriptionsData() {
   // Récupérer les données des utilisateurs et élèves
   const { data: usersResponse, isLoading: usersLoading } = useQuery({
@@ -57,16 +17,58 @@ export function useInscriptionsData() {
     queryFn: () => usersService.getEleves(),
   });
 
-  // Récupérer les inscriptions depuis l'API
+  // Récupérer toutes les données académiques depuis l'API
   const { data: inscriptionsResponse, isLoading: inscriptionsLoading } = useQuery({
     queryKey: ['inscriptions'],
     queryFn: () => academicService.getInscriptions(),
   });
 
+  const { data: sessionsResponse, isLoading: sessionsLoading } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => academicService.getSessions(),
+  });
+
+  const { data: classeSessionsResponse, isLoading: classeSessionsLoading } = useQuery({
+    queryKey: ['classe-sessions'],
+    queryFn: () => academicService.getClasseSessions(),
+  });
+
+  const { data: classesResponse, isLoading: classesLoading } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => academicService.getClasses(),
+  });
+
+  const { data: specialitesResponse, isLoading: specialitesLoading } = useQuery({
+    queryKey: ['specialites'],
+    queryFn: () => academicService.getSpecialites(),
+  });
+
+  const { data: filieresResponse, isLoading: filieresLoading } = useQuery({
+    queryKey: ['filieres'],
+    queryFn: () => academicService.getFilieres(),
+  });
+
+  const { data: niveauxResponse, isLoading: niveauxLoading } = useQuery({
+    queryKey: ['niveaux'],
+    queryFn: () => academicService.getNiveaux(),
+  });
+
   const users = usersResponse?.data || [];
   const eleves = elevesResponse?.data || [];
   const inscriptionsApiData = inscriptionsResponse?.data || [];
-  const fromApi = usersResponse?.fromApi && elevesResponse?.fromApi && inscriptionsResponse?.fromApi;
+  const sessionsData = sessionsResponse?.data || [];
+  const classeSessionsData = classeSessionsResponse?.data || [];
+  const classesData = classesResponse?.data || [];
+  const specialitesData = specialitesResponse?.data || [];
+  const filieresData = filieresResponse?.data || [];
+  const niveauxData = niveauxResponse?.data || [];
+
+  const fromApi = usersResponse?.fromApi && 
+                 elevesResponse?.fromApi && 
+                 inscriptionsResponse?.fromApi &&
+                 sessionsResponse?.fromApi &&
+                 classeSessionsResponse?.fromApi &&
+                 classesResponse?.fromApi;
 
   // Fonctions utilitaires
   const getEleveFullName = (eleveId: number) => {
@@ -116,10 +118,26 @@ export function useInscriptionsData() {
     dateFormatted: new Date(inscription.date_inscription).toLocaleDateString('fr-FR')
   }));
 
-  // Classes académiques pour le formulaire
+  // Construire les classes académiques avec la hiérarchie complète depuis l'API
   const classesAcademiques = classeSessionsData.map(cs => {
     const classe = classesData.find(c => c.id === cs.classe);
     const session = sessionsData.find(s => s.id === cs.session);
+    
+    // Construire le nom complet de la classe avec la hiérarchie
+    let classeNom = classe?.nom || 'Inconnue';
+    
+    if (classe) {
+      const specialite = specialitesData.find(sp => sp.id === classe.specialite);
+      if (specialite) {
+        const filiere = filieresData.find(f => f.id === specialite.filiere);
+        if (filiere) {
+          const niveau = niveauxData.find(n => n.id === filiere.niveau);
+          if (niveau) {
+            classeNom = `${niveau.nom} - ${filiere.nom} - ${specialite.nom} - ${classe.nom}`;
+          }
+        }
+      }
+    }
     
     // Compter les inscriptions actuelles pour cette classe session
     const currentInscriptions = inscriptionsApiData.filter(i => 
@@ -128,14 +146,24 @@ export function useInscriptionsData() {
     
     return {
       id: cs.id,
-      classe: classe?.nom || 'Inconnue',
+      classe: classeNom,
       session: session?.nom || 'Inconnue',
-      enseignant: 'M. Dupont', // Données fictives
+      enseignant: 'M. Dupont', // TODO: À récupérer depuis l'API quand disponible
       eleves: currentInscriptions.length,
       capacite: cs.capacite,
       statut: 'Actif'
     };
   });
+
+  const isLoading = usersLoading || 
+                   elevesLoading || 
+                   inscriptionsLoading ||
+                   sessionsLoading ||
+                   classeSessionsLoading ||
+                   classesLoading ||
+                   specialitesLoading ||
+                   filieresLoading ||
+                   niveauxLoading;
 
   return {
     inscriptions: enrichedInscriptions,
@@ -149,7 +177,7 @@ export function useInscriptionsData() {
     getClasseSessionName,
     getStatutLabel,
     getStatutColor,
-    isLoading: usersLoading || elevesLoading || inscriptionsLoading,
+    isLoading,
     fromApi
   };
 }
