@@ -128,26 +128,28 @@ export function useInscriptionFormState({
 
   // Surveiller les changements d'élève pour détecter automatiquement la réinscription
   useEffect(() => {
-    const eleveId = form.watch('eleve');
-    if (eleveId && !isEditing) {
-      const isReinscriptionDetected = checkIfReinscription(eleveId);
-      setIsReinscription(isReinscriptionDetected);
-      form.setValue('est_reinscription', isReinscriptionDetected);
-    }
-  }, [form.watch('eleve'), checkIfReinscription, isEditing, form]);
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'eleve' && value.eleve && !isEditing) {
+        const isReinscriptionDetected = checkIfReinscription(value.eleve);
+        setIsReinscription(isReinscriptionDetected);
+        form.setValue('est_reinscription', isReinscriptionDetected);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, checkIfReinscription, isEditing]);
 
   // Surveiller les changements de classe pour vérifier la capacité
   useEffect(() => {
-    const classeAcademiqueId = form.watch('classeAcademiqueId');
-    const eleveId = form.watch('eleve');
-    
-    if (classeAcademiqueId) {
-      const error = checkClassCapacity(classeAcademiqueId, eleveId);
-      setCapacityError(error);
-    } else {
-      setCapacityError('');
-    }
-  }, [form.watch('classeAcademiqueId'), form.watch('eleve'), checkClassCapacity, form]);
+    const subscription = form.watch((value) => {
+      if (value.classeAcademiqueId) {
+        const error = checkClassCapacity(value.classeAcademiqueId, value.eleve || '');
+        setCapacityError(error);
+      } else {
+        setCapacityError('');
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, checkClassCapacity]);
 
   return {
     form,

@@ -64,7 +64,7 @@ function DataManagementModals<T extends { id: number }>({
             <currentTab.form
               isEditing={!!selectedItem}
               selectedItem={selectedItem}
-              selectedInscription={selectedItem} // Add this for inscription forms
+              selectedInscription={selectedItem}
               onSubmit={onFormSubmit}
               onCancel={onFormCancel}
               {...additionalProps}

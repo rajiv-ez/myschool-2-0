@@ -15,7 +15,7 @@ export function useInscriptionFormData() {
     queryFn: () => usersService.getEleves(),
   });
 
-  // Récupérer toutes les inscriptions pour vérifier les réinscriptions
+  // Récupérer toutes les inscriptions depuis l'API pour vérifier les réinscriptions
   const { data: inscriptionsResponse } = useQuery({
     queryKey: ['inscriptions'],
     queryFn: () => academicService.getInscriptions(),

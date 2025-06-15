@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { usersService } from '@/services/usersService';
+import { academicService } from '@/services/academicService';
 import { User, Eleve } from '@/types/users';
 import { Inscription, ClasseSession, Session, Classe, Specialite, Filiere, Niveau } from '@/types/academic';
 
@@ -44,41 +45,6 @@ const classeSessionsData: ClasseSession[] = [
   { id: 4, classe: 4, session: 1, capacite: 32 },
 ];
 
-const inscriptionsData: Inscription[] = [
-  { 
-    id: 1, 
-    eleve: 1, 
-    classe_session: 1, 
-    date_inscription: '2024-08-12', 
-    est_reinscription: false, 
-    statut: 'CONFIRMEE' 
-  },
-  { 
-    id: 2, 
-    eleve: 2, 
-    classe_session: 2, 
-    date_inscription: '2024-08-15', 
-    est_reinscription: true, 
-    statut: 'CONFIRMEE' 
-  },
-  { 
-    id: 3, 
-    eleve: 3, 
-    classe_session: 3, 
-    date_inscription: '2024-08-10', 
-    est_reinscription: false, 
-    statut: 'EN_ATTENTE' 
-  },
-  { 
-    id: 4, 
-    eleve: 4, 
-    classe_session: 4, 
-    date_inscription: '2024-08-18', 
-    est_reinscription: true, 
-    statut: 'CONFIRMEE' 
-  },
-];
-
 export function useInscriptionsData() {
   // Récupérer les données des utilisateurs et élèves
   const { data: usersResponse, isLoading: usersLoading } = useQuery({
@@ -91,9 +57,16 @@ export function useInscriptionsData() {
     queryFn: () => usersService.getEleves(),
   });
 
+  // Récupérer les inscriptions depuis l'API
+  const { data: inscriptionsResponse, isLoading: inscriptionsLoading } = useQuery({
+    queryKey: ['inscriptions'],
+    queryFn: () => academicService.getInscriptions(),
+  });
+
   const users = usersResponse?.data || [];
   const eleves = elevesResponse?.data || [];
-  const fromApi = usersResponse?.fromApi && elevesResponse?.fromApi;
+  const inscriptionsApiData = inscriptionsResponse?.data || [];
+  const fromApi = usersResponse?.fromApi && elevesResponse?.fromApi && inscriptionsResponse?.fromApi;
 
   // Fonctions utilitaires
   const getEleveFullName = (eleveId: number) => {
@@ -132,7 +105,7 @@ export function useInscriptionsData() {
   };
 
   // Données enrichies pour les inscriptions avec informations complètes
-  const enrichedInscriptions = inscriptionsData.map(inscription => ({
+  const enrichedInscriptions = inscriptionsApiData.map(inscription => ({
     ...inscription,
     eleveNom: getEleveFullName(inscription.eleve),
     classeSessionNom: getClasseSessionName(inscription.classe_session),
@@ -147,12 +120,18 @@ export function useInscriptionsData() {
   const classesAcademiques = classeSessionsData.map(cs => {
     const classe = classesData.find(c => c.id === cs.classe);
     const session = sessionsData.find(s => s.id === cs.session);
+    
+    // Compter les inscriptions actuelles pour cette classe session
+    const currentInscriptions = inscriptionsApiData.filter(i => 
+      i.classe_session === cs.id && i.statut === 'CONFIRMEE'
+    );
+    
     return {
       id: cs.id,
       classe: classe?.nom || 'Inconnue',
       session: session?.nom || 'Inconnue',
       enseignant: 'M. Dupont', // Données fictives
-      eleves: Math.floor(Math.random() * cs.capacite),
+      eleves: currentInscriptions.length,
       capacite: cs.capacite,
       statut: 'Actif'
     };
@@ -170,7 +149,7 @@ export function useInscriptionsData() {
     getClasseSessionName,
     getStatutLabel,
     getStatutColor,
-    isLoading: usersLoading || elevesLoading,
+    isLoading: usersLoading || elevesLoading || inscriptionsLoading,
     fromApi
   };
 }
