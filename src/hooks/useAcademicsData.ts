@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { academicService } from '@/services/academicService';
 import { Niveau, Filiere, Specialite, Classe } from '@/types/academic';
 
 // Données fictives étendues
@@ -51,88 +52,117 @@ export function useAcademicsData() {
   const [loading, setLoading] = useState(false);
   const [fromApi, setFromApi] = useState(false);
 
+  
+    useEffect(() => {
+      (async () => {
+        setLoading(true);
+        const [n, f, s, c] = await Promise.all([
+          academicService.getNiveaux(),
+          academicService.getFilieres(),
+          academicService.getSpecialites(),
+          academicService.getClasses(),
+        ]);
+  
+        if (n.fromApi) setNiveaux(n.data);
+        if (f.fromApi) setFilieres(f.data);
+        if (s.fromApi) setSpecialites(s.data);
+        if (c.fromApi) setClasses(c.data);
+  
+        // Déterminer si au moins une des réponses vient de l'API
+        const isFromApi = [n, f, s, c].some(response => response.fromApi);
+        setFromApi(isFromApi);
+  
+        setLoading(false);
+      })();
+    }, []);
+
   // Fonctions CRUD pour niveaux
-  const createNiveau = async (data: Omit<typeof niveauxData[0], 'id'>) => {
-    const newNiveau = { ...data, id: Date.now() };
-    setNiveaux(prev => [...prev, newNiveau]);
-    return { data: newNiveau, fromApi: false };
-  };
+  // const createNiveau = async (data: Omit<typeof niveauxData[0], 'id'>) => {
+  //   const newNiveau = { ...data, id: Date.now() };
+  //   setNiveaux(prev => [...prev, newNiveau]);
+  //   return { data: newNiveau, fromApi: false };
+  // };
 
-  const updateNiveau = async (id: number, data: Partial<typeof niveauxData[0]>) => {
-    setNiveaux(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
-    return { data: { id, ...data }, fromApi: false };
-  };
+  // const updateNiveau = async (id: number, data: Partial<typeof niveauxData[0]>) => {
+  //   setNiveaux(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
+  //   return { data: { id, ...data }, fromApi: false };
+  // };
 
-  const deleteNiveau = async (id: number) => {
-    setNiveaux(prev => prev.filter(item => item.id !== id));
-  };
+  // const deleteNiveau = async (id: number) => {
+  //   setNiveaux(prev => prev.filter(item => item.id !== id));
+  // };
 
   // Fonctions CRUD pour filières
-  const createFiliere = async (data: Omit<Filiere, 'id'>) => {
-    const newFiliere = { ...data, id: Date.now() };
-    setFilieres(prev => [...prev, newFiliere]);
-    return { data: newFiliere, fromApi: false };
-  };
+  // const createFiliere = async (data: Omit<Filiere, 'id'>) => {
+  //   const newFiliere = { ...data, id: Date.now() };
+  //   setFilieres(prev => [...prev, newFiliere]);
+  //   return { data: newFiliere, fromApi: false };
+  // };
 
-  const updateFiliere = async (id: number, data: Partial<Filiere>) => {
-    setFilieres(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
-    return { data: { id, ...data }, fromApi: false };
-  };
+  // const updateFiliere = async (id: number, data: Partial<Filiere>) => {
+  //   setFilieres(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
+  //   return { data: { id, ...data }, fromApi: false };
+  // };
 
-  const deleteFiliere = async (id: number) => {
-    setFilieres(prev => prev.filter(item => item.id !== id));
-  };
+  // const deleteFiliere = async (id: number) => {
+  //   setFilieres(prev => prev.filter(item => item.id !== id));
+  // };
 
   // Fonctions CRUD pour spécialités
-  const createSpecialite = async (data: Omit<Specialite, 'id'>) => {
-    const newSpecialite = { ...data, id: Date.now() };
-    setSpecialites(prev => [...prev, newSpecialite]);
-    return { data: newSpecialite, fromApi: false };
-  };
+  // const createSpecialite = async (data: Omit<Specialite, 'id'>) => {
+  //   const newSpecialite = { ...data, id: Date.now() };
+  //   setSpecialites(prev => [...prev, newSpecialite]);
+  //   return { data: newSpecialite, fromApi: false };
+  // };
 
-  const updateSpecialite = async (id: number, data: Partial<Specialite>) => {
-    setSpecialites(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
-    return { data: { id, ...data }, fromApi: false };
-  };
+  // const updateSpecialite = async (id: number, data: Partial<Specialite>) => {
+  //   setSpecialites(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
+  //   return { data: { id, ...data }, fromApi: false };
+  // };
 
-  const deleteSpecialite = async (id: number) => {
-    setSpecialites(prev => prev.filter(item => item.id !== id));
-  };
+  // const deleteSpecialite = async (id: number) => {
+  //   setSpecialites(prev => prev.filter(item => item.id !== id));
+  // };
 
   // Fonctions CRUD pour classes
-  const createClasse = async (data: Omit<Classe, 'id'>) => {
-    const newClasse = { ...data, id: Date.now() };
-    setClasses(prev => [...prev, newClasse]);
-    return { data: newClasse, fromApi: false };
-  };
+  // const createClasse = async (data: Omit<Classe, 'id'>) => {
+  //   const newClasse = { ...data, id: Date.now() };
+  //   setClasses(prev => [...prev, newClasse]);
+  //   return { data: newClasse, fromApi: false };
+  // };
 
-  const updateClasse = async (id: number, data: Partial<Classe>) => {
-    setClasses(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
-    return { data: { id, ...data }, fromApi: false };
-  };
+  // const updateClasse = async (id: number, data: Partial<Classe>) => {
+  //   setClasses(prev => prev.map(item => item.id === id ? { ...item, ...data } : item));
+  //   return { data: { id, ...data }, fromApi: false };
+  // };
 
-  const deleteClasse = async (id: number) => {
-    setClasses(prev => prev.filter(item => item.id !== id));
-  };
+  // const deleteClasse = async (id: number) => {
+  //   setClasses(prev => prev.filter(item => item.id !== id));
+  // };
 
+
+  const createNiveau = async (data: Partial<Niveau>) => { const r = await academicService.createNiveau(data); if (r.fromApi) setNiveaux(prev => [...prev, r.data]); return r; };
+  const updateNiveau = async (id: number, data: Partial<Niveau>) => { const r = await academicService.updateNiveau(id, data); if (r.fromApi) setNiveaux(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
+  const deleteNiveau = async (id: number) => { await academicService.deleteNiveau(id); setNiveaux(prev => prev.filter(s => s.id !== id)); };
+  
+  const createFiliere = async (data: Partial<Filiere>) => { const r = await academicService.createFiliere(data); if (r.fromApi) setFilieres(prev => [...prev, r.data]); return r; };
+  const updateFiliere = async (id: number, data: Partial<Filiere>) => { const r = await academicService.updateFiliere(id, data); if (r.fromApi) setFilieres(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
+  const deleteFiliere = async (id: number) => { await academicService.deleteFiliere(id); setFilieres(prev => prev.filter(s => s.id !== id)); };
+  
+  const createSpecialite = async (data: Partial<Specialite>) => { const r = await academicService.createSpecialite(data); if (r.fromApi) setSpecialites(prev => [...prev, r.data]); return r; };
+  const updateSpecialite = async (id: number, data: Partial<Specialite>) => { const r = await academicService.updateSpecialite(id, data); if (r.fromApi) setSpecialites(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
+  const deleteSpecialite = async (id: number) => { await academicService.deleteSpecialite(id); setSpecialites(prev => prev.filter(s => s.id !== id)); };
+
+  const createClasse = async (data: Partial<Classe>) => { const r = await academicService.createClasse(data); if (r.fromApi) setClasses(prev => [...prev, r.data]); return r; };
+  const updateClasse = async (id: number, data: Partial<Classe>) => { const r = await academicService.updateClasse(id, data); if (r.fromApi) setClasses(prev => prev.map(s => (s.id === id ? r.data : s))); return r; };
+  const deleteClasse = async (id: number) => { await academicService.deleteClasse(id); setClasses(prev => prev.filter(s => s.id !== id)); };
+  
   return {
-    niveaux,
-    filieres,
-    specialites,
-    classes,
+    niveaux, createNiveau, updateNiveau, deleteNiveau,
+    filieres, createFiliere, updateFiliere, deleteFiliere,
+    specialites, createSpecialite, updateSpecialite, deleteSpecialite,
+    classes, createClasse, updateClasse, deleteClasse,
     loading,
     fromApi,
-    createNiveau,
-    updateNiveau,
-    deleteNiveau,
-    createFiliere,
-    updateFiliere,
-    deleteFiliere,
-    createSpecialite,
-    updateSpecialite,
-    deleteSpecialite,
-    createClasse,
-    updateClasse,
-    deleteClasse,
   };
 }
