@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { teachingService } from '@/services/teachingService';
 import {
@@ -19,6 +20,7 @@ export function useTeachingData() {
     const [notes, setNotes] = useState<Note[]>([]);
     const [noteConfigs, setNoteConfigs] = useState<NoteConfig[]>([]);
     const [loading, setLoading] = useState(true);
+    const [fromApi, setFromApi] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -37,6 +39,10 @@ export function useTeachingData() {
         if (ex.fromApi) setExercices(ex.data); if (fx.fromApi) setFichiersExercices(fx.data);
         if (p.fromApi) setPresences(p.data); if (n.fromApi) setNotes(n.data);
         if (nc.fromApi) setNoteConfigs(nc.data);
+
+        // Déterminer si au moins une des réponses vient de l'API
+        const isFromApi = [d, u, m, g, e, fe, ex, fx, p, n, nc].some(response => response.fromApi);
+        setFromApi(isFromApi);
 
         setLoading(false);
         })();
@@ -88,6 +94,7 @@ export function useTeachingData() {
     
     return {
         loading,
+        fromApi,
         domaines, createDomaine, updateDomaine, deleteDomaine,
         unites, createUnite, updateUnite, deleteUnite,
         matieres, createMatiere, updateMatiere, deleteMatiere,

@@ -11,6 +11,7 @@ export function useAcademicData() {
   const [classes, setClasses] = useState<Classe[]>([]);
   const [classeSessions, setClasseSessions] = useState<ClasseSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fromApi, setFromApi] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -30,6 +31,10 @@ export function useAcademicData() {
       if (f.fromApi) setFilieres(f.data);
       if (c.fromApi) setClasses(c.data);
       if (cs.fromApi) setClasseSessions(cs.data);
+
+      // Déterminer si au moins une des réponses vient de l'API
+      const isFromApi = [s, p, n, f, c, cs].some(response => response.fromApi);
+      setFromApi(isFromApi);
 
       setLoading(false);
     })();
@@ -86,6 +91,7 @@ export function useAcademicData() {
     classes,
     classeSessions,
     loading,
+    fromApi,
     createSession,
     updateSession,
     deleteSession,

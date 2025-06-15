@@ -16,6 +16,7 @@ const Academics: React.FC = () => {
     specialites,
     classes,
     loading,
+    fromApi,
     createNiveau,
     updateNiveau,
     deleteNiveau,
@@ -165,7 +166,7 @@ const Academics: React.FC = () => {
       title="Structure Académique"
       description="Gérez les niveaux, filières, spécialités et classes de votre établissement"
       tabs={tabs}
-      fromApi={false}
+      fromApi={fromApi}
       additionalProps={{
         niveaux,
         filieres,

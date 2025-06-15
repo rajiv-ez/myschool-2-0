@@ -13,6 +13,7 @@ const Education: React.FC = () => {
     domaines,
     unites,
     matieres,
+    fromApi,
     createDomaine,
     updateDomaine,
     deleteDomaine,
@@ -136,7 +137,7 @@ const Education: React.FC = () => {
       title="Unités d'Enseignement"
       description="Gérez les domaines, unités d'enseignement et matières"
       tabs={tabs}
-      fromApi={false}
+      fromApi={fromApi}
       additionalProps={{
         domaines,
         unites,

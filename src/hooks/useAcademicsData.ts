@@ -49,6 +49,7 @@ export function useAcademicsData() {
   const [specialites, setSpecialites] = useState(specialitesData);
   const [classes, setClasses] = useState(classesData);
   const [loading, setLoading] = useState(false);
+  const [fromApi, setFromApi] = useState(false);
 
   // Fonctions CRUD pour niveaux
   const createNiveau = async (data: Omit<typeof niveauxData[0], 'id'>) => {
@@ -120,6 +121,7 @@ export function useAcademicsData() {
     specialites,
     classes,
     loading,
+    fromApi,
     createNiveau,
     updateNiveau,
     deleteNiveau,

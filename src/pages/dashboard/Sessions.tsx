@@ -14,6 +14,7 @@ const Sessions: React.FC = () => {
     paliers,
     classes,
     classeSessions,
+    fromApi,
     createSession,
     updateSession,
     deleteSession,
@@ -230,7 +231,7 @@ const Sessions: React.FC = () => {
       title="Sessions et Paliers"
       description="Gérez les sessions scolaires, les paliers et les classes académiques"
       tabs={tabs}
-      fromApi={false}
+      fromApi={fromApi}
       additionalProps={{
         sessions,
         paliers,
