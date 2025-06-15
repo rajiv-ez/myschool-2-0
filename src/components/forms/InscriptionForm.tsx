@@ -4,11 +4,12 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { useInscriptionForm } from '@/hooks/useInscriptionForm';
-import EleveSelect from './inscription/EleveSelect';
+import EleveSearchSelect from './inscription/EleveSearchSelect';
 import ClasseAcademiqueSelect from './inscription/ClasseAcademiqueSelect';
 import StatutSelect from './inscription/StatutSelect';
 import ReinscriptionCheckbox from './inscription/ReinscriptionCheckbox';
 import DateInscriptionField from './inscription/DateInscriptionField';
+import CapacityAlert from './inscription/CapacityAlert';
 
 interface ClasseAcademique {
   id: number;
@@ -49,7 +50,10 @@ const InscriptionForm: React.FC<InscriptionFormProps> = ({
     selectedClasseAcademique,
     elevesWithUserInfo,
     activeClassesAcademiques,
+    isReinscription,
+    capacityError,
     handleClasseAcademiqueChange,
+    handleEleveChange,
     handleSubmit
   } = useInscriptionForm({
     isEditing,
@@ -58,12 +62,18 @@ const InscriptionForm: React.FC<InscriptionFormProps> = ({
     onSubmit
   });
 
+  const isFormValid = selectedClasseAcademique && 
+                     form.watch('eleve') && 
+                     !capacityError;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <EleveSelect 
+        <EleveSearchSelect 
           control={form.control}
           elevesWithUserInfo={elevesWithUserInfo}
+          onValueChange={handleEleveChange}
+          disabled={isEditing}
         />
         
         <ClasseAcademiqueSelect
@@ -71,18 +81,25 @@ const InscriptionForm: React.FC<InscriptionFormProps> = ({
           activeClassesAcademiques={activeClassesAcademiques}
           onValueChange={handleClasseAcademiqueChange}
         />
+
+        <CapacityAlert capacityError={capacityError} />
         
         <StatutSelect control={form.control} />
 
-        <ReinscriptionCheckbox register={form.register} />
+        <ReinscriptionCheckbox 
+          control={form.control}
+          isReinscription={isReinscription}
+        />
         
         <DateInscriptionField control={form.control} />
         
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>Annuler</Button>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Annuler
+          </Button>
           <Button 
             type="submit"
-            disabled={!selectedClasseAcademique || !form.watch('eleve')}
+            disabled={!isFormValid}
           >
             {isEditing ? 'Mettre à jour' : 'Enregistrer'}
           </Button>
