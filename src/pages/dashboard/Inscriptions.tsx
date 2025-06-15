@@ -124,12 +124,21 @@ const Inscriptions: React.FC = () => {
           filterFunction: (item, value) => item.statut === value
         }
       },
-      form: InscriptionForm,
+      form: ({ isEditing, selectedItem, onSubmit, onCancel, ...props }) => (
+        <InscriptionForm
+          isEditing={isEditing}
+          selectedInscription={selectedItem}
+          classesAcademiques={classesAcademiques}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          {...props}
+        />
+      ),
       createLabel: 'Nouvelle inscription',
       exportFunction: (items) => {
         console.log('Export des inscriptions:', items);
       },
-      importType: 'succursales', // Utilisé pour le type d'import
+      importType: 'succursales',
       onImport: async (data) => {
         console.log('Import des inscriptions:', data);
       }

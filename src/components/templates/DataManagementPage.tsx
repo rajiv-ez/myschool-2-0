@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { academicService } from '@/services/academicService';
 import DataManagementHeader from './DataManagementHeader';
 import DataManagementTabs from './DataManagementTabs';
 import DataManagementTabContent from './DataManagementTabContent';
@@ -49,6 +51,7 @@ function DataManagementPage<T extends { id: number }>({
   additionalProps = {}
 }: DataManagementPageProps<T>) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState(tabs[0]?.id || '');
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -80,8 +83,29 @@ function DataManagementPage<T extends { id: number }>({
     setIsDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (selectedItem) {
+  const handleConfirmDelete = async () => {
+    if (selectedItem && activeTab === 'inscriptions') {
+      try {
+        await academicService.deleteInscription(selectedItem.id);
+        
+        // Refresh the data
+        await queryClient.invalidateQueries({ queryKey: ['inscriptions'] });
+        await queryClient.invalidateQueries({ queryKey: ['users'] });
+        await queryClient.invalidateQueries({ queryKey: ['eleves'] });
+        
+        toast({
+          title: 'Inscription supprimée',
+          description: 'L\'inscription a été supprimée avec succès.',
+        });
+      } catch (error) {
+        console.error('Error deleting inscription:', error);
+        toast({
+          title: 'Erreur',
+          description: 'Erreur lors de la suppression de l\'inscription.',
+          variant: 'destructive'
+        });
+      }
+    } else {
       toast({
         title: 'Élément supprimé',
         description: 'L\'élément a été supprimé avec succès.',
@@ -105,12 +129,49 @@ function DataManagementPage<T extends { id: number }>({
     setIsImportModalOpen(true);
   };
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = async (data: any) => {
     const isEdit = !!selectedItem;
-    toast({ 
-      title: `Élément ${isEdit ? 'mis à jour' : 'créé'}`, 
-      description: `L'élément a été ${isEdit ? 'modifié' : 'créé'} avec succès.` 
-    });
+    
+    if (activeTab === 'inscriptions') {
+      try {
+        if (isEdit) {
+          console.log('Updating inscription with data:', data);
+          await academicService.updateInscription(selectedItem.id, data);
+          toast({ 
+            title: 'Inscription mise à jour', 
+            description: 'L\'inscription a été modifiée avec succès.' 
+          });
+        } else {
+          console.log('Creating new inscription with data:', data);
+          await academicService.createInscription(data);
+          toast({ 
+            title: 'Inscription créée', 
+            description: 'L\'inscription a été créée avec succès.' 
+          });
+        }
+        
+        // Refresh the data
+        await queryClient.invalidateQueries({ queryKey: ['inscriptions'] });
+        await queryClient.invalidateQueries({ queryKey: ['users'] });
+        await queryClient.invalidateQueries({ queryKey: ['eleves'] });
+        
+      } catch (error) {
+        console.error('Error saving inscription:', error);
+        toast({
+          title: 'Erreur',
+          description: `Erreur lors de ${isEdit ? 'la modification' : 'la création'} de l'inscription.`,
+          variant: 'destructive'
+        });
+        return; // Don't close modal on error
+      }
+    } else {
+      // For other tabs, use the existing logic
+      toast({ 
+        title: `Élément ${isEdit ? 'mis à jour' : 'créé'}`, 
+        description: `L'élément a été ${isEdit ? 'modifié' : 'créé'} avec succès.` 
+      });
+    }
+    
     setIsCreateModalOpen(false);
     setIsEditModalOpen(false);
     setSelectedItem(null);
