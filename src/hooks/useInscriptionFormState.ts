@@ -39,6 +39,7 @@ interface UseInscriptionFormStateProps {
   eleves: any[];
   checkIfReinscription: (eleveId: string) => boolean;
   checkClassCapacity: (classeAcademiqueId: string, eleveId: string) => string;
+  checkForDuplicateEnrollment: (eleveId: string, classeAcademiqueId: string) => string;
 }
 
 export function useInscriptionFormState({
@@ -47,11 +48,13 @@ export function useInscriptionFormState({
   classesAcademiques,
   eleves,
   checkIfReinscription,
-  checkClassCapacity
+  checkClassCapacity,
+  checkForDuplicateEnrollment
 }: UseInscriptionFormStateProps) {
   const [selectedClasseAcademique, setSelectedClasseAcademique] = useState<ClasseAcademique | null>(null);
   const [isReinscription, setIsReinscription] = useState(false);
   const [capacityError, setCapacityError] = useState<string>('');
+  const [duplicateError, setDuplicateError] = useState<string>('');
 
   const form = useForm({
     defaultValues: {
@@ -123,6 +126,7 @@ export function useInscriptionFormState({
       setSelectedClasseAcademique(null);
       setIsReinscription(false);
       setCapacityError('');
+      setDuplicateError('');
     }
   }, [isEditing, selectedInscription, classesAcademiques, eleves, form]);
 
@@ -138,18 +142,25 @@ export function useInscriptionFormState({
     return () => subscription.unsubscribe();
   }, [form, checkIfReinscription, isEditing]);
 
-  // Surveiller les changements de classe pour vérifier la capacité
+  // Surveiller les changements de classe et élève pour vérifier la capacité et les doublons
   useEffect(() => {
     const subscription = form.watch((value) => {
       if (value.classeAcademiqueId) {
-        const error = checkClassCapacity(value.classeAcademiqueId, value.eleve || '');
-        setCapacityError(error);
+        const capacityErr = checkClassCapacity(value.classeAcademiqueId, value.eleve || '');
+        setCapacityError(capacityErr);
       } else {
         setCapacityError('');
       }
+
+      if (value.eleve && value.classeAcademiqueId) {
+        const duplicateErr = checkForDuplicateEnrollment(value.eleve, value.classeAcademiqueId);
+        setDuplicateError(duplicateErr);
+      } else {
+        setDuplicateError('');
+      }
     });
     return () => subscription.unsubscribe();
-  }, [form, checkClassCapacity]);
+  }, [form, checkClassCapacity, checkForDuplicateEnrollment]);
 
   return {
     form,
@@ -157,6 +168,7 @@ export function useInscriptionFormState({
     setSelectedClasseAcademique,
     isReinscription,
     setIsReinscription,
-    capacityError
+    capacityError,
+    duplicateError
   };
 }

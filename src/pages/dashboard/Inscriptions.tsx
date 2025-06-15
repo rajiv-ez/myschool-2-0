@@ -4,6 +4,7 @@ import { UserPlus } from 'lucide-react';
 import DataManagementPage, { TabConfig } from '@/components/templates/DataManagementPage';
 import InscriptionForm from '@/components/forms/InscriptionForm';
 import { useInscriptionsData } from '@/hooks/useInscriptionsData';
+import { exportInscriptionsToExcel } from '@/utils/excelUtils';
 import { Inscription } from '@/types/academic';
 
 const Inscriptions: React.FC = () => {
@@ -136,9 +137,9 @@ const Inscriptions: React.FC = () => {
       ),
       createLabel: 'Nouvelle inscription',
       exportFunction: (items) => {
-        console.log('Export des inscriptions:', items);
+        exportInscriptionsToExcel(items);
       },
-      importType: 'succursales',
+      importType: 'inscriptions',
       onImport: async (data) => {
         console.log('Import des inscriptions:', data);
       }

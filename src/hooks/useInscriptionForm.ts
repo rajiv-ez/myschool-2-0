@@ -50,7 +50,7 @@ export function useInscriptionForm({
   const { elevesWithUserInfo, allInscriptions, eleves } = useInscriptionFormData();
   
   // Get validation functions
-  const { checkIfReinscription, checkClassCapacity } = useInscriptionValidation({
+  const { checkIfReinscription, checkClassCapacity, checkForDuplicateEnrollment } = useInscriptionValidation({
     classesAcademiques,
     allInscriptions,
     elevesWithUserInfo,
@@ -65,14 +65,16 @@ export function useInscriptionForm({
     setSelectedClasseAcademique,
     isReinscription,
     setIsReinscription,
-    capacityError
+    capacityError,
+    duplicateError
   } = useInscriptionFormState({
     isEditing,
     selectedInscription,
     classesAcademiques,
     eleves,
     checkIfReinscription,
-    checkClassCapacity
+    checkClassCapacity,
+    checkForDuplicateEnrollment
   });
   
   const handleClasseAcademiqueChange = (value: string) => {
@@ -99,9 +101,9 @@ export function useInscriptionForm({
   const handleSubmit = (data: any) => {
     console.log('Form submitted with data:', data);
     
-    // Vérifier la capacité avant la soumission
-    if (capacityError) {
-      console.error('Cannot submit: capacity error');
+    // Vérifier les erreurs avant la soumission
+    if (capacityError || duplicateError) {
+      console.error('Cannot submit: validation errors');
       return;
     }
     
@@ -133,6 +135,7 @@ export function useInscriptionForm({
     activeClassesAcademiques,
     isReinscription,
     capacityError,
+    duplicateError,
     handleClasseAcademiqueChange,
     handleEleveChange,
     handleSubmit

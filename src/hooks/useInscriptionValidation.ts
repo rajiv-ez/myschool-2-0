@@ -87,8 +87,33 @@ export function useInscriptionValidation({
     };
   }, [allInscriptions, classesAcademiques, isEditing, selectedInscriptionId]);
 
+  const checkForDuplicateEnrollment = useMemo(() => {
+    return (eleveId: string, classeAcademiqueId: string) => {
+      if (!eleveId || !classeAcademiqueId) return '';
+
+      // Trouver l'élève sélectionné pour obtenir son user ID
+      const selectedEleve = elevesWithUserInfo.find(e => e.id.toString() === eleveId);
+      if (!selectedEleve) return '';
+
+      // Vérifier si cet élève est déjà inscrit dans cette classe académique
+      const existingEnrollment = allInscriptions.find(inscription => 
+        inscription.eleve === selectedEleve.user &&
+        inscription.classe_session === parseInt(classeAcademiqueId) &&
+        inscription.statut === 'CONFIRMEE' &&
+        (!isEditing || inscription.id !== selectedInscriptionId)
+      );
+
+      if (existingEnrollment) {
+        return `Cet élève est déjà inscrit dans cette classe académique.`;
+      }
+
+      return '';
+    };
+  }, [allInscriptions, elevesWithUserInfo, isEditing, selectedInscriptionId]);
+
   return {
     checkIfReinscription,
-    checkClassCapacity
+    checkClassCapacity,
+    checkForDuplicateEnrollment
   };
 }

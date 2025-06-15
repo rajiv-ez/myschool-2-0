@@ -52,6 +52,7 @@ const InscriptionForm: React.FC<InscriptionFormProps> = ({
     activeClassesAcademiques,
     isReinscription,
     capacityError,
+    duplicateError,
     handleClasseAcademiqueChange,
     handleEleveChange,
     handleSubmit
@@ -64,7 +65,8 @@ const InscriptionForm: React.FC<InscriptionFormProps> = ({
 
   const isFormValid = selectedClasseAcademique && 
                      form.watch('eleve') && 
-                     !capacityError;
+                     !capacityError &&
+                     !duplicateError;
 
   return (
     <Form {...form}>
@@ -83,6 +85,10 @@ const InscriptionForm: React.FC<InscriptionFormProps> = ({
         />
 
         <CapacityAlert capacityError={capacityError} />
+        
+        {duplicateError && (
+          <CapacityAlert capacityError={duplicateError} />
+        )}
         
         <StatutSelect control={form.control} />
 

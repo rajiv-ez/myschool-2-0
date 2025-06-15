@@ -1,13 +1,13 @@
-
 import * as XLSX from 'xlsx';
 import { Succursale, Batiment, Salle } from '@/types/infrastructure';
+import { Inscription } from '@/types/academic';
 
 export interface ExcelExportOptions {
   filename: string;
   sheetName: string;
 }
 
-// Export functions
+// Export functions for infrastructure
 export const exportSuccursalesToExcel = (succursales: Succursale[], options?: Partial<ExcelExportOptions>) => {
   const data = succursales.map(s => ({
     ID: s.id,
@@ -65,6 +65,70 @@ export const exportSallesToExcel = (salles: Salle[], batiments: Batiment[], opti
   XLSX.writeFile(wb, filename);
 };
 
+// Export functions for inscriptions
+export const exportInscriptionsToExcel = (inscriptions: any[], options?: Partial<ExcelExportOptions>) => {
+  const data = inscriptions.map(i => ({
+    ID: i.id,
+    'Nom Élève': i.eleveNom || 'Inconnu',
+    'Classe/Session': i.classeSessionNom || 'Inconnue',
+    'Date Inscription': i.dateFormatted || i.date_inscription,
+    Type: i.typeLabel || (i.est_reinscription ? 'Réinscription' : 'Nouvelle'),
+    Statut: i.statutLabel || i.statut
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Inscriptions');
+  
+  const filename = options?.filename || `inscriptions_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+// Export functions for academic entities
+export const exportSessionsToExcel = (sessions: any[], options?: Partial<ExcelExportOptions>) => {
+  const data = sessions.map(s => ({
+    ID: s.id,
+    Nom: s.nom,
+    Début: s.debut,
+    Fin: s.fin,
+    'En Cours': s.en_cours ? 'Oui' : 'Non',
+    'Auto Activer Palier': s.auto_activer_palier ? 'Oui' : 'Non'
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Sessions');
+  
+  const filename = options?.filename || `sessions_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+export const exportClassesToExcel = (classes: any[], options?: Partial<ExcelExportOptions>) => {
+  const data = classes.map(c => ({
+    ID: c.id,
+    Nom: c.nom,
+    Description: c.description,
+    'ID Spécialité': c.specialite
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || 'Classes');
+  
+  const filename = options?.filename || `classes_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
+// Generic export function
+export const exportToExcel = (data: any[], entityType: string, options?: Partial<ExcelExportOptions>) => {
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, options?.sheetName || entityType);
+  
+  const filename = options?.filename || `${entityType.toLowerCase()}_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
 // Template generation functions
 export const generateSuccursalesTemplate = () => {
   const templateData = [
@@ -113,6 +177,24 @@ export const generateSallesTemplate = () => {
   XLSX.utils.book_append_sheet(wb, ws, 'Template Salles');
   
   XLSX.writeFile(wb, 'template_salles.xlsx');
+};
+
+export const generateInscriptionsTemplate = () => {
+  const templateData = [
+    {
+      'ID Élève': 1,
+      'ID Classe Session': 1,
+      'Date Inscription': '2024-01-01',
+      'Est Réinscription': 'Non',
+      'Statut': 'CONFIRMEE'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(templateData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Template Inscriptions');
+  
+  XLSX.writeFile(wb, 'template_inscriptions.xlsx');
 };
 
 // Import validation functions
@@ -231,6 +313,51 @@ export const validateSallesImport = (data: any[], batiments: Batiment[]): Import
         nom: row.Nom,
         capacite: row.Capacité,
         batiment: row['ID Bâtiment']
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateInscriptionsImport = (data: any[]): ImportValidationResult => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row['ID Élève'] || typeof row['ID Élève'] !== 'number') {
+      errors.push(`Ligne ${rowNumber}: L'ID Élève est requis et doit être un nombre`);
+    }
+    
+    if (!row['ID Classe Session'] || typeof row['ID Classe Session'] !== 'number') {
+      errors.push(`Ligne ${rowNumber}: L'ID Classe Session est requis et doit être un nombre`);
+    }
+    
+    if (!row['Date Inscription']) {
+      errors.push(`Ligne ${rowNumber}: La date d'inscription est requise`);
+    }
+    
+    if (row['Est Réinscription'] && !['Oui', 'Non'].includes(row['Est Réinscription'])) {
+      errors.push(`Ligne ${rowNumber}: "Est Réinscription" doit être "Oui" ou "Non"`);
+    }
+    
+    if (row.Statut && !['CONFIRMEE', 'EN_ATTENTE', 'ANNULEE'].includes(row.Statut)) {
+      errors.push(`Ligne ${rowNumber}: Le statut doit être "CONFIRMEE", "EN_ATTENTE" ou "ANNULEE"`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        eleve: row['ID Élève'],
+        classe_session: row['ID Classe Session'],
+        date_inscription: row['Date Inscription'],
+        est_reinscription: row['Est Réinscription'] === 'Oui',
+        statut: row.Statut || 'CONFIRMEE'
       });
     }
   });

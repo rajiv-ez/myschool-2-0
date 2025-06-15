@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,16 +11,18 @@ import {
   validateSuccursalesImport, 
   validateBatimentsImport, 
   validateSallesImport,
+  validateInscriptionsImport,
   generateSuccursalesTemplate,
   generateBatimentsTemplate,
-  generateSallesTemplate
+  generateSallesTemplate,
+  generateInscriptionsTemplate
 } from '@/utils/excelUtils';
 import { Succursale, Batiment } from '@/types/infrastructure';
 
 interface ExcelImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type: 'succursales' | 'batiments' | 'salles';
+  type: 'succursales' | 'batiments' | 'salles' | 'inscriptions';
   onImport: (data: any[]) => Promise<void>;
   succursales?: Succursale[];
   batiments?: Batiment[];
@@ -76,6 +79,9 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
           break;
         case 'salles':
           result = validateSallesImport(data, batiments);
+          break;
+        case 'inscriptions':
+          result = validateInscriptionsImport(data);
           break;
         default:
           throw new Error('Type non supporté');
@@ -139,6 +145,9 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
       case 'salles':
         generateSallesTemplate();
         break;
+      case 'inscriptions':
+        generateInscriptionsTemplate();
+        break;
     }
     
     toast({
@@ -152,6 +161,7 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
       case 'succursales': return 'Succursales';
       case 'batiments': return 'Bâtiments';
       case 'salles': return 'Salles';
+      case 'inscriptions': return 'Inscriptions';
       default: return '';
     }
   };
