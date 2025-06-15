@@ -11,8 +11,7 @@ const mockSuccursales: Succursale[] = [
     adresse: '123 Avenue de l\'Éducation',
     telephone: '+241 01 23 45 67',
     email: 'principal@ecole.ga',
-    description: 'Campus principal de l\'établissement',
-    is_active: true
+    description: 'Campus principal de l\'établissement'
   },
   { 
     id: 2, 
@@ -23,8 +22,7 @@ const mockSuccursales: Succursale[] = [
     adresse: '45 Rue des Sciences',
     telephone: '+241 01 23 45 68',
     email: 'nord@ecole.ga',
-    description: 'Campus secondaire au nord de Libreville',
-    is_active: true
+    description: 'Campus secondaire au nord de Libreville'
   },
   { 
     id: 3, 
@@ -35,8 +33,7 @@ const mockSuccursales: Succursale[] = [
     adresse: '12 Boulevard de la Mer',
     telephone: '+241 05 67 89 01',
     email: 'portgentil@ecole.ga',
-    description: 'Annexe située à Port-Gentil',
-    is_active: true
+    description: 'Annexe située à Port-Gentil'
   },
 ];
 
@@ -45,29 +42,25 @@ const mockBatiments: Batiment[] = [
     id: 1, 
     nom: 'Bâtiment A', 
     succursale: 1,
-    description: 'Bâtiment principal des classes',
-    is_active: true
+    description: 'Bâtiment principal des classes'
   },
   { 
     id: 2, 
     nom: 'Bâtiment B', 
     succursale: 1,
-    description: 'Bâtiment des laboratoires',
-    is_active: true
+    description: 'Bâtiment des laboratoires'
   },
   { 
     id: 3, 
     nom: 'Bâtiment Principal', 
     succursale: 2,
-    description: 'Bâtiment unique du campus nord',
-    is_active: true
+    description: 'Bâtiment unique du campus nord'
   },
   { 
     id: 4, 
     nom: 'Bloc Unique', 
     succursale: 3,
-    description: 'Bloc principal de l\'annexe',
-    is_active: true
+    description: 'Bloc principal de l\'annexe'
   },
 ];
 
@@ -77,40 +70,35 @@ const mockSalles: Salle[] = [
     nom: 'Salle 101', 
     capacite: 35, 
     batiment: 1,
-    description: 'Salle de classe standard',
-    is_active: true
+    description: 'Salle de classe standard'
   },
   { 
     id: 2, 
     nom: 'Salle 102', 
     capacite: 30, 
     batiment: 1,
-    description: 'Salle de classe avec équipement multimédia',
-    is_active: true
+    description: 'Salle de classe avec équipement multimédia'
   },
   { 
     id: 3, 
     nom: 'Laboratoire 201', 
     capacite: 25, 
     batiment: 2,
-    description: 'Laboratoire de sciences',
-    is_active: true
+    description: 'Laboratoire de sciences'
   },
   { 
     id: 4, 
     nom: 'Amphithéâtre', 
     capacite: 150, 
     batiment: 3,
-    description: 'Grand amphithéâtre pour conférences',
-    is_active: true
+    description: 'Grand amphithéâtre pour conférences'
   },
   { 
     id: 5, 
     nom: 'Salle 001', 
     capacite: 40, 
     batiment: 4,
-    description: 'Salle polyvalente',
-    is_active: true
+    description: 'Salle polyvalente'
   },
 ];
 

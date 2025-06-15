@@ -9,7 +9,6 @@ export interface Succursale {
   email: string;
   est_siege: boolean;
   description: string;
-  is_active: boolean;
 }
 
 export interface Batiment {
@@ -17,7 +16,6 @@ export interface Batiment {
   succursale: number; // FK to Succursale
   nom: string;
   description: string;
-  is_active: boolean;
 }
 
 export interface Salle {
@@ -26,5 +24,4 @@ export interface Salle {
   nom: string;
   capacite: number;
   description: string;
-  is_active: boolean;
 }

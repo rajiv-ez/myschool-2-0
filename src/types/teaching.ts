@@ -1,44 +1,43 @@
 
+// Base teaching structure
 export interface Domaine {
   id: number;
   nom: string;
   description: string;
-  is_active: boolean;
 }
 
 export interface UniteEnseignement {
   id: number;
   nom: string;
   description: string;
-  domaines: number[];
-  is_active: boolean;
+  domaines: number[]; // FK to Domaine
 }
 
 export interface Matiere {
   id: number;
+  unite: number; // FK to UniteEnseignement
   nom: string;
-  unite: number;
   coefficient: number;
   description: string;
-  is_active: boolean;
 }
 
 export interface MatiereGroupee {
   id: number;
   nom: string;
-  matieres: number[];
+  matieres: number[]; // FK to Matiere
 }
 
+// Events and evaluations
 export interface Evenement {
   id: number;
   titre: string;
-  type: string | 'COURS' | 'EVALUATION' | 'AUTRE';
+  type: 'COURS' | 'EVALUATION' | 'DEVOIR' | 'CONTROLE' | 'EXAMEN';
   date: string;
   heure_debut: string;
   heure_fin: string;
-  palier: number;
-  classe_session: number;
-  matiere: number;
+  palier: number; // FK to Palier
+  classe_session: number; // FK to ClasseSession
+  matiere: number; // FK to Matiere
   barreme: number;
   description: string;
   contenu: string;
@@ -47,46 +46,47 @@ export interface Evenement {
 
 export interface FichierEvenement {
   id: number;
-  evenement: number;
-  fichier: string;
+  evenement: number; // FK to Evenement
+  fichier: string; // File path
 }
 
+// Exercises
 export interface Exercice {
   id: number;
   nom: string;
   date: string;
   est_a_rendre: boolean;
-  echeance?: string;
   contenu: string;
-  evenement?: number;
 }
 
 export interface FichierExercice {
   id: number;
-  exercice: number;
-  fichier: string;
+  exercice: number; // FK to Exercice
+  fichier: string; // File path
 }
 
+// Attendance
 export interface Presence {
   id: number;
-  evenement: number;
-  eleve: number;
+  evenement: number; // FK to Evenement
+  eleve: number; // FK to Eleve
   present: boolean;
   retard: boolean;
   justification: string;
 }
 
+// Grades
 export interface Note {
   id: number;
-  evaluation: number;
-  inscription: number;
+  evaluation: number; // FK to Evenement (type EVALUATION)
+  inscription: number; // FK to Inscription
   note: number;
 }
 
 export interface NoteConfig {
   id: number;
-  matiere: number;
-  enseignant: number;
-  classe_session: number;
-  formule: string;
+  matiere: number; // FK to Matiere
+  enseignant: number; // FK to Enseignant
+  classe_session: number; // FK to ClasseSession
+  formule: string; // Formula for calculating final grade
 }

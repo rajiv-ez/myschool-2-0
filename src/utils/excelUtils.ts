@@ -34,8 +34,7 @@ export const exportSuccursalesToExcel = (items: Succursale[]) => {
     'Téléphone': item.telephone,
     'Email': item.email,
     'Siège': item.est_siege ? 'Oui' : 'Non',
-    'Description': item.description,
-    'Actif': item.is_active ? 'Oui' : 'Non'
+    'Description': item.description
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);
@@ -51,8 +50,7 @@ export const exportBatimentsToExcel = (items: Batiment[], succursales: Succursal
       'ID': item.id,
       'Nom': item.nom,
       'Succursale': succursale?.nom || 'Inconnue',
-      'Description': item.description,
-      'Actif': item.is_active ? 'Oui' : 'Non'
+      'Description': item.description
     };
   });
 
@@ -70,8 +68,7 @@ export const exportSallesToExcel = (items: Salle[], batiments: Batiment[]) => {
       'Nom': item.nom,
       'Bâtiment': batiment?.nom || 'Inconnu',
       'Capacité': item.capacite,
-      'Description': item.description,
-      'Actif': item.is_active ? 'Oui' : 'Non'
+      'Description': item.description
     };
   });
 
@@ -156,8 +153,7 @@ export const exportDomainesToExcel = (items: Domaine[]) => {
   const data = items.map(item => ({
     'ID': item.id,
     'Nom': item.nom,
-    'Description': item.description,
-    'Actif': item.is_active ? 'Oui' : 'Non'
+    'Description': item.description
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);
@@ -176,8 +172,7 @@ export const exportUnitesToExcel = (items: UniteEnseignement[], domaines: Domain
       'ID': item.id,
       'Nom': item.nom,
       'Domaines': domaineNames,
-      'Description': item.description,
-      'Actif': item.is_active ? 'Oui' : 'Non'
+      'Description': item.description
     };
   });
 
@@ -195,8 +190,7 @@ export const exportMatieresToExcel = (items: Matiere[], unites: UniteEnseignemen
       'Nom': item.nom,
       'Unité': unite?.nom || 'Inconnue',
       'Coefficient': item.coefficient,
-      'Description': item.description,
-      'Actif': item.is_active ? 'Oui' : 'Non'
+      'Description': item.description
     };
   });
 
@@ -303,8 +297,7 @@ export const validateSuccursalesImport = (data: any[]) => {
         adresse: row.adresse,
         telephone: row.telephone,
         email: row.email || '',
-        description: row.description || '',
-        is_active: row.is_active !== false
+        description: row.description || ''
       });
     }
   });
@@ -340,8 +333,7 @@ export const validateBatimentsImport = (data: any[], succursales: Succursale[]) 
       validData.push({
         nom: row.nom,
         succursale: succursale!.id,
-        description: row.description || '',
-        is_active: row.is_active !== false
+        description: row.description || ''
       });
     }
   });
@@ -381,8 +373,7 @@ export const validateSallesImport = (data: any[], batiments: Batiment[]) => {
         nom: row.nom,
         batiment: batiment!.id,
         capacite: row.capacite || 0,
-        description: row.description || '',
-        is_active: row.is_active !== false
+        description: row.description || ''
       });
     }
   });
@@ -504,8 +495,7 @@ export const validateDomainesImport = (data: any[]) => {
     if (errors.length === 0) {
       validData.push({
         nom: row.nom,
-        description: row.description || '',
-        is_active: row.is_active !== false
+        description: row.description || ''
       });
     }
   });
@@ -624,8 +614,7 @@ export const generateSuccursalesTemplate = () => {
       adresse: '123 Avenue de la République',
       telephone: '+241 01 23 45 67',
       email: 'centre@ecole.ga',
-      description: 'Succursale principale au centre-ville',
-      is_active: true
+      description: 'Succursale principale au centre-ville'
     }
   ];
 
@@ -640,8 +629,7 @@ export const generateBatimentsTemplate = () => {
     {
       nom: 'Bâtiment A',
       succursale_nom: 'Succursale Centre',
-      description: 'Bâtiment principal d\'enseignement',
-      is_active: true
+      description: 'Bâtiment principal d\'enseignement'
     }
   ];
 
@@ -657,8 +645,7 @@ export const generateSallesTemplate = () => {
       nom: 'Salle 101',
       batiment_nom: 'Bâtiment A',
       capacite: 30,
-      description: 'Salle de classe standard',
-      is_active: true
+      description: 'Salle de classe standard'
     }
   ];
 
@@ -724,8 +711,7 @@ export const generateDomainessTemplate = () => {
   const data = [
     {
       nom: 'Littéraire',
-      description: 'Domaine des sciences littéraires',
-      is_active: true
+      description: 'Domaine des sciences littéraires'
     }
   ];
 

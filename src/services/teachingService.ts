@@ -9,8 +9,7 @@ const mockDomaines: Domaine[] = [
   { 
     id: 1, 
     nom: 'Sciences', 
-    description: 'Enseignements scientifiques',
-    is_active: true
+    description: 'Enseignements scientifiques'
   },
 ];
 
@@ -19,8 +18,7 @@ const mockUnites: UniteEnseignement[] = [
     id: 1, 
     nom: 'Mathématiques', 
     description: 'Unité de maths', 
-    domaines: [1],
-    is_active: true
+    domaines: [1]
   },
 ];
 
@@ -30,8 +28,7 @@ const mockMatieres: Matiere[] = [
     nom: 'Algèbre', 
     unite: 1, 
     coefficient: 2, 
-    description: "Cours d'algèbre",
-    is_active: true
+    description: "Cours d'algèbre"
   },
 ];
 
