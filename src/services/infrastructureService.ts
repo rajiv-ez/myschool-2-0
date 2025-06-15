@@ -1,26 +1,117 @@
-
 import { fetchWithFallback, ApiResponse } from './api';
 import { Succursale, Batiment, Salle } from '../types/infrastructure';
 
 const mockSuccursales: Succursale[] = [
-  { id: 1, nom: 'Campus Principal', ville: 'Libreville', pays: 'Gabon', est_siege: true, adresse: '123 Avenue de l\'Éducation' },
-  { id: 2, nom: 'Campus Nord', ville: 'Libreville', pays: 'Gabon', est_siege: false, adresse: '45 Rue des Sciences' },
-  { id: 3, nom: 'Annexe Port-Gentil', ville: 'Port-Gentil', pays: 'Gabon', est_siege: false, adresse: '12 Boulevard de la Mer' },
+  { 
+    id: 1, 
+    nom: 'Campus Principal', 
+    ville: 'Libreville', 
+    pays: 'Gabon', 
+    est_siege: true, 
+    adresse: '123 Avenue de l\'Éducation',
+    telephone: '+241 01 23 45 67',
+    email: 'principal@ecole.ga',
+    description: 'Campus principal de l\'établissement',
+    is_active: true
+  },
+  { 
+    id: 2, 
+    nom: 'Campus Nord', 
+    ville: 'Libreville', 
+    pays: 'Gabon', 
+    est_siege: false, 
+    adresse: '45 Rue des Sciences',
+    telephone: '+241 01 23 45 68',
+    email: 'nord@ecole.ga',
+    description: 'Campus secondaire au nord de Libreville',
+    is_active: true
+  },
+  { 
+    id: 3, 
+    nom: 'Annexe Port-Gentil', 
+    ville: 'Port-Gentil', 
+    pays: 'Gabon', 
+    est_siege: false, 
+    adresse: '12 Boulevard de la Mer',
+    telephone: '+241 05 67 89 01',
+    email: 'portgentil@ecole.ga',
+    description: 'Annexe située à Port-Gentil',
+    is_active: true
+  },
 ];
 
 const mockBatiments: Batiment[] = [
-  { id: 1, nom: 'Bâtiment A', succursale: 1 },
-  { id: 2, nom: 'Bâtiment B', succursale: 1 },
-  { id: 3, nom: 'Bâtiment Principal', succursale: 2 },
-  { id: 4, nom: 'Bloc Unique', succursale: 3 },
+  { 
+    id: 1, 
+    nom: 'Bâtiment A', 
+    succursale: 1,
+    description: 'Bâtiment principal des classes',
+    is_active: true
+  },
+  { 
+    id: 2, 
+    nom: 'Bâtiment B', 
+    succursale: 1,
+    description: 'Bâtiment des laboratoires',
+    is_active: true
+  },
+  { 
+    id: 3, 
+    nom: 'Bâtiment Principal', 
+    succursale: 2,
+    description: 'Bâtiment unique du campus nord',
+    is_active: true
+  },
+  { 
+    id: 4, 
+    nom: 'Bloc Unique', 
+    succursale: 3,
+    description: 'Bloc principal de l\'annexe',
+    is_active: true
+  },
 ];
 
 const mockSalles: Salle[] = [
-  { id: 1, nom: 'Salle 101', capacite: 35, batiment: 1 },
-  { id: 2, nom: 'Salle 102', capacite: 30, batiment: 1 },
-  { id: 3, nom: 'Laboratoire 201', capacite: 25, batiment: 2 },
-  { id: 4, nom: 'Amphithéâtre', capacite: 150, batiment: 3 },
-  { id: 5, nom: 'Salle 001', capacite: 40, batiment: 4 },
+  { 
+    id: 1, 
+    nom: 'Salle 101', 
+    capacite: 35, 
+    batiment: 1,
+    description: 'Salle de classe standard',
+    is_active: true
+  },
+  { 
+    id: 2, 
+    nom: 'Salle 102', 
+    capacite: 30, 
+    batiment: 1,
+    description: 'Salle de classe avec équipement multimédia',
+    is_active: true
+  },
+  { 
+    id: 3, 
+    nom: 'Laboratoire 201', 
+    capacite: 25, 
+    batiment: 2,
+    description: 'Laboratoire de sciences',
+    is_active: true
+  },
+  { 
+    id: 4, 
+    nom: 'Amphithéâtre', 
+    capacite: 150, 
+    batiment: 3,
+    description: 'Grand amphithéâtre pour conférences',
+    is_active: true
+  },
+  { 
+    id: 5, 
+    nom: 'Salle 001', 
+    capacite: 40, 
+    batiment: 4,
+    description: 'Salle polyvalente',
+    is_active: true
+  },
 ];
 
 export const infrastructureService = {

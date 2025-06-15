@@ -6,15 +6,33 @@ import {
 } from '../types/teaching';
 
 const mockDomaines: Domaine[] = [
-  { id: 1, nom: 'Sciences', description: 'Enseignements scientifiques' },
+  { 
+    id: 1, 
+    nom: 'Sciences', 
+    description: 'Enseignements scientifiques',
+    is_active: true
+  },
 ];
 
 const mockUnites: UniteEnseignement[] = [
-  { id: 1, nom: 'Mathématiques', description: 'Unité de maths', domaines: [1] },
+  { 
+    id: 1, 
+    nom: 'Mathématiques', 
+    description: 'Unité de maths', 
+    domaines: [1],
+    is_active: true
+  },
 ];
 
 const mockMatieres: Matiere[] = [
-  { id: 1, nom: 'Algèbre', unite: 1, coefficient: 2, description: "Cours d'algèbre" },
+  { 
+    id: 1, 
+    nom: 'Algèbre', 
+    unite: 1, 
+    coefficient: 2, 
+    description: "Cours d'algèbre",
+    is_active: true
+  },
 ];
 
 const mockGroupes: MatiereGroupee[] = [
