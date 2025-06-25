@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import FraisScolaires from '@/components/ressources/FraisScolaires';
+import FraisScolairesManagement from '@/components/financial/FraisScolairesManagement';
 import GestionStock from '@/components/ressources/GestionStock';
 
 const GestionRessources = () => {
@@ -26,7 +26,7 @@ const GestionRessources = () => {
             </TabsList>
             
             <TabsContent value="fraisScolaires" className="pt-4">
-              <FraisScolaires />
+              <FraisScolairesManagement />
             </TabsContent>
             
             <TabsContent value="stock" className="pt-4">
