@@ -90,18 +90,20 @@ export function useInscriptionsData() {
 
   const getStatutColor = (statut: string) => {
     switch (statut) {
-      case 'CONFIRMEE': return 'bg-green-100 text-green-800';
+      case 'CONFIRME': return 'bg-green-100 text-green-800';
       case 'EN_ATTENTE': return 'bg-yellow-100 text-yellow-800';
-      case 'ANNULEE': return 'bg-red-100 text-red-800';
+      case 'ANNULE': return 'bg-red-100 text-red-800';
+      case 'SUSPENDU': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatutLabel = (statut: string) => {
     switch (statut) {
-      case 'CONFIRMEE': return 'Confirmée';
+      case 'CONFIRME': return 'Confirmée';
       case 'EN_ATTENTE': return 'En attente';
-      case 'ANNULEE': return 'Annulée';
+      case 'ANNULE': return 'Annulée';
+      case 'SUSPENDU': return 'Suspendue';
       default: return statut;
     }
   };
@@ -141,7 +143,7 @@ export function useInscriptionsData() {
     
     // Compter les inscriptions actuelles pour cette classe session
     const currentInscriptions = inscriptionsApiData.filter(i => 
-      i.classe_session === cs.id && i.statut === 'CONFIRMEE'
+      i.classe_session === cs.id && i.statut === 'CONFIRME'
     );
     
     return {

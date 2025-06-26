@@ -60,8 +60,8 @@ const mockClasseSessions: ClasseSession[] = [
 ];
 
 const mockInscriptions: Inscription[] = [
-  { id: 1, eleve: 1, classe_session: 1, date_inscription: '2024-09-01', est_reinscription: false, statut: 'CONFIRMEE', },
-  { id: 2, eleve: 2, classe_session: 2, date_inscription: '2024-09-01', est_reinscription: false, statut: 'EN_ATTENTE', },
+  { id: 1, eleve: 1, classe_session: 1, date_inscription: '2024-09-01', type: 'NORMALE', est_reinscription: false, statut: 'CONFIRME' },
+  { id: 2, eleve: 2, classe_session: 2, date_inscription: '2024-09-01', type: 'NORMALE', est_reinscription: false, statut: 'EN_ATTENTE' },
 ];
 
 export const academicService = {

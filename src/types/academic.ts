@@ -27,7 +27,6 @@ export interface Classe {
   id: number;
   nom: string;
   specialite: number;
-  session: number;
   description: string;
   is_active: boolean;
 }
