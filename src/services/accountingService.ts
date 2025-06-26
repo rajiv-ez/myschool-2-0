@@ -181,10 +181,221 @@ const mockDepenses: Depense[] = [
 ];
 
 export const accountingService = {
+  // Frais Scolaires
   getFrais: (): Promise<ApiResponse<FraisScolaire[]>> =>
     fetchWithFallback('/api/accounting/frais-scolaires/', mockFrais),
+  
+  createFrais: async (frais: Omit<FraisScolaire, 'id'>): Promise<ApiResponse<FraisScolaire>> => {
+    try {
+      const response = await fetch('/api/accounting/frais-scolaires/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(frais)
+      });
+      const data = await response.json();
+      return { data, fromApi: true };
+    } catch (error) {
+      // Fallback: simuler la création localement
+      const newFrais = { ...frais, id: Date.now() };
+      mockFrais.push(newFrais);
+      return { data: newFrais, fromApi: false };
+    }
+  },
+
+  updateFrais: async (id: number, frais: Partial<FraisScolaire>): Promise<ApiResponse<FraisScolaire>> => {
+    try {
+      const response = await fetch(`/api/accounting/frais-scolaires/${id}/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(frais)
+      });
+      const data = await response.json();
+      return { data, fromApi: true };
+    } catch (error) {
+      // Fallback: mise à jour locale
+      const index = mockFrais.findIndex(f => f.id === id);
+      if (index !== -1) {
+        mockFrais[index] = { ...mockFrais[index], ...frais };
+        return { data: mockFrais[index], fromApi: false };
+      }
+      throw new Error('Frais non trouvé');
+    }
+  },
+
+  deleteFrais: async (id: number): Promise<ApiResponse<{ success: boolean }>> => {
+    try {
+      await fetch(`/api/accounting/frais-scolaires/${id}/`, {
+        method: 'DELETE'
+      });
+      return { data: { success: true }, fromApi: true };
+    } catch (error) {
+      // Fallback: suppression locale
+      const index = mockFrais.findIndex(f => f.id === id);
+      if (index !== -1) {
+        mockFrais.splice(index, 1);
+        return { data: { success: true }, fromApi: false };
+      }
+      throw new Error('Frais non trouvé');
+    }
+  },
+
+  // Paiements
   getPaiements: (): Promise<ApiResponse<Paiement[]>> =>
     fetchWithFallback('/api/accounting/paiements/', mockPaiements),
+
+  createPaiement: async (paiement: Omit<Paiement, 'id'>): Promise<ApiResponse<Paiement>> => {
+    try {
+      const response = await fetch('/api/accounting/paiements/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paiement)
+      });
+      const data = await response.json();
+      return { data, fromApi: true };
+    } catch (error) {
+      const newPaiement = { ...paiement, id: Date.now() };
+      mockPaiements.push(newPaiement);
+      return { data: newPaiement, fromApi: false };
+    }
+  },
+
+  updatePaiement: async (id: number, paiement: Partial<Paiement>): Promise<ApiResponse<Paiement>> => {
+    try {
+      const response = await fetch(`/api/accounting/paiements/${id}/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paiement)
+      });
+      const data = await response.json();
+      return { data, fromApi: true };
+    } catch (error) {
+      const index = mockPaiements.findIndex(p => p.id === id);
+      if (index !== -1) {
+        mockPaiements[index] = { ...mockPaiements[index], ...paiement };
+        return { data: mockPaiements[index], fromApi: false };
+      }
+      throw new Error('Paiement non trouvé');
+    }
+  },
+
+  deletePaiement: async (id: number): Promise<ApiResponse<{ success: boolean }>> => {
+    try {
+      await fetch(`/api/accounting/paiements/${id}/`, {
+        method: 'DELETE'
+      });
+      return { data: { success: true }, fromApi: true };
+    } catch (error) {
+      const index = mockPaiements.findIndex(p => p.id === id);
+      if (index !== -1) {
+        mockPaiements.splice(index, 1);
+        return { data: { success: true }, fromApi: false };
+      }
+      throw new Error('Paiement non trouvé');
+    }
+  },
+
+  // Dépenses
   getDepenses: (): Promise<ApiResponse<Depense[]>> =>
     fetchWithFallback('/api/accounting/depenses/', mockDepenses),
+
+  createDepense: async (depense: Omit<Depense, 'id'>): Promise<ApiResponse<Depense>> => {
+    try {
+      const response = await fetch('/api/accounting/depenses/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(depense)
+      });
+      const data = await response.json();
+      return { data, fromApi: true };
+    } catch (error) {
+      const newDepense = { ...depense, id: Date.now() };
+      mockDepenses.push(newDepense);
+      return { data: newDepense, fromApi: false };
+    }
+  },
+
+  updateDepense: async (id: number, depense: Partial<Depense>): Promise<ApiResponse<Depense>> => {
+    try {
+      const response = await fetch(`/api/accounting/depenses/${id}/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(depense)
+      });
+      const data = await response.json();
+      return { data, fromApi: true };
+    } catch (error) {
+      const index = mockDepenses.findIndex(d => d.id === id);
+      if (index !== -1) {
+        mockDepenses[index] = { ...mockDepenses[index], ...depense };
+        return { data: mockDepenses[index], fromApi: false };
+      }
+      throw new Error('Dépense non trouvée');
+    }
+  },
+
+  deleteDepense: async (id: number): Promise<ApiResponse<{ success: boolean }>> => {
+    try {
+      await fetch(`/api/accounting/depenses/${id}/`, {
+        method: 'DELETE'
+      });
+      return { data: { success: true }, fromApi: true };
+    } catch (error) {
+      const index = mockDepenses.findIndex(d => d.id === id);
+      if (index !== -1) {
+        mockDepenses.splice(index, 1);
+        return { data: { success: true }, fromApi: false };
+      }
+      throw new Error('Dépense non trouvée');
+    }
+  },
+
+  // Import/Export
+  importFrais: async (data: Omit<FraisScolaire, 'id'>[]): Promise<ApiResponse<FraisScolaire[]>> => {
+    try {
+      const response = await fetch('/api/accounting/frais-scolaires/import/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data })
+      });
+      const result = await response.json();
+      return { data: result, fromApi: true };
+    } catch (error) {
+      // Fallback: ajout local
+      const newFrais = data.map(item => ({ ...item, id: Date.now() + Math.random() }));
+      mockFrais.push(...newFrais);
+      return { data: newFrais, fromApi: false };
+    }
+  },
+
+  importPaiements: async (data: Omit<Paiement, 'id'>[]): Promise<ApiResponse<Paiement[]>> => {
+    try {
+      const response = await fetch('/api/accounting/paiements/import/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data })
+      });
+      const result = await response.json();
+      return { data: result, fromApi: true };
+    } catch (error) {
+      const newPaiements = data.map(item => ({ ...item, id: Date.now() + Math.random() }));
+      mockPaiements.push(...newPaiements);
+      return { data: newPaiements, fromApi: false };
+    }
+  },
+
+  importDepenses: async (data: Omit<Depense, 'id'>[]): Promise<ApiResponse<Depense[]>> => {
+    try {
+      const response = await fetch('/api/accounting/depenses/import/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data })
+      });
+      const result = await response.json();
+      return { data: result, fromApi: true };
+    } catch (error) {
+      const newDepenses = data.map(item => ({ ...item, id: Date.now() + Math.random() }));
+      mockDepenses.push(...newDepenses);
+      return { data: newDepenses, fromApi: false };
+    }
+  }
 };

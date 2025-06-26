@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { Succursale, Batiment, Salle } from '@/types/infrastructure';
 import { Niveau, Filiere, Specialite, Classe, Session, Palier, ClasseSession, Inscription } from '@/types/academic';
 import { Domaine, UniteEnseignement, Matiere } from '@/types/teaching';
+import { FraisScolaire, Paiement, Depense } from '@/types/financial';
 
 // Read Excel file utility
 export const readExcelFile = (file: File): Promise<any[]> => {
@@ -271,6 +272,64 @@ export const exportInscriptionsToExcel = (items: any[]) => {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Inscriptions');
   XLSX.writeFile(wb, 'inscriptions.xlsx');
+};
+
+// Export functions for Financial data
+export const exportFraisToExcel = (items: FraisScolaire[]) => {
+  const data = items.map(item => ({
+    'ID': item.id,
+    'Nom': item.nom,
+    'Description': item.description,
+    'Session': item.session,
+    'Palier': item.palier,
+    'Montant': item.montant,
+    'Quantité': item.quantite,
+    'Obligatoire': item.est_obligatoire ? 'Oui' : 'Non',
+    'Actif': item.est_actif ? 'Oui' : 'Non',
+    'Immatériel': item.est_immateriel ? 'Oui' : 'Non',
+    'Toutes classes': item.concerne_toutes_classes ? 'Oui' : 'Non',
+    'Date création': item.date_creation
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Frais Scolaires');
+  XLSX.writeFile(wb, 'frais_scolaires.xlsx');
+};
+
+export const exportPaiementsToExcel = (items: Paiement[]) => {
+  const data = items.map(item => ({
+    'ID': item.id,
+    'Inscription': item.inscription,
+    'Frais': item.frais,
+    'Montant': item.montant,
+    'Date': item.date,
+    'Référence': item.reference,
+    'Payeur': item.tiers_payeur,
+    'Statut': item.statut
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Paiements');
+  XLSX.writeFile(wb, 'paiements.xlsx');
+};
+
+export const exportDepensesToExcel = (items: Depense[]) => {
+  const data = items.map(item => ({
+    'ID': item.id,
+    'Montant': item.montant,
+    'Date': item.date,
+    'Bénéficiaire': item.beneficiaire,
+    'Référence': item.reference,
+    'Description': item.description,
+    'Catégorie': item.categorie
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Dépenses');
+  XLSX.writeFile(wb, 'depenses.xlsx');
 };
 
 // Validation functions
@@ -606,6 +665,136 @@ export const validateTuteursImport = (data: any[]) => {
   };
 };
 
+// Validation functions for financial data
+export const validateFraisImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.nom || typeof row.nom !== 'string') {
+      errors.push(`Ligne ${rowNumber}: Le nom est requis`);
+    }
+    if (!row.session || isNaN(row.session) || row.session < 1) {
+      errors.push(`Ligne ${rowNumber}: La session doit être un nombre positif`);
+    }
+    if (!row.montant || isNaN(parseFloat(row.montant))) {
+      errors.push(`Ligne ${rowNumber}: Le montant doit être un nombre`);
+    }
+    if (!row.quantite || isNaN(row.quantite) || row.quantite < 1) {
+      errors.push(`Ligne ${rowNumber}: La quantité doit être un nombre positif`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        nom: row.nom,
+        description: row.description || '',
+        session: parseInt(row.session),
+        palier: row.palier ? parseInt(row.palier) : null,
+        montant: row.montant.toString(),
+        quantite: parseInt(row.quantite),
+        est_obligatoire: row.est_obligatoire !== false,
+        est_actif: row.est_actif !== false,
+        est_immateriel: row.est_immateriel === true,
+        concerne_toutes_classes: row.concerne_toutes_classes !== false,
+        date_creation: new Date().toISOString(),
+        echeance: row.echeance || null,
+        classes: []
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validatePaiementsImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.inscription || isNaN(row.inscription)) {
+      errors.push(`Ligne ${rowNumber}: L'inscription doit être un nombre`);
+    }
+    if (!row.frais || isNaN(row.frais)) {
+      errors.push(`Ligne ${rowNumber}: Le frais doit être un nombre`);
+    }
+    if (!row.montant || isNaN(parseFloat(row.montant))) {
+      errors.push(`Ligne ${rowNumber}: Le montant doit être un nombre`);
+    }
+    if (!row.date) {
+      errors.push(`Ligne ${rowNumber}: La date est requise`);
+    }
+    if (!row.statut || !['EN_ATTENTE', 'PAYE_PARTIELLEMENT', 'PAYE', 'ANNULE', 'REMBOURSE'].includes(row.statut)) {
+      errors.push(`Ligne ${rowNumber}: Le statut doit être valide`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        inscription: parseInt(row.inscription),
+        frais: parseInt(row.frais),
+        montant: row.montant.toString(),
+        date: row.date,
+        reference: row.reference || null,
+        user_payeur: row.user_payeur ? parseInt(row.user_payeur) : null,
+        tiers_payeur: row.tiers_payeur || null,
+        statut: row.statut
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
+export const validateDepensesImport = (data: any[]) => {
+  const errors: string[] = [];
+  const validData: any[] = [];
+
+  data.forEach((row, index) => {
+    const rowNumber = index + 2;
+    
+    if (!row.montant || isNaN(parseFloat(row.montant))) {
+      errors.push(`Ligne ${rowNumber}: Le montant doit être un nombre`);
+    }
+    if (!row.date) {
+      errors.push(`Ligne ${rowNumber}: La date est requise`);
+    }
+    if (!row.description || typeof row.description !== 'string') {
+      errors.push(`Ligne ${rowNumber}: La description est requise`);
+    }
+    if (!row.categorie || !['MATERIEL', 'MAINTENANCE', 'SALAIRES', 'CHARGES', 'TRANSPORT', 'ALIMENTATION', 'AUTRES'].includes(row.categorie)) {
+      errors.push(`Ligne ${rowNumber}: La catégorie doit être valide`);
+    }
+
+    if (errors.length === 0) {
+      validData.push({
+        montant: row.montant.toString(),
+        date: row.date,
+        beneficiaire: row.beneficiaire || null,
+        reference: row.reference || null,
+        description: row.description,
+        categorie: row.categorie
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: validData
+  };
+};
+
 // Template generation functions
 export const generateSuccursalesTemplate = () => {
   const data = [
@@ -769,4 +958,64 @@ export const generateTuteursTemplate = () => {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Tuteurs');
   XLSX.writeFile(wb, 'template_tuteurs.xlsx');
+};
+
+export const generateFraisTemplate = () => {
+  const data = [
+    {
+      nom: 'Frais d\'inscription',
+      description: 'Frais d\'inscription pour l\'année scolaire',
+      session: 1,
+      palier: null,
+      montant: '50000',
+      quantite: 1,
+      est_obligatoire: true,
+      est_actif: true,
+      est_immateriel: false,
+      concerne_toutes_classes: true
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Frais');
+  XLSX.writeFile(wb, 'template_frais.xlsx');
+};
+
+export const generatePaiementsTemplate = () => {
+  const data = [
+    {
+      inscription: 1,
+      frais: 1,
+      montant: '25000',
+      date: '2024-12-01',
+      reference: 'PAY001',
+      user_payeur: null,
+      tiers_payeur: 'Famille Martin',
+      statut: 'EN_ATTENTE'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Paiements');
+  XLSX.writeFile(wb, 'template_paiements.xlsx');
+};
+
+export const generateDepensesTemplate = () => {
+  const data = [
+    {
+      montant: '20000',
+      date: '2024-11-20',
+      beneficiaire: 'Librairie Papeterie Moderne',
+      reference: 'DEP001',
+      description: 'Achat cahiers et fournitures scolaires',
+      categorie: 'MATERIEL'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Dépenses');
+  XLSX.writeFile(wb, 'template_depenses.xlsx');
 };

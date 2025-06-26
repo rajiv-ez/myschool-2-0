@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,9 @@ import {
   validateDomainesImport,
   validateElevesImport,
   validateTuteursImport,
+  validateFraisImport,
+  validatePaiementsImport,
+  validateDepensesImport,
   generateSuccursalesTemplate,
   generateBatimentsTemplate,
   generateSallesTemplate,
@@ -24,14 +28,17 @@ import {
   generateNiveauxTemplate,
   generateDomainessTemplate,
   generateElevesTemplate,
-  generateTuteursTemplate
+  generateTuteursTemplate,
+  generateFraisTemplate,
+  generatePaiementsTemplate,
+  generateDepensesTemplate
 } from '@/utils/excelUtils';
 import { Succursale, Batiment } from '@/types/infrastructure';
 
 interface ExcelImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type: 'succursales' | 'batiments' | 'salles' | 'inscriptions' | 'eleves' | 'tuteurs';
+  type: 'succursales' | 'batiments' | 'salles' | 'inscriptions' | 'eleves' | 'tuteurs' | 'frais' | 'paiements' | 'depenses';
   onImport: (data: any[]) => Promise<void>;
   succursales?: Succursale[];
   batiments?: Batiment[];
@@ -97,6 +104,15 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
           break;
         case 'tuteurs':
           result = validateTuteursImport(data);
+          break;
+        case 'frais':
+          result = validateFraisImport(data);
+          break;
+        case 'paiements':
+          result = validatePaiementsImport(data);
+          break;
+        case 'depenses':
+          result = validateDepensesImport(data);
           break;
         default:
           result = validateSuccursalesImport(data);
@@ -170,6 +186,15 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
       case 'tuteurs':
         generateTuteursTemplate();
         break;
+      case 'frais':
+        generateFraisTemplate();
+        break;
+      case 'paiements':
+        generatePaiementsTemplate();
+        break;
+      case 'depenses':
+        generateDepensesTemplate();
+        break;
       default:
         generateSuccursalesTemplate();
         break;
@@ -189,6 +214,9 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
       case 'inscriptions': return 'Inscriptions';
       case 'eleves': return 'Élèves';
       case 'tuteurs': return 'Tuteurs';
+      case 'frais': return 'Frais Scolaires';
+      case 'paiements': return 'Paiements';
+      case 'depenses': return 'Dépenses';
       default: return 'Données';
     }
   };
