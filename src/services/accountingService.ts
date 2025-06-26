@@ -1,6 +1,5 @@
-
 import { fetchWithFallback, ApiResponse } from './api';
-import { FraisScolaire, Paiement, Depense } from '../types/accounting';
+import { FraisScolaire, FraisIndividuel, Paiement, Depense } from '../types/accounting';
 
 const mockFrais: FraisScolaire[] = [
   { 
@@ -85,50 +84,63 @@ const mockFrais: FraisScolaire[] = [
   },
 ];
 
+const mockFraisIndividuels: FraisIndividuel[] = [
+  {
+    id: 1,
+    inscription: 1,
+    frais: 1,
+    montant: "50000",
+    statut: 'EN_ATTENTE',
+    date_creation: '2024-12-01'
+  },
+  {
+    id: 2,
+    inscription: 2,
+    frais: 1,
+    montant: "50000",
+    statut: 'PAYE',
+    date_creation: '2024-11-15'
+  },
+  {
+    id: 3,
+    inscription: 3,
+    frais: 2,
+    montant: "25000",
+    statut: 'PAYE_PARTIELLEMENT',
+    date_creation: '2024-12-10'
+  }
+];
+
 const mockPaiements: Paiement[] = [
   { 
     id: 1, 
+    frais_individuel: 1,
     montant: "25000", 
-    statut: 'EN_ATTENTE', 
-    frais: 1, 
-    inscription: 1, 
     date: '2024-12-01', 
     reference: 'PAY001', 
     user_payeur: null, 
-    tiers_payeur: 'Famille Martin' 
+    tiers_payeur: 'Famille Martin',
+    methode_paiement: 'ESPECES'
   },
   { 
     id: 2, 
+    frais_individuel: 2,
     montant: "50000", 
-    statut: 'PAYE', 
-    frais: 1, 
-    inscription: 2, 
     date: '2024-11-15', 
     reference: 'PAY002', 
     user_payeur: null, 
-    tiers_payeur: 'Famille Dubois' 
+    tiers_payeur: 'Famille Dubois',
+    methode_paiement: 'VIREMENT'
   },
   { 
     id: 3, 
-    montant: "30000", 
-    statut: 'PAYE_PARTIELLEMENT', 
-    frais: 2, 
-    inscription: 3, 
+    frais_individuel: 3,
+    montant: "15000", 
     date: '2024-12-10', 
     reference: 'PAY003', 
     user_payeur: null, 
-    tiers_payeur: 'Famille Kouadio' 
-  },
-  { 
-    id: 4, 
-    montant: "15000", 
-    statut: 'PAYE', 
-    frais: 3, 
-    inscription: 4, 
-    date: '2024-12-05', 
-    reference: 'PAY004', 
-    user_payeur: null, 
-    tiers_payeur: 'Famille N\'Guessan' 
+    tiers_payeur: 'Famille Kouadio',
+    methode_paiement: 'CARTE'
   }
 ];
 
@@ -239,6 +251,10 @@ export const accountingService = {
     }
   },
 
+  // Frais Individuels
+  getFraisIndividuels: (): Promise<ApiResponse<FraisIndividuel[]>> =>
+    fetchWithFallback('/api/accounting/frais-individuels/', mockFraisIndividuels),
+
   // Paiements
   getPaiements: (): Promise<ApiResponse<Paiement[]>> =>
     fetchWithFallback('/api/accounting/paiements/', mockPaiements),
@@ -308,7 +324,7 @@ export const accountingService = {
       const data = await response.json();
       return { data, fromApi: true };
     } catch (error) {
-      const newDepense = { ...depense, id: Date.now() };
+      const newDepense = { ...depense, id: Date.now() + Math.random() };
       mockDepenses.push(newDepense);
       return { data: newDepense, fromApi: false };
     }

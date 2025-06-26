@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { FraisScolaire } from '@/types/accounting';
 import { useFinancialData } from '@/hooks/useFinancialData';
+import { useAcademicData } from '@/hooks/useAcademicData';
 
 const fraisSchema = z.object({
   nom: z.string().min(1, 'Le nom est requis'),
@@ -42,7 +43,9 @@ interface FraisFormProps {
 
 const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
   const { sessions, paliers } = useFinancialData();
+  const { classes } = useAcademicData();
   const [selectedSession, setSelectedSession] = useState<number | null>(item?.session || null);
+  const [selectedClasses, setSelectedClasses] = useState<number[]>(item?.classes || []);
   const [echeanceDate, setEcheanceDate] = useState<Date | undefined>(
     item?.echeance ? new Date(item.echeance) : undefined
   );
@@ -89,16 +92,33 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
     ? paliers.filter(p => p.session === selectedSession)
     : [];
 
+  // Filtrer les classes selon la session sélectionnée
+  const availableClasses = selectedSession 
+    ? classes.filter(c => c.session === selectedSession)
+    : [];
+
   const handleSessionChange = (sessionId: string) => {
     const sessionNumber = parseInt(sessionId);
     setSelectedSession(sessionNumber);
     setValue('session', sessionNumber);
     setValue('palier', undefined); // Reset palier quand on change de session
+    setSelectedClasses([]); // Reset classes quand on change de session
+    setValue('classes', []);
+  };
+
+  const handleClassToggle = (classId: number) => {
+    const newSelectedClasses = selectedClasses.includes(classId)
+      ? selectedClasses.filter(id => id !== classId)
+      : [...selectedClasses, classId];
+    
+    setSelectedClasses(newSelectedClasses);
+    setValue('classes', newSelectedClasses);
   };
 
   const handleFormSubmit = (data: FraisFormData) => {
     const formattedData = {
       ...data,
+      classes: selectedClasses,
       echeance: echeanceDate ? echeanceDate.toISOString().split('T')[0] : null,
       date_creation: new Date().toISOString()
     };
@@ -262,6 +282,54 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
           <Label htmlFor="concerne_toutes_classes">Concerne toutes les classes</Label>
         </div>
       </div>
+
+      {/* Section Classes */}
+      {!watch('concerne_toutes_classes') && (
+        <div>
+          <Label>Classes concernées</Label>
+          <div className="mt-2 border rounded-md p-3 max-h-48 overflow-y-auto">
+            {availableClasses.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {selectedSession ? "Aucune classe disponible pour cette session" : "Sélectionnez d'abord une session"}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {availableClasses.map(classe => (
+                  <div key={classe.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`classe-${classe.id}`}
+                      checked={selectedClasses.includes(classe.id)}
+                      onCheckedChange={() => handleClassToggle(classe.id)}
+                    />
+                    <Label htmlFor={`classe-${classe.id}`} className="text-sm">
+                      {classe.nom}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {selectedClasses.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {selectedClasses.map(classId => {
+                const classe = availableClasses.find(c => c.id === classId);
+                return classe ? (
+                  <span key={classId} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                    {classe.nom}
+                    <button
+                      type="button"
+                      onClick={() => handleClassToggle(classId)}
+                      className="hover:bg-blue-200 rounded-full p-0.5"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex justify-end gap-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>

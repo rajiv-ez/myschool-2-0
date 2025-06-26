@@ -1,3 +1,4 @@
+
 export interface FraisScolaire {
   id: number;
   nom: string | null;
@@ -15,16 +16,24 @@ export interface FraisScolaire {
   classes: number[]; // ManyToMany: ids of Classe
 }
 
-export interface Paiement {
+export interface FraisIndividuel {
   id: number;
   inscription: number;
   frais: number;
-  montant: string;
-  date: string;
+  montant: string; // Decimal as string
+  statut: 'EN_ATTENTE' | 'PAYE_PARTIELLEMENT' | 'PAYE' | 'ANNULE' | 'REMBOURSE';
+  date_creation: string; // ISO date
+}
+
+export interface Paiement {
+  id: number;
+  frais_individuel: number;
+  montant: string; // Decimal as string
+  date: string; // ISO date
   reference: string | null;
   user_payeur: number | null;
   tiers_payeur: string | null;
-  statut: 'EN_ATTENTE' | 'PAYE_PARTIELLEMENT' | 'PAYE' | 'ANNULE' | 'REMBOURSE';
+  methode_paiement: string | null;
 }
 
 export interface Depense {

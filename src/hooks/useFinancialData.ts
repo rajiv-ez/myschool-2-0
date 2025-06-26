@@ -1,12 +1,12 @@
-
 import { useState, useEffect } from 'react';
 import { accountingService } from '@/services/accountingService';
 import { academicService } from '@/services/academicService';
-import { FraisScolaire, Paiement, Depense } from '@/types/accounting';
+import { FraisScolaire, FraisIndividuel, Paiement, Depense } from '@/types/accounting';
 import { Session, Palier } from '@/types/academic';
 
 export const useFinancialData = () => {
   const [frais, setFrais] = useState<FraisScolaire[]>([]);
+  const [fraisIndividuels, setFraisIndividuels] = useState<FraisIndividuel[]>([]);
   const [paiements, setPaiements] = useState<Paiement[]>([]);
   const [depenses, setDepenses] = useState<Depense[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -21,8 +21,9 @@ export const useFinancialData = () => {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [fraisResult, paiementsResult, depensesResult, sessionsResult, paliersResult] = await Promise.all([
+      const [fraisResult, fraisIndividuelsResult, paiementsResult, depensesResult, sessionsResult, paliersResult] = await Promise.all([
         accountingService.getFrais(),
+        accountingService.getFraisIndividuels(),
         accountingService.getPaiements(),
         accountingService.getDepenses(),
         academicService.getSessions(),
@@ -30,11 +31,12 @@ export const useFinancialData = () => {
       ]);
 
       setFrais(fraisResult.data);
+      setFraisIndividuels(fraisIndividuelsResult.data);
       setPaiements(paiementsResult.data);
       setDepenses(depensesResult.data);
       setSessions(sessionsResult.data);
       setPaliers(paliersResult.data);
-      setFromApi(fraisResult.fromApi || paiementsResult.fromApi || depensesResult.fromApi);
+      setFromApi(fraisResult.fromApi || fraisIndividuelsResult.fromApi || paiementsResult.fromApi || depensesResult.fromApi);
     } catch (error) {
       console.error('Erreur lors du chargement des données financières:', error);
     } finally {
@@ -47,8 +49,8 @@ export const useFinancialData = () => {
     totalPaiements: paiements.reduce((sum, p) => sum + parseFloat(p.montant), 0),
     totalDepenses: depenses.reduce((sum, d) => sum + parseFloat(d.montant), 0),
     balance: paiements.reduce((sum, p) => sum + parseFloat(p.montant), 0) - depenses.reduce((sum, d) => sum + parseFloat(d.montant), 0),
-    paiementsEnAttente: paiements.filter(p => p.statut === 'EN_ATTENTE').length,
-    paiementsPayes: paiements.filter(p => p.statut === 'PAYE').length
+    fraisEnAttente: fraisIndividuels.filter(f => f.statut === 'EN_ATTENTE').length,
+    fraisPayes: fraisIndividuels.filter(f => f.statut === 'PAYE').length
   };
 
   // CRUD operations for Frais
@@ -126,6 +128,7 @@ export const useFinancialData = () => {
 
   return {
     frais,
+    fraisIndividuels,
     paiements,
     depenses,
     sessions,
