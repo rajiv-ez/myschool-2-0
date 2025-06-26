@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { FraisScolaire } from '@/types/accounting';
 import { useFinancialData } from '@/hooks/useFinancialData';
-import { useAcademicData } from '@/hooks/useAcademicData';
+import { useInscriptionsData } from '@/hooks/useInscriptionsData';
 
 const fraisSchema = z.object({
   nom: z.string().min(1, 'Le nom est requis'),
@@ -43,7 +43,7 @@ interface FraisFormProps {
 
 const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
   const { sessions, paliers } = useFinancialData();
-  const { classes } = useAcademicData();
+  const { classes, classeSessionsData } = useInscriptionsData();
   const [selectedSession, setSelectedSession] = useState<number | null>(item?.session || null);
   const [selectedClasses, setSelectedClasses] = useState<number[]>(item?.classes || []);
   const [echeanceDate, setEcheanceDate] = useState<Date | undefined>(
@@ -92,9 +92,12 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
     ? paliers.filter(p => p.session === selectedSession)
     : [];
 
-  // Filtrer les classes selon la session sélectionnée
+  // Filtrer les classes selon la session sélectionnée via ClasseSession
   const availableClasses = selectedSession 
-    ? classes.filter(c => c.session === selectedSession)
+    ? classeSessionsData
+        .filter(cs => cs.session === selectedSession)
+        .map(cs => classes.find(c => c.id === cs.classe))
+        .filter(Boolean)
     : [];
 
   const handleSessionChange = (sessionId: string) => {
