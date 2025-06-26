@@ -72,7 +72,7 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
     } : {
       nom: '',
       description: '',
-      session: 0,
+      session: sessions.length > 0 ? sessions[0].id : 1,
       montant: '',
       quantite: 1,
       est_obligatoire: true,
@@ -121,7 +121,7 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
         <div>
           <Label htmlFor="session">Session *</Label>
           <Select
-            value={selectedSession?.toString() || ''}
+            value={selectedSession?.toString() || undefined}
             onValueChange={handleSessionChange}
           >
             <SelectTrigger>
@@ -152,15 +152,15 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
         <div>
           <Label htmlFor="palier">Palier</Label>
           <Select
-            value={watch('palier')?.toString() || ''}
-            onValueChange={(value) => setValue('palier', value ? parseInt(value) : undefined)}
+            value={watch('palier')?.toString() || "none"}
+            onValueChange={(value) => setValue('palier', value === "none" ? undefined : parseInt(value))}
             disabled={!selectedSession}
           >
             <SelectTrigger>
               <SelectValue placeholder="Sélectionner un palier" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Aucun palier</SelectItem>
+              <SelectItem value="none">Aucun palier</SelectItem>
               {filteredPaliers.map(palier => (
                 <SelectItem key={palier.id} value={palier.id.toString()}>
                   {palier.nom}
