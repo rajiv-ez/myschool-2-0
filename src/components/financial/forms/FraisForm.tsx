@@ -49,6 +49,9 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
   const [echeanceDate, setEcheanceDate] = useState<Date | undefined>(
     item?.echeance ? new Date(item.echeance) : undefined
   );
+  const [concerneToutesClasses, setConcerneToutesClasses] = useState<boolean>(
+    item?.concerne_toutes_classes ?? true
+  );
 
   const {
     register,
@@ -118,10 +121,19 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
     setValue('classes', newSelectedClasses);
   };
 
+  const handleConcerneToutesClassesChange = (checked: boolean) => {
+    setConcerneToutesClasses(checked);
+    setValue('concerne_toutes_classes', checked);
+    if (checked) {
+      setSelectedClasses([]);
+      setValue('classes', []);
+    }
+  };
+
   const handleFormSubmit = (data: FraisFormData) => {
     const formattedData = {
       ...data,
-      classes: selectedClasses,
+      classes: concerneToutesClasses ? [] : selectedClasses,
       echeance: echeanceDate ? echeanceDate.toISOString().split('T')[0] : null,
       date_creation: new Date().toISOString()
     };
@@ -278,19 +290,18 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
         <div className="flex items-center space-x-2">
           <Checkbox
             id="concerne_toutes_classes"
-            {...register('concerne_toutes_classes')}
-            defaultChecked={watch('concerne_toutes_classes')}
-            onCheckedChange={(checked) => setValue('concerne_toutes_classes', !!checked)}
+            checked={concerneToutesClasses}
+            onCheckedChange={handleConcerneToutesClassesChange}
           />
           <Label htmlFor="concerne_toutes_classes">Concerne toutes les classes</Label>
         </div>
       </div>
 
       {/* Section Classes */}
-      {!watch('concerne_toutes_classes') && (
+      {!concerneToutesClasses && (
         <div>
-          <Label>Classes concernées</Label>
-          <div className="mt-2 border rounded-md p-3 max-h-48 overflow-y-auto">
+          <Label>Classes concernées *</Label>
+          <div className="mt-2 border rounded-md p-3 max-h-48 overflow-y-auto bg-white">
             {availableClasses.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 {selectedSession ? "Aucune classe disponible pour cette session" : "Sélectionnez d'abord une session"}
@@ -304,7 +315,7 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
                       checked={selectedClasses.includes(classe.id)}
                       onCheckedChange={() => handleClassToggle(classe.id)}
                     />
-                    <Label htmlFor={`classe-${classe.id}`} className="text-sm">
+                    <Label htmlFor={`classe-${classe.id}`} className="text-sm cursor-pointer">
                       {classe.nom}
                     </Label>
                   </div>
@@ -330,6 +341,9 @@ const FraisForm: React.FC<FraisFormProps> = ({ item, onSubmit, onCancel }) => {
                 ) : null;
               })}
             </div>
+          )}
+          {!concerneToutesClasses && selectedClasses.length === 0 && (
+            <p className="text-sm text-red-500 mt-1">Veuillez sélectionner au moins une classe</p>
           )}
         </div>
       )}
