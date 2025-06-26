@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx';
 import { Succursale, Batiment, Salle } from '@/types/infrastructure';
 import { Niveau, Filiere, Specialite, Classe, Session, Palier, ClasseSession, Inscription } from '@/types/academic';
 import { Domaine, UniteEnseignement, Matiere } from '@/types/teaching';
-import { FraisScolaire, Paiement, Depense } from '@/types/financial';
+import { FraisScolaire, Paiement, Depense } from '@/types/accounting';
 
 // Read Excel file utility
 export const readExcelFile = (file: File): Promise<any[]> => {
