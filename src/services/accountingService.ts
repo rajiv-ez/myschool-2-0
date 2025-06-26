@@ -115,32 +115,41 @@ const mockPaiements: Paiement[] = [
   { 
     id: 1, 
     frais_individuel: 1,
+    inscription: 1,
+    frais: 1,
     montant: "25000", 
     date: '2024-12-01', 
     reference: 'PAY001', 
     user_payeur: null, 
     tiers_payeur: 'Famille Martin',
-    methode_paiement: 'ESPECES'
+    methode_paiement: 'ESPECES',
+    statut: 'EN_ATTENTE'
   },
   { 
     id: 2, 
     frais_individuel: 2,
+    inscription: 2,
+    frais: 1,
     montant: "50000", 
     date: '2024-11-15', 
     reference: 'PAY002', 
     user_payeur: null, 
     tiers_payeur: 'Famille Dubois',
-    methode_paiement: 'VIREMENT'
+    methode_paiement: 'VIREMENT',
+    statut: 'PAYE'
   },
   { 
     id: 3, 
     frais_individuel: 3,
+    inscription: 3,
+    frais: 2,
     montant: "15000", 
     date: '2024-12-10', 
     reference: 'PAY003', 
     user_payeur: null, 
     tiers_payeur: 'Famille Kouadio',
-    methode_paiement: 'CARTE'
+    methode_paiement: 'CARTE',
+    statut: 'PAYE_PARTIELLEMENT'
   }
 ];
 

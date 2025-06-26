@@ -50,7 +50,9 @@ export const useFinancialData = () => {
     totalDepenses: depenses.reduce((sum, d) => sum + parseFloat(d.montant), 0),
     balance: paiements.reduce((sum, p) => sum + parseFloat(p.montant), 0) - depenses.reduce((sum, d) => sum + parseFloat(d.montant), 0),
     fraisEnAttente: fraisIndividuels.filter(f => f.statut === 'EN_ATTENTE').length,
-    fraisPayes: fraisIndividuels.filter(f => f.statut === 'PAYE').length
+    fraisPayes: fraisIndividuels.filter(f => f.statut === 'PAYE').length,
+    paiementsEnAttente: paiements.filter(p => p.statut === 'EN_ATTENTE').length,
+    paiementsPayes: paiements.filter(p => p.statut === 'PAYE').length
   };
 
   // CRUD operations for Frais

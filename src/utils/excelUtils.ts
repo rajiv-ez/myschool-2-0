@@ -300,6 +300,7 @@ export const exportFraisToExcel = (items: FraisScolaire[]) => {
 export const exportPaiementsToExcel = (items: Paiement[]) => {
   const data = items.map(item => ({
     'ID': item.id,
+    'Frais individuel': item.frais_individuel,
     'Inscription': item.inscription,
     'Frais': item.frais,
     'Montant': item.montant,
@@ -719,6 +720,9 @@ export const validatePaiementsImport = (data: any[]) => {
   data.forEach((row, index) => {
     const rowNumber = index + 2;
     
+    if (!row.frais_individuel || isNaN(row.frais_individuel)) {
+      errors.push(`Ligne ${rowNumber}: Le frais individuel doit être un nombre`);
+    }
     if (!row.inscription || isNaN(row.inscription)) {
       errors.push(`Ligne ${rowNumber}: L'inscription doit être un nombre`);
     }
@@ -737,6 +741,7 @@ export const validatePaiementsImport = (data: any[]) => {
 
     if (errors.length === 0) {
       validData.push({
+        frais_individuel: parseInt(row.frais_individuel),
         inscription: parseInt(row.inscription),
         frais: parseInt(row.frais),
         montant: row.montant.toString(),
@@ -744,6 +749,7 @@ export const validatePaiementsImport = (data: any[]) => {
         reference: row.reference || null,
         user_payeur: row.user_payeur ? parseInt(row.user_payeur) : null,
         tiers_payeur: row.tiers_payeur || null,
+        methode_paiement: row.methode_paiement || null,
         statut: row.statut
       });
     }
@@ -985,6 +991,7 @@ export const generateFraisTemplate = () => {
 export const generatePaiementsTemplate = () => {
   const data = [
     {
+      frais_individuel: 1,
       inscription: 1,
       frais: 1,
       montant: '25000',
@@ -992,6 +999,7 @@ export const generatePaiementsTemplate = () => {
       reference: 'PAY001',
       user_payeur: null,
       tiers_payeur: 'Famille Martin',
+      methode_paiement: 'ESPECES',
       statut: 'EN_ATTENTE'
     }
   ];

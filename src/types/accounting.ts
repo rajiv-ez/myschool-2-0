@@ -28,12 +28,15 @@ export interface FraisIndividuel {
 export interface Paiement {
   id: number;
   frais_individuel: number;
+  inscription: number;
+  frais: number;
   montant: string; // Decimal as string
   date: string; // ISO date
   reference: string | null;
   user_payeur: number | null;
   tiers_payeur: string | null;
   methode_paiement: string | null;
+  statut: 'EN_ATTENTE' | 'PAYE_PARTIELLEMENT' | 'PAYE' | 'ANNULE' | 'REMBOURSE';
 }
 
 export interface Depense {
